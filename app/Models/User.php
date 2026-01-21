@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Users\UserStatus;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -13,6 +14,17 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 
+/**
+ * @property-read string $id
+ * @property-read UserStatus $status
+ * @property-read string $email
+ * @property-read string $password
+ * @property-read CarbonInterface $last_login_at
+ * @property-read CarbonInterface $email_verified_at
+ * @property-read CarbonInterface $created_at
+ * @property-read CarbonInterface $updated_at
+ * @property-read UserProfile $profile
+ */
 final class User extends Authenticatable implements OAuthenticatable
 {
     use HasApiTokens;
