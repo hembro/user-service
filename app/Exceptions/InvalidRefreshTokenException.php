@@ -23,7 +23,7 @@ final class InvalidRefreshTokenException extends Exception
             message: 'The refresh token is invalid or expired.',
             code: Response::HTTP_UNAUTHORIZED,
         )->withCookie(
-                cookie: $cookieService->forget()
-            );
+            cookie: $cookieService->forget()
+        );
     }
 }

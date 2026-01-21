@@ -20,8 +20,11 @@ final class LogoutController
     public function __invoke(Request $request): JsonResponse
     {
         $request->user()->token()->revoke();
+        $request->user()->token()->refreshToken?->revoke();
 
-        return $this->success('Logged out.')
-            ->withCookie($this->cookieFactory->forget());
+        return $this->noContent()
+            ->withCookie(
+                cookie: $this->cookieFactory->forget()
+            );
     }
 }
