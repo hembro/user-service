@@ -7,6 +7,7 @@ namespace App\Services;
 use App\DTOs\Api\V1\Tokens\TokenDTO;
 use App\Enums\Users\UserStatus;
 use App\Events\UserLoggedIn;
+use App\Exceptions\InvalidRefreshTokenException;
 use App\Models\User;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Auth\AuthenticationException;
@@ -31,7 +32,7 @@ final class AuthService
             boolean: 'and'
         )->firstOrFail();
 
-        if (!$user || !Hash::check($password, $user->password)) {
+        if (! $user || ! Hash::check($password, $user->password)) {
             throw new AuthenticationException(
                 message: 'Invalid credentials.'
             );
@@ -77,12 +78,21 @@ final class AuthService
             ]
         );
 
-        $result = $this->handleResponse($response);
-
-        return TokenDTO::fromArray($result);
+        return TokenDTO::fromArray($this->handleResponse($response));
     }
 
-    public function proxyRefreshTokenGrant(string $refreshToken): array
+    public function refresh(string $refreshToken): TokenDTO
+    {
+        try {
+            return $this->proxyRefreshTokenGrant(
+                refreshToken: $refreshToken
+            );
+        } catch (AuthenticationException $e) {
+            throw new InvalidRefreshTokenException();
+        }
+    }
+
+    public function proxyRefreshTokenGrant(string $refreshToken): TokenDTO
     {
         // Laravel Octane Ready!
         $response = Http::asForm()->post(
@@ -96,12 +106,12 @@ final class AuthService
             ]
         );
 
-        return $this->handleResponse($response);
+        return TokenDTO::fromArray($this->handleResponse($response));
     }
 
     private function handleResponse(PromiseInterface|Response $response): array
     {
-        if (!$response instanceof Response) {
+        if (! $response instanceof Response) {
             throw new AuthenticationException(
                 message: 'Auth service returned an unexpected response type.'
             );

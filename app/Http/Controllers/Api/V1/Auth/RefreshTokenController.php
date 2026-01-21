@@ -8,9 +8,7 @@ use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
 use App\Traits\HasApiResponse;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 final class RefreshTokenController
 {
@@ -23,30 +21,21 @@ final class RefreshTokenController
 
     public function __invoke(RefreshTokenRequest $request): JsonResponse
     {
-        $refreshToken = $request->cookie('refresh_token') ?? $request->validated('refresh_token');
+        $refreshToken = $request->cookie('refresh_token') ?? $request->validated('refresh_token', '');
 
-        try {
-            $tokenData = $this->service->proxyRefreshTokenGrant(
-                refreshToken: $refreshToken
-            );
-        } catch (AuthenticationException $e) {
-            return $this->error(
-                message: $e->getMessage(),
-                code: Response::HTTP_UNAUTHORIZED
-            )->withCookie(
-                cookie: $this->cookieFactory->forget()
-            );
-        }
+        $token = $this->service->refresh(
+            refreshToken: $refreshToken
+        );
 
         return $this->success(
             data: [
-                'access_token' => $tokenData['access_token'],
-                'expires_in' => $tokenData['expires_in'],
                 'token_type' => 'Bearer',
+                'access_token' => $token->accessToken,
+                'expires_in' => $token->expiresIn,
             ]
         )->withCookie(
             cookie: $this->cookieFactory->make(
-                refreshToken: $tokenData['refresh_token']
+                refreshToken: $token->refreshToken
             )
         );
     }
