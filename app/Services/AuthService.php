@@ -85,7 +85,7 @@ final class AuthService
                 'client_secret' => config('services.passport.password_client_secret'),
                 'username' => $email,
                 'password' => $password,
-                'scope' => '*',
+                'scope' => '*', // Token scopes are for clients only, not for users.
             ]
         );
 
