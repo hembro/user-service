@@ -25,14 +25,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function configurePassport(): void
     {
-        Passport::tokensCan([
-            'pms:read' => 'Read PMS Data',
-            'pms:write' => 'Write PMS Data',
-            // 'herdin:admin' => 'Admin access to HERDIN',
-        ]);
-
         Passport::enablePasswordGrant();
-
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
         Passport::personalAccessTokensExpireIn(CarbonInterval::months(6));

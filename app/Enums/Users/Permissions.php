@@ -69,11 +69,6 @@ enum Permissions: string
     // Planning Officer: "Produce a report"
     case PMS_REPORT_GENERATE = 'pms.report.generate';
 
-    public static function all(): array
-    {
-        return array_map(fn (Permissions $permission): string => $permission->value, self::cases());
-    }
-
     public function pms(): array
     {
         return [];

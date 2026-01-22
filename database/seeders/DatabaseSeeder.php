@@ -22,5 +22,9 @@ final class DatabaseSeeder extends Seeder
                 'status' => UserStatus::ACTIVE,
                 'email' => 'test@example.com',
             ]);
+
+        $this->call(
+            class: [RoleAndPermissionSeeder::class]
+        );
     }
 }
