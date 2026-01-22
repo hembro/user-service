@@ -20,7 +20,7 @@ final class InvalidRefreshTokenException extends Exception
         $cookieService = app(AuthCookieService::class);
 
         return $this->error(
-            message: 'The refresh token is invalid or expired.',
+            message: $this->getMessage(),
             code: Response::HTTP_UNAUTHORIZED,
         )->withCookie(
             cookie: $cookieService->forget()

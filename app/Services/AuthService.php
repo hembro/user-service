@@ -99,7 +99,9 @@ final class AuthService
                 refreshToken: $refreshToken
             );
         } catch (AuthenticationException $e) {
-            throw new InvalidRefreshTokenException();
+            throw new InvalidRefreshTokenException(
+                message: 'The refresh token is invalid or expired.'
+            );
         }
     }
 
