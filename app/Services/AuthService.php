@@ -7,7 +7,10 @@ namespace App\Services;
 use App\DTOs\Api\V1\Tokens\TokenDTO;
 use App\Enums\Users\UserStatus;
 use App\Events\UserLoggedIn;
+use App\Exceptions\AccountStatusException;
+use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
+use App\Exceptions\UpstreamServiceException;
 use App\Models\User;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Auth\AuthenticationException;
@@ -16,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Laravel\Passport\Bridge\RefreshTokenRepository;
 use Laravel\Passport\TokenRepository;
+use RuntimeException;
 use SensitiveParameter;
 
 final class AuthService
@@ -39,15 +43,15 @@ final class AuthService
             boolean: 'and'
         )->firstOrFail();
 
-        if (! $user || ! Hash::check($password, $user->password)) {
-            throw new AuthenticationException(
-                message: 'Invalid credentials.'
+        if ($user->status !== UserStatus::ACTIVE) {
+            throw new AccountStatusException(
+                message: "Access denied. Account status: {$user->status->value}"
             );
         }
 
-        if ($user->status !== UserStatus::ACTIVE) {
-            throw new AuthenticationException(
-                message: "Access denied. Account status: {$user->status->value}"
+        if (! $user || ! Hash::check($password, $user->password)) {
+            throw new InvalidCredentialsException(
+                message: 'Invalid credentials.'
             );
         }
 
@@ -131,13 +135,19 @@ final class AuthService
     private function handleResponse(PromiseInterface|Response $response): array
     {
         if (! $response instanceof Response) {
-            throw new AuthenticationException(
-                message: 'Auth service returned an unexpected response type.'
+            throw new RuntimeException(
+                'Critical Error: Auth service returned an unexpected response type.'
             );
         }
 
         if ($response->failed()) {
-            throw new AuthenticationException(
+            if ($response->serverError()) {
+                throw new UpstreamServiceException(
+                    'The authentication server is currently unavailable. Please try again later.'
+                );
+            }
+
+            throw new InvalidCredentialsException(
                 message: $response->json('error') ?? 'Invalid or expired token.'
             );
         }
