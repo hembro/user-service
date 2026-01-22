@@ -39,6 +39,9 @@ enum Permissions: string
     // Proponent: "Track... their proposal"
     case PMS_PROPOSAL_TRACK = 'pms.proposal.track';
 
+    // Divisoon Chief and Senior Officer: "Approves the clearance for assignment of the proposal"
+    case PMS_PROPOSAL_APPROVE_CLEARANCE = 'pms.proposal.approve-clearance';
+
     // ==========================
     // USER PROFILE: MANAGEMENT
     // ==========================
