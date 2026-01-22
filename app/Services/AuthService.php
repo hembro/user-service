@@ -14,10 +14,17 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Laravel\Passport\Bridge\RefreshTokenRepository;
+use Laravel\Passport\TokenRepository;
 use SensitiveParameter;
 
 final class AuthService
 {
+    public function __construct(
+        private readonly TokenRepository $tokenRepository,
+        private readonly RefreshTokenRepository $refreshTokenRepository
+    ) {}
+
     public function login(
         string $email,
         #[SensitiveParameter]
@@ -107,6 +114,18 @@ final class AuthService
         );
 
         return TokenDTO::fromArray($this->handleResponse($response));
+    }
+
+    public function logout(User $user): void
+    {
+        $accessToken = $user->token();
+
+        if (! $accessToken) {
+            return;
+        }
+
+        $accessToken->revoke();
+        $accessToken->refreshToken?->revoke();
     }
 
     private function handleResponse(PromiseInterface|Response $response): array
