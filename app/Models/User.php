@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property-read string $id
@@ -29,6 +30,7 @@ final class User extends Authenticatable implements OAuthenticatable
 {
     use HasApiTokens;
     use HasFactory;
+    use HasRoles;
     use HasUlids;
     use Notifiable;
 
