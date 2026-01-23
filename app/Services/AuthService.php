@@ -7,7 +7,6 @@ namespace App\Services;
 use App\DTOs\Api\V1\Tokens\TokenDTO;
 use App\Enums\Users\UserStatus;
 use App\Events\UserLoggedIn;
-use App\Exceptions\AccountStatusException;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Exceptions\UpstreamServiceException;
@@ -15,20 +14,12 @@ use App\Models\User;
 use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use Laravel\Passport\Bridge\RefreshTokenRepository;
-use Laravel\Passport\TokenRepository;
 use RuntimeException;
 use SensitiveParameter;
 
 final class AuthService
 {
-    public function __construct(
-        private readonly TokenRepository $tokenRepository,
-        private readonly RefreshTokenRepository $refreshTokenRepository
-    ) {}
-
     public function login(
         string $email,
         #[SensitiveParameter]
@@ -41,15 +32,9 @@ final class AuthService
             value: $email,
             operator: '=',
             boolean: 'and'
-        )->firstOrFail();
+        )->first();
 
-        if ($user->status !== UserStatus::ACTIVE) {
-            throw new AccountStatusException(
-                message: "Access denied. Account status: {$user->status->value}"
-            );
-        }
-
-        if (! $user || ! Hash::check($password, $user->password)) {
+        if (! $user || $user->status !== UserStatus::ACTIVE) {
             throw new InvalidCredentialsException(
                 message: 'Invalid credentials.'
             );
