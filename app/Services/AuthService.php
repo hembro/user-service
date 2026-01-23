@@ -11,11 +11,7 @@ use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Exceptions\UpstreamServiceException;
 use App\Models\User;
-use GuzzleHttp\Promise\PromiseInterface;
-use Illuminate\Auth\AuthenticationException;
-use Illuminate\Http\Client\Response;
-use Illuminate\Support\Facades\Http;
-use RuntimeException;
+use Illuminate\Http\Request;
 use SensitiveParameter;
 
 final class AuthService
@@ -27,12 +23,9 @@ final class AuthService
         string $ip,
         string $userAgent
     ): TokenDTO {
-        $user = User::where(
-            column: 'email',
-            value: $email,
-            operator: '=',
-            boolean: 'and'
-        )->first();
+        $user = User::query()
+            ->where('email', $email)
+            ->first();
 
         if (! $user || $user->status !== UserStatus::ACTIVE) {
             throw new InvalidCredentialsException(
@@ -61,20 +54,15 @@ final class AuthService
         #[SensitiveParameter]
         string $password
     ): TokenDTO {
-        // Laravel Octane Ready!
-        $response = Http::asForm()->post(
-            url: route('api.v1.auth.oauth.token'),
-            data: [
+        $response = $this->makeInternalRequest(
+            parameters: [
                 'grant_type' => 'password',
-                'client_id' => config('services.passport.password_client_id'),
-                'client_secret' => config('services.passport.password_client_secret'),
                 'username' => $email,
                 'password' => $password,
-                'scope' => '*', // Token scopes are for clients only, not for users.
             ]
         );
 
-        return TokenDTO::fromArray($this->handleResponse($response));
+        return TokenDTO::fromArray($response);
     }
 
     public function refresh(string $refreshToken): TokenDTO
@@ -83,28 +71,24 @@ final class AuthService
             return $this->proxyRefreshTokenGrant(
                 refreshToken: $refreshToken
             );
-        } catch (AuthenticationException $e) {
+        } catch (InvalidCredentialsException $e) {
             throw new InvalidRefreshTokenException(
-                message: 'The refresh token is invalid or expired.'
+                message: 'Invalid or expired refresh token.',
+                previous: $e
             );
         }
     }
 
     public function proxyRefreshTokenGrant(string $refreshToken): TokenDTO
     {
-        // Laravel Octane Ready!
-        $response = Http::asForm()->post(
-            url: route('api.v1.auth.oauth.token'),
-            data: [
+        $response = $this->makeInternalRequest(
+            parameters: [
                 'grant_type' => 'refresh_token',
-                'client_id' => config('services.passport.password_client_id'),
-                'client_secret' => config('services.passport.password_client_secret'),
                 'refresh_token' => $refreshToken,
-                'scope' => '*',
             ]
         );
 
-        return TokenDTO::fromArray($this->handleResponse($response));
+        return TokenDTO::fromArray($response);
     }
 
     public function logout(User $user): void
@@ -119,26 +103,43 @@ final class AuthService
         $accessToken->refreshToken?->revoke();
     }
 
-    private function handleResponse(PromiseInterface|Response $response): array
+    private function makeInternalRequest(array $parameters): array
     {
-        if (! $response instanceof Response) {
-            throw new RuntimeException(
-                'Critical Error: Auth service returned an unexpected response type.'
+        $parameters['client_id'] = config('services.passport.password_client_id');
+        $parameters['client_secret'] = config('services.passport.password_client_secret');
+        $parameters['scope'] = '*'; // Token scopes are for clients only, not for users.
+
+        $request = Request::create(
+            uri: route(
+                name: 'api.v1.auth.oauth.token',
+                absolute: false
+            ),
+            method: 'POST',
+            parameters: $parameters
+        );
+
+        $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
+        $request->headers->set('Accept', 'application/json');
+
+        $response = app()->handle($request);
+
+        $result = json_decode(
+            json: $response->getContent(),
+            associative: true
+        );
+
+        if (! is_array($result) || $response->isServerError()) {
+            throw new UpstreamServiceException(
+                message: 'The authentication server is currently unavailable. Please try again later.'
             );
         }
 
-        if ($response->failed()) {
-            if ($response->serverError()) {
-                throw new UpstreamServiceException(
-                    'The authentication server is currently unavailable. Please try again later.'
-                );
-            }
-
+        if (! $response->isSuccessful()) {
             throw new InvalidCredentialsException(
-                message: $response->json('error') ?? 'Invalid or expired token.'
+                message: $result['error_description'] ?? 'Invalid credentials or expired token.'
             );
         }
 
-        return $response->json();
+        return $result;
     }
 }
