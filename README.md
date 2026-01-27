@@ -1,6 +1,6 @@
 # 👤 User Service
 
-A microservice responsible for user management and authentication, powered by **Laravel Passport**.
+A microservice responsible for user management, authentication and authorization. Powered by **Laravel Passport** and **spatie/laravel-permissions**.
 
 ---
 
