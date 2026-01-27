@@ -14,7 +14,6 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Passport::ignoreRoutes();
-        Passport::enablePasswordGrant();
     }
 
     public function boot(): void
@@ -28,19 +27,21 @@ final class AppServiceProvider extends ServiceProvider
         Passport::enablePasswordGrant();
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
-        Passport::personalAccessTokensExpireIn(CarbonInterval::months(6));
     }
 
     private function configurePasswordDefaults(): void
     {
-        Password::defaults(function () {
-            return Password::required()
-                ->min(8)
-                ->max(255)
-                ->mixedCase()
-                ->numbers()
-                ->symbols()
-                ->uncompromised(2);
-        });
+        Password::defaults(
+            function (): Password {
+                $password = Password::min(8)->max(255);
+
+                return $this->app->environment('production')
+                    ? $password->mixedCase()
+                        ->numbers()
+                        ->symbols()
+                        ->uncompromised(2)
+                    : $password;
+            }
+        );
     }
 }
