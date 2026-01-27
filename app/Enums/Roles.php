@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Users;
+namespace App\Enums;
 
 enum Roles: string
 {
@@ -18,5 +18,7 @@ enum Roles: string
     case PMS_PROPONENT = 'pms.proponent';
 
     case HERDIN_ADMIN = 'herdin.admin';
+    case HERDIN_USER = 'herdin.user';
     case PHRR_ADMIN = 'phrr.admin';
+    case PHRR_USER = 'phrr.user';
 }

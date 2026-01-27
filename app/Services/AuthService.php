@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\DTOs\Api\V1\Tokens\TokenDTO;
-use App\Enums\Users\UserStatus;
+use App\DTOs\Api\V1\Auth\TokenDTO;
+use App\Enums\UserStatus;
 use App\Events\UserLoggedIn;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;

@@ -8,19 +8,7 @@ use App\Events\UserCreated;
 
 final class PublishUserCreationToBroker
 {
-    /**
-     * Create the event listener.
-     */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct() {}
 
-    /**
-     * Handle the event.
-     */
-    public function handle(UserCreated $event): void
-    {
-        //
-    }
+    public function handle(UserCreated $event): void {}
 }

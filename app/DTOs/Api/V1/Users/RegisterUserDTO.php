@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\DTOs\Api\V1\Users;
 
 final readonly class RegisterUserDTO
 {
@@ -17,6 +17,7 @@ final readonly class RegisterUserDTO
         public string $sex,
         public ?string $mobileNumber,
         public array $preferences,
+        public string $system
     ) {}
 
     public static function fromRequest(array $data): self
@@ -32,6 +33,7 @@ final readonly class RegisterUserDTO
             sex: $data['sex'],
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
+            system: $data['system'],
         );
     }
 }
