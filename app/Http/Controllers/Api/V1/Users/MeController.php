@@ -15,8 +15,10 @@ final class MeController
 
     public function __invoke(Request $request): JsonResponse
     {
+        $user = $request->user()->load(['profile', 'roles', 'permissions']);
+
         return $this->success(
-            data: new UserResource($request->user())
+            data: new UserResource($user)
         );
     }
 }

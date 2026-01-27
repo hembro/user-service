@@ -15,12 +15,19 @@ final class UserResource extends JsonResource
             'id' => $this->resource->id,
             'status' => $this->resource->status,
             'email' => $this->resource->email,
-            'created_at' => $this->resource->created_at,
-            'updated_at' => $this->resource->updated_at,
-            'profile' => $this->whenLoaded(
-                relationship: 'profile',
-                value: new UserProfileResource($this->resource->profile)
-            ),
+
+            'first_name' => $this->resource->profile?->first_name,
+            'middle_name' => $this->resource->profile?->middle_name,
+            'last_name' => $this->resource->profile?->last_name,
+            'suffix' => $this->resource->profile?->suffix,
+            'sex' => $this->resource->profile?->sex,
+            'mobile_number' => $this->resource->profile?->mobile_number,
+
+            'roles' => $this->resource->getRoleNames(),
+            'permissions' => $this->resource->getAllPermissions()->pluck('name'),
+
+            'preferences' => $this->resource->profile?->preferences,
+            'created_at' => $this->resource->created_at->toIso8601String(),
         ];
     }
 }

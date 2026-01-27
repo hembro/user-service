@@ -25,7 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             return new JsonResponse(
                 data: [
                     'success' => false,
-                    'message' => $e->getMessage(),
+                    'message' => 'Invalid credentials.',
                     'code' => Response::HTTP_UNAUTHORIZED,
                 ],
                 status: Response::HTTP_UNAUTHORIZED
