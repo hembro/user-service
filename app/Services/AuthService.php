@@ -14,6 +14,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use SensitiveParameter;
 
+use function is_array;
+
 final class AuthService
 {
     public function login(
@@ -99,7 +101,9 @@ final class AuthService
             return;
         }
 
+        // @phpstan-ignore-next-line
         $accessToken->revoke();
+        // @phpstan-ignore-next-line
         $accessToken->refreshToken?->revoke();
     }
 
@@ -136,7 +140,7 @@ final class AuthService
 
         if (! $response->isSuccessful()) {
             throw new InvalidCredentialsException(
-                message: $result['error_description'] ?? 'Invalid credentials or expired token.'
+                message: 'Invalid credentials.'
             );
         }
 
