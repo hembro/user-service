@@ -7,6 +7,7 @@ namespace App\Services;
 use App\DTOs\Api\V1\Auth\TokenDTO;
 use App\Enums\UserStatus;
 use App\Events\UserLoggedIn;
+use App\Events\UserLoggedOut;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Exceptions\UpstreamServiceException;
@@ -109,6 +110,8 @@ final class AuthService
         $accessToken->revoke();
         // @phpstan-ignore-next-line
         $accessToken->refreshToken?->revoke();
+
+        UserLoggedOut::dispatch($user);
     }
 
     private function makeInternalRequest(array $parameters, array $headers = []): array
