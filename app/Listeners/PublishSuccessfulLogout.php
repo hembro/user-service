@@ -7,7 +7,7 @@ namespace App\Listeners;
 use App\Events\UserLoggedOut;
 use App\Jobs\Publishers\PublishUserLoggedOut;
 
-final class LogSuccessfulLogout
+final class PublishSuccessfulLogout
 {
     public function __construct() {}
 
