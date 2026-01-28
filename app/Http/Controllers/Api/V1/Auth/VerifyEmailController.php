@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 final class VerifyEmailController
 {
@@ -18,7 +19,7 @@ final class VerifyEmailController
         private readonly VerifyEmail $action
     ) {}
 
-    public function __invoke(Request $request, string $id, string $hash): JsonResponse
+    public function verify(string $id, string $hash): JsonResponse
     {
         $user = User::query()->findOrFail($id);
 
@@ -26,6 +27,24 @@ final class VerifyEmailController
 
         return $this->success(
             message: 'Email verified successfully'
+        );
+    }
+
+    public function resend(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
+            return $this->error(
+                message: 'Email already verified',
+                code: Response::HTTP_FORBIDDEN
+            );
+        }
+
+        $user->sendEmailVerificationNotification();
+
+        return $this->success(
+            code: Response::HTTP_ACCEPTED
         );
     }
 }

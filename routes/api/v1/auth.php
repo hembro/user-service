@@ -21,10 +21,11 @@ Route::middleware('throttle')->group(function (): void {
         ->middleware('auth:api')
         ->name('logout');
 
-    Route::post('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    Route::post('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
         ->middleware(['signed', 'throttle:6,1'])
         ->name('verification.verify');
 
     Route::post('/email/resend', [VerifyEmailController::class, 'resend'])
-        ->middleware(['auth:api', 'throttle:6,1']);
+        ->middleware(['auth:api', 'throttle:6,1'])
+        ->name('verification.resend');
 });
