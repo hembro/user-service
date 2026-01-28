@@ -24,7 +24,6 @@ final class RegisterRequest extends FormRequest
             'sex' => ['required', 'string', Rule::enum(Enums\Sex::class)],
             'mobile_number' => ['nullable', 'string', 'min:10', 'max:11'],
             'preferences' => ['nullable', 'array'],
-            'system' => ['required', 'string', Rule::enum(Enums\Systems::class)],
         ];
     }
 }

@@ -16,8 +16,7 @@ final readonly class RegisterUserDTO
         public ?string $suffix,
         public string $sex,
         public ?string $mobileNumber,
-        public array $preferences,
-        public string $system
+        public array $preferences
     ) {}
 
     public static function fromArray(array $data): self
@@ -32,8 +31,7 @@ final readonly class RegisterUserDTO
             suffix: $data['suffix'] ?? null,
             sex: $data['sex'],
             mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? [],
-            system: $data['system'],
+            preferences: $data['preferences'] ?? []
         );
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Users;
 
 use App\Actions\Api\V1\Users\CreateUser;
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
+use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -21,8 +22,9 @@ final class RegisterController
 
     public function __invoke(RegisterRequest $request): JsonResponse
     {
-        $user = $this->action->handle(
-            dto: RegisterUserDTO::fromArray($request->validated())
+        $this->action->handle(
+            dto: RegisterUserDTO::fromArray($request->validated()),
+            system: Systems::find($request->header('X-Source-System', ''))->value
         );
 
         return $this->success(

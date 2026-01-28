@@ -18,10 +18,10 @@ final class CreateUser
         private DatabaseManager $db
     ) {}
 
-    public function handle(RegisterUserDTO $dto): User
+    public function handle(RegisterUserDTO $dto, string $system): User
     {
         return $this->db->transaction(
-            callback: function () use ($dto): User {
+            callback: function () use ($dto, $system): User {
 
                 $user = User::create([
                     'email' => $dto->email,
@@ -40,13 +40,13 @@ final class CreateUser
                     'preferences' => $dto->preferences,
                 ]);
 
-                $user->assignRole($this->resolveRole($dto->system));
+                $user->assignRole($this->resolveRole($system));
 
                 UserCreated::dispatch($user);
 
                 Log::info(
                     message: 'User created',
-                    context: ['user_id' => $user->id, 'system' => $dto->system]
+                    context: ['user_id' => $user->id]
                 );
 
                 return $user;
