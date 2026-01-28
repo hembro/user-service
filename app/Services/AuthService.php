@@ -23,7 +23,8 @@ final class AuthService
         #[SensitiveParameter]
         string $password,
         string $ip,
-        string $userAgent
+        string $userAgent,
+        string $system
     ): TokenDTO {
         $user = User::query()
             ->where('email', $email)
@@ -37,16 +38,11 @@ final class AuthService
 
         $token = $this->proxyPasswordGrant(
             email: $email,
-            password: $password
+            password: $password,
+            system: $system
         );
 
-        event(
-            new UserLoggedIn(
-                user: $user,
-                ip: $ip,
-                userAgent: $userAgent
-            )
-        );
+        UserLoggedIn::dispatch($user, $ip, $userAgent);
 
         return $token;
     }
@@ -54,24 +50,29 @@ final class AuthService
     public function proxyPasswordGrant(
         string $email,
         #[SensitiveParameter]
-        string $password
+        string $password,
+        string $system
     ): TokenDTO {
         $response = $this->makeInternalRequest(
             parameters: [
                 'grant_type' => 'password',
                 'username' => $email,
                 'password' => $password,
+            ],
+            headers: [
+                'HTTP_X-Source-System' => $system,
             ]
         );
 
         return TokenDTO::fromArray($response);
     }
 
-    public function refresh(string $refreshToken): TokenDTO
+    public function refresh(string $refreshToken, string $system): TokenDTO
     {
         try {
             return $this->proxyRefreshTokenGrant(
-                refreshToken: $refreshToken
+                refreshToken: $refreshToken,
+                system: $system
             );
         } catch (InvalidCredentialsException $e) {
             throw new InvalidRefreshTokenException(
@@ -81,12 +82,15 @@ final class AuthService
         }
     }
 
-    public function proxyRefreshTokenGrant(string $refreshToken): TokenDTO
+    public function proxyRefreshTokenGrant(string $refreshToken, string $system): TokenDTO
     {
         $response = $this->makeInternalRequest(
             parameters: [
                 'grant_type' => 'refresh_token',
                 'refresh_token' => $refreshToken,
+            ],
+            headers: [
+                'HTTP_X-Source-System' => $system,
             ]
         );
 
@@ -107,11 +111,14 @@ final class AuthService
         $accessToken->refreshToken?->revoke();
     }
 
-    private function makeInternalRequest(array $parameters): array
+    private function makeInternalRequest(array $parameters, array $headers = []): array
     {
         $parameters['client_id'] = config('services.passport.password_client_id');
         $parameters['client_secret'] = config('services.passport.password_client_secret');
         $parameters['scope'] = '*'; // Token scopes are for clients only, not for users.
+
+        $headers['HTTP_Content-Type'] = 'application/x-www-form-urlencoded';
+        $headers['HTTP_Accept'] = 'application/json';
 
         $request = Request::create(
             uri: route(
@@ -119,11 +126,9 @@ final class AuthService
                 absolute: false
             ),
             method: 'POST',
-            parameters: $parameters
+            parameters: $parameters,
+            server: $headers
         );
-
-        $request->headers->set('Content-Type', 'application/x-www-form-urlencoded');
-        $request->headers->set('Accept', 'application/json');
 
         $response = app()->handle($request);
 

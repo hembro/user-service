@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
@@ -26,6 +27,7 @@ final class LoginController
             password: $request->validated('password'),
             ip: $request->ip(),
             userAgent: $request->userAgent(),
+            system: Systems::find($request->header('X-Source-System', ''))->value,
         );
 
         return $this->success(

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
@@ -24,7 +25,8 @@ final class RefreshTokenController
         $refreshToken = $request->cookie('refresh_token') ?? $request->validated('refresh_token', '');
 
         $token = $this->service->refresh(
-            refreshToken: $refreshToken
+            refreshToken: $refreshToken,
+            system: Systems::find($request->header('X-Source-System', ''))->value,
         );
 
         return $this->success(

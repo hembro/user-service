@@ -20,7 +20,7 @@ final readonly class RegisterUserDTO
         public string $system
     ) {}
 
-    public static function fromRequest(array $data): self
+    public static function fromArray(array $data): self
     {
         return new self(
             email: $data['email'],

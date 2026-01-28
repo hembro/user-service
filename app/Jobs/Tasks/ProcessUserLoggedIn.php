@@ -23,7 +23,7 @@ final class ProcessUserLoggedIn implements ShouldQueue
     {
         $this->user->updateQuietly(['last_login_at' => now()]);
 
-        Log::info('user_login', [
+        Log::info('User Login', [
             'user_id' => $this->user->id,
             'ip' => $this->ip,
             'user_agent' => $this->userAgent,

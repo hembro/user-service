@@ -40,14 +40,7 @@ final class CreateUser
                     'preferences' => $dto->preferences,
                 ]);
 
-                $defaultRole = match ($dto->system) {
-                    Enums\Systems::PMS->value => Enums\Roles::PMS_PROPONENT,
-                    Enums\Systems::HERDIN->value => Enums\Roles::HERDIN_USER,
-                    Enums\Systems::PHRR->value => Enums\Roles::PHRR_USER,
-                    default => throw new InvalidArgumentException("Invalid system: {$dto->system}"),
-                };
-
-                $user->assignRole($defaultRole);
+                $user->assignRole($this->resolveRole($dto->system));
 
                 UserCreated::dispatch($user);
 
@@ -59,5 +52,15 @@ final class CreateUser
                 return $user;
             }
         );
+    }
+
+    private function resolveRole(string $system): Enums\Roles
+    {
+        return match ($system) {
+            Enums\Systems::PMS->value => Enums\Roles::PMS_PROPONENT,
+            Enums\Systems::HERDIN->value => Enums\Roles::HERDIN_USER,
+            Enums\Systems::PHRR->value => Enums\Roles::PHRR_USER,
+            default => throw new InvalidArgumentException("Invalid system: {$system}"),
+        };
     }
 }
