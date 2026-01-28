@@ -19,6 +19,8 @@ final class PublishUserCreated implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info("BROKER: Publishing UserCreated event for User ID: {$this->user->id}");
+        Log::info('BROKER: UserCreated event', [
+            'user_id' => $this->user->id,
+        ]);
     }
 }

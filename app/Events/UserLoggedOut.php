@@ -14,6 +14,9 @@ final class UserLoggedOut
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user
+        public User $user,
+        public string $ip,
+        public string $userAgent,
+        public string $timestamp
     ) {}
 }

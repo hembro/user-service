@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 
-final class ProcessUserLoggedIn implements ShouldQueue
+final class ProcessUserLoggedOut implements ShouldQueue
 {
     use Queueable;
 
@@ -22,9 +22,7 @@ final class ProcessUserLoggedIn implements ShouldQueue
 
     public function handle(): void
     {
-        $this->user->updateQuietly(['last_login_at' => now()]);
-
-        Log::info('User Login', [
+        Log::info('User logged out', [
             'user_id' => $this->user->id,
             'ip' => $this->ip,
             'user_agent' => $this->userAgent,

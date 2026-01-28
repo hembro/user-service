@@ -22,7 +22,10 @@ final class LogoutController
     public function __invoke(Request $request): JsonResponse
     {
         $this->service->logout(
-            user: $request->user()
+            user: $request->user(),
+            ip: $request->ip(),
+            userAgent: $request->userAgent(),
+            timestamp: now()->toIso8601String()
         );
 
         return $this->noContent()

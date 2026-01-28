@@ -27,6 +27,7 @@ final class LoginController
             password: $request->validated('password'),
             ip: $request->ip(),
             userAgent: $request->userAgent(),
+            timestamp: now()->toIso8601String(),
             system: Systems::find($request->header('X-Source-System', ''))->value,
         );
 

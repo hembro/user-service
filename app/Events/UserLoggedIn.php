@@ -17,5 +17,6 @@ final class UserLoggedIn
         public User $user,
         public string $ip,
         public string $userAgent,
+        public string $timestamp
     ) {}
 }

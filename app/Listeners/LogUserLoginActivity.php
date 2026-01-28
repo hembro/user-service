@@ -13,6 +13,6 @@ final class LogUserLoginActivity
 
     public function handle(UserLoggedIn $event): void
     {
-        ProcessUserLoggedIn::dispatch($event->user, $event->ip, $event->userAgent);
+        ProcessUserLoggedIn::dispatch($event->user, $event->ip, $event->userAgent, $event->timestamp);
     }
 }

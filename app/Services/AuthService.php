@@ -25,6 +25,7 @@ final class AuthService
         string $password,
         string $ip,
         string $userAgent,
+        string $timestamp,
         string $system
     ): TokenDTO {
         $user = User::query()
@@ -43,7 +44,7 @@ final class AuthService
             system: $system
         );
 
-        UserLoggedIn::dispatch($user, $ip, $userAgent);
+        UserLoggedIn::dispatch($user, $ip, $userAgent, $timestamp);
 
         return $token;
     }
@@ -98,7 +99,7 @@ final class AuthService
         return TokenDTO::fromArray($response);
     }
 
-    public function logout(User $user): void
+    public function logout(User $user, string $ip, string $userAgent, string $timestamp): void
     {
         $accessToken = $user->token();
 
@@ -111,7 +112,7 @@ final class AuthService
         // @phpstan-ignore-next-line
         $accessToken->refreshToken?->revoke();
 
-        UserLoggedOut::dispatch($user);
+        UserLoggedOut::dispatch($user, $ip, $userAgent, $timestamp);
     }
 
     private function makeInternalRequest(array $parameters, array $headers = []): array
