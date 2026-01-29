@@ -15,7 +15,7 @@ final class RegisterRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email:rfc', 'min:3', 'max:255', 'unique:users'],
-            'password' => ['required', Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'title' => ['nullable', 'string', Rule::enum(Enums\Titles::class)],
             'first_name' => ['required', 'string', 'min:2', 'max:100'],
             'middle_name' => ['nullable', 'string', 'min:2', 'max:100'],

@@ -7,10 +7,10 @@ namespace App\Actions\Api\V1\Users;
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
 use App\Enums;
 use App\Events\UserCreated;
+use App\Exceptions\InvalidSystemHeaderException;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 
 final class CreateUser
 {
@@ -60,7 +60,7 @@ final class CreateUser
             Enums\Systems::PMS->value => Enums\Roles::PMS_PROPONENT,
             Enums\Systems::HERDIN->value => Enums\Roles::HERDIN_USER,
             Enums\Systems::PHRR->value => Enums\Roles::PHRR_USER,
-            default => throw new InvalidArgumentException("Invalid system: {$system}"),
+            default => throw new InvalidSystemHeaderException("Invalid system: {$system}"),
         };
     }
 }
