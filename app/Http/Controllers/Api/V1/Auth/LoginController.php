@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
@@ -28,7 +27,7 @@ final class LoginController
             ip: $request->ip(),
             userAgent: $request->userAgent(),
             timestamp: now()->toIso8601String(),
-            system: Systems::find($request->header('X-Source-System', ''))->value,
+            system: $request->header('X-Source-System', ''),
         );
 
         return $this->success(

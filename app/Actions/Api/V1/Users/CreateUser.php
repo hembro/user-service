@@ -20,8 +20,10 @@ final class CreateUser
 
     public function handle(RegisterUserDTO $dto, string $system): User
     {
+        $role = $this->resolveRole($system);
+
         return $this->db->transaction(
-            callback: function () use ($dto, $system): User {
+            callback: function () use ($dto, $role): User {
 
                 $user = User::create([
                     'email' => $dto->email,
@@ -40,14 +42,14 @@ final class CreateUser
                     'preferences' => $dto->preferences,
                 ]);
 
-                $user->assignRole($this->resolveRole($system));
+                $user->assignRole($role);
+
+                Log::debug(
+                    message: 'user registration initiated',
+                    context: ['email' => $dto->email]
+                );
 
                 UserCreated::dispatch($user);
-
-                Log::info(
-                    message: 'User created',
-                    context: ['user_id' => $user->id]
-                );
 
                 return $user;
             }
@@ -60,7 +62,9 @@ final class CreateUser
             Enums\Systems::PMS->value => Enums\Roles::PMS_PROPONENT,
             Enums\Systems::HERDIN->value => Enums\Roles::HERDIN_USER,
             Enums\Systems::PHRR->value => Enums\Roles::PHRR_USER,
-            default => throw new InvalidSystemHeaderException("Invalid system: {$system}"),
+            default => throw new InvalidSystemHeaderException(
+                message: "Invalid system: {$system}"
+            ),
         };
     }
 }

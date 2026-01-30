@@ -212,7 +212,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
 
     it('aborts the entire transaction if profile creation fails', function (): void {
 
-        Log::shouldReceive('info')
+        Log::shouldReceive('debug')
             ->once()
             ->andThrow(new Exception('Simulated Critical Failure'));
 
@@ -222,7 +222,6 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
 
         $payload = validRegistrationPayload();
 
-        // 2. Act
         $response = $this->postJson(
             uri: route('api.v1.user.register'),
             data: $payload,

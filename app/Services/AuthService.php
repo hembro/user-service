@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\DTOs\Api\V1\Auth\TokenDTO;
+use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Events\UserLoggedIn;
 use App\Events\UserLoggedOut;
@@ -41,7 +42,7 @@ final class AuthService
         $token = $this->proxyPasswordGrant(
             email: $email,
             password: $password,
-            system: $system
+            system: Systems::find($system)->value
         );
 
         UserLoggedIn::dispatch($user, $ip, $userAgent, $timestamp);
@@ -71,6 +72,8 @@ final class AuthService
 
     public function refresh(string $refreshToken, string $system): TokenDTO
     {
+        $system = Systems::find($system)->value;
+
         try {
             return $this->proxyRefreshTokenGrant(
                 refreshToken: $refreshToken,
