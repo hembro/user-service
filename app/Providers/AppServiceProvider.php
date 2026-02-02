@@ -39,6 +39,25 @@ final class AppServiceProvider extends ServiceProvider
         Passport::enablePasswordGrant();
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
+
+        Passport::tokensCan([
+            'pms.admin' => 'PMS: Admin for the whole Information System.',
+            'pms.division-admin' => 'PMS: Admin for a specific division within the Information System.',
+            'pms.division-chief' => 'PMS: Receive, monitor and reviews the proposal assigned to its division and then assigns it accordingly to senior officer/program manager/project officer.',
+            'pms.senior-officer' => 'PMS: Receive, monitor and reviews the proposal assigned to its division and then assigns it accordingly to program manager/project officer. Senior officer can also be assigned to a proposal by the division chief.',
+            'pms.project-officer' => 'PMS: Project Officer',
+            'pms.program-manager' => 'PMS: Receive, monitor and reviews the proposal assigned to them by their senior officer or division chief, and then assigns it accordingly to project officer.',
+            'pms.planning-officer' => 'PMS: Oversees and monitors the proposal that comes into their division. They can also produce a report from the proposals.',
+            'pms.records-officer' => 'PMS: Records the concept proposal and full blown proposal that the Information System receives.',
+            'pms.technical-reviewer' => 'PMS: Technical Reviewer or the Consultant, reviews the proposal assigned to them when deemed necessary for a 3rd party technical review.',
+            'pms.proponent' => 'PMS: The user that submits a proposal.',
+
+            'herdin.admin' => 'HERDIN: System Administrator',
+            'herdin.user' => 'HERDIN: Standard User',
+
+            'phrr.admin' => 'PHRR: System Administrator',
+            'phrr.user' => 'PHRR: Standard User',
+        ]);
     }
 
     private function configurePasswordDefaults(bool $isProduction): void
