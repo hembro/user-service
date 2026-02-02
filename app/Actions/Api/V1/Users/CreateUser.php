@@ -7,24 +7,23 @@ namespace App\Actions\Api\V1\Users;
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
 use App\Enums;
 use App\Events\UserCreated;
-use App\Exceptions\InvalidSystemHeaderException;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
-final class CreateUser
+final readonly class CreateUser
 {
     public function __construct(
-        private DatabaseManager $db
+        private readonly DatabaseManager $db,
+        private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(RegisterUserDTO $dto, string $system): User
+    public function handle(RegisterUserDTO $dto): User
     {
-        $role = $this->resolveRole($system);
-
         return $this->db->transaction(
-            callback: function () use ($dto, $role): User {
+            callback: function () use ($dto): User {
 
+                /** @var User $user */
                 $user = User::create([
                     'email' => $dto->email,
                     'password' => $dto->password,
@@ -42,9 +41,9 @@ final class CreateUser
                     'preferences' => $dto->preferences,
                 ]);
 
-                $user->assignRole($role);
+                $user->assignRole($dto->system->defaultRole());
 
-                Log::debug(
+                $this->logger->debug(
                     message: 'user registration initiated',
                     context: ['email' => $dto->email]
                 );
@@ -54,17 +53,5 @@ final class CreateUser
                 return $user;
             }
         );
-    }
-
-    private function resolveRole(string $system): Enums\Roles
-    {
-        return match ($system) {
-            Enums\Systems::PMS->value => Enums\Roles::PMS_PROPONENT,
-            Enums\Systems::HERDIN->value => Enums\Roles::HERDIN_USER,
-            Enums\Systems::PHRR->value => Enums\Roles::PHRR_USER,
-            default => throw new InvalidSystemHeaderException(
-                message: "Invalid system: {$system}"
-            ),
-        };
     }
 }

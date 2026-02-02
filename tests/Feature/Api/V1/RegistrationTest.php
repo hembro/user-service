@@ -11,6 +11,8 @@ use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 use function Pest\Laravel\assertDatabaseHas;
+use function Pest\Laravel\assertDatabaseMissing;
+use function Pest\Laravel\postJson;
 use function Pest\Laravel\seed;
 
 uses(RefreshDatabase::class);
@@ -44,7 +46,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
 
         $payload = validRegistrationPayload();
 
-        $response = $this->postJson(
+        $response = postJson(
             uri: route('api.v1.user.register', false),
             data: $payload,
             headers: [
@@ -82,7 +84,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
 
         $payload = validRegistrationPayload();
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: [
@@ -102,7 +104,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
     it('validates required fields', function (string $field): void {
         $payload = validRegistrationPayload([$field => '']);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload
         )
@@ -122,7 +124,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
 
         $payload = validRegistrationPayload(['email' => 'duplicate@example.com']);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload
         )
@@ -133,7 +135,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
     it('validates password strength', function (): void {
         $payload = validRegistrationPayload(['password' => 'weak', 'password_confirmation' => 'weak']);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload
         )
@@ -147,22 +149,22 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
     it('rejects registration if the X-Source-System header is missing', function (): void {
         $payload = validRegistrationPayload();
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload
-        )->assertBadRequest();
+        )->assertUnprocessable();
     });
 
     it('rejects registration if the X-Source-System header contains an invalid value', function (): void {
         $payload = validRegistrationPayload();
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: [
                 'X-Source-System' => 'HACKER_SYSTEM',
             ]
-        )->assertBadRequest();
+        )->assertUnprocessable();
     });
 
     it('fails if password confirmation does not match', function (): void {
@@ -171,7 +173,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
             'password_confirmation' => 'DifferentP@ssw0rd!',
         ]);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
@@ -183,7 +185,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
     it('fails if the email is invalid format', function (string $invalidEmail): void {
         $payload = validRegistrationPayload(['email' => $invalidEmail]);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
@@ -201,7 +203,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
     it('fails if the sex is not a valid enum value', function (): void {
         $payload = validRegistrationPayload(['sex' => 'attack_helicopter']);
 
-        $this->postJson(
+        postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
@@ -222,7 +224,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
 
         $payload = validRegistrationPayload();
 
-        $response = $this->postJson(
+        $response = postJson(
             uri: route('api.v1.user.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
@@ -230,7 +232,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
 
         $response->assertServerError();
 
-        $this->assertDatabaseMissing('users', ['email' => $payload['email']]);
-        $this->assertDatabaseMissing('user_profiles', ['first_name' => 'Jose']);
+        assertDatabaseMissing('users', ['email' => $payload['email']]);
+        assertDatabaseMissing('user_profiles', ['first_name' => 'Jose']);
     });
 });

@@ -5,25 +5,31 @@ declare(strict_types=1);
 namespace App\Listeners\Logs;
 
 use App\Events\UserLoggedIn;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class LogUserLoginActivity implements ShouldQueue
 {
-    public $queue = 'low-priority';
+    public string $queue = 'low';
 
-    public $tries = 3;
+    public int $tries = 3;
+
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {}
 
     public function handle(UserLoggedIn $event): void
     {
-        $event->user->updateQuietly(['last_login_at' => Carbon::parse($event->timestamp)]);
+        $occurredAt = CarbonImmutable::createFromTimestamp($event->metadata->timestamp);
 
-        Log::info('audit: user logged-in', [
+        $event->user->updateQuietly(['last_login_at' => $occurredAt]);
+
+        $this->logger->info('audit: user logged-in', [
             'user_id' => $event->user->id,
-            'ip' => $event->ip,
-            'user_agent' => $event->userAgent,
-            'timestamp' => $event->timestamp,
+            'ip' => $event->metadata->ip,
+            'user_agent' => $event->metadata->userAgent,
+            'timestamp' => $occurredAt->toIso8601String(),
         ]);
     }
 }

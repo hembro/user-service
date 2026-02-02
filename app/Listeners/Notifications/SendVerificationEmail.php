@@ -10,7 +10,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 final class SendVerificationEmail implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
-    public $queue = 'high-priority';
+    public string $queue = 'high';
+
+    public int $tries = 3;
 
     public function handle(UserCreated $event): void
     {

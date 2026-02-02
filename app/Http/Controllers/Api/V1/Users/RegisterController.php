@@ -22,8 +22,7 @@ final class RegisterController
     public function __invoke(RegisterRequest $request): JsonResponse
     {
         $this->action->handle(
-            dto: RegisterUserDTO::fromArray($request->validated()),
-            system: $request->header('X-Source-System', '')
+            dto: RegisterUserDTO::fromArray($request->validated())
         );
 
         return $this->success(

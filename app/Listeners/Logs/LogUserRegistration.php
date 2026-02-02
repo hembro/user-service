@@ -7,15 +7,21 @@ namespace App\Listeners\Logs;
 use App\Events\UserCreated;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class LogUserRegistration implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
-    public $queue = 'low-priority';
+    public string $queue = 'low';
+
+    public int $tries = 3;
+
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {}
 
     public function handle(UserCreated $event): void
     {
-        Log::info('audit: user registered', [
+        $this->logger->info('audit: user registered', [
             'user_id' => $event->user->id,
         ]);
     }

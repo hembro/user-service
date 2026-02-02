@@ -4,14 +4,18 @@ declare(strict_types=1);
 
 namespace App\Listeners\Notifications;
 
-use App\Jobs\Tasks\ProcessWelcomeEmail;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Psr\Log\LoggerInterface;
 
-final class SendWelcomeNotification implements ShouldHandleEventsAfterCommit
+final class SendWelcomeNotification implements ShouldQueue
 {
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {}
+
     public function handle(Verified $event): void
     {
-        ProcessWelcomeEmail::dispatch($event->user);
+        $this->logger->info("Sending welcome email to {$event->user->email}");
     }
 }

@@ -4,33 +4,32 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\DTOs\Api\V1\Auth\LoginCredentials;
 use App\DTOs\Api\V1\Auth\TokenDTO;
-use App\Enums\Systems;
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\UserStatus;
 use App\Events\UserLoggedIn;
 use App\Events\UserLoggedOut;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
-use App\Exceptions\UpstreamServiceException;
 use App\Models\User;
-use Illuminate\Http\Request;
-use SensitiveParameter;
+use Illuminate\Support\Facades\Config;
+use League\OAuth2\Server\AuthorizationServer;
+use League\OAuth2\Server\Exception\OAuthServerException;
+use Nyholm\Psr7\Response as Psr7Response;
+use Nyholm\Psr7\ServerRequest as Psr7Request;
+use RuntimeException;
 
-use function is_array;
-
-final class AuthService
+final readonly class AuthService
 {
-    public function login(
-        string $email,
-        #[SensitiveParameter]
-        string $password,
-        string $ip,
-        string $userAgent,
-        string $timestamp,
-        string $system
-    ): TokenDTO {
+    public function __construct(
+        private AuthorizationServer $server,
+    ) {}
+
+    public function login(LoginCredentials $credentials, RequestMetadata $metadata): TokenDTO
+    {
         $user = User::query()
-            ->where('email', $email)
+            ->where('email', $credentials->email)
             ->first();
 
         if (! $user || $user->status !== UserStatus::ACTIVE) {
@@ -39,123 +38,85 @@ final class AuthService
             );
         }
 
-        $token = $this->proxyPasswordGrant(
-            email: $email,
-            password: $password,
-            system: Systems::find($system)->value
-        );
-
-        UserLoggedIn::dispatch($user, $ip, $userAgent, $timestamp);
-
-        return $token;
-    }
-
-    public function proxyPasswordGrant(
-        string $email,
-        #[SensitiveParameter]
-        string $password,
-        string $system
-    ): TokenDTO {
-        $response = $this->makeInternalRequest(
-            parameters: [
-                'grant_type' => 'password',
-                'username' => $email,
-                'password' => $password,
-            ],
-            headers: [
-                'HTTP_X-Source-System' => $system,
-            ]
-        );
-
-        return TokenDTO::fromArray($response);
-    }
-
-    public function refresh(string $refreshToken, string $system): TokenDTO
-    {
-        $system = Systems::find($system)->value;
-
         try {
-            return $this->proxyRefreshTokenGrant(
-                refreshToken: $refreshToken,
-                system: $system
+            $tokenDto = $this->dispatchRequest(
+                payload: [
+                    'grant_type' => 'password',
+                    'username' => $credentials->email,
+                    'password' => $credentials->password,
+                    'scope' => '*',
+                ]
             );
-        } catch (InvalidCredentialsException $e) {
+        } catch (OAuthServerException) {
+            throw new InvalidCredentialsException(
+                message: 'Invalid credentials.'
+            );
+        }
+
+        UserLoggedIn::dispatch($user, $metadata);
+
+        return $tokenDto;
+    }
+
+    public function refresh(string $refreshToken): TokenDTO
+    {
+        try {
+            return $this->dispatchRequest(
+                payload: [
+                    'grant_type' => 'refresh_token',
+                    'refresh_token' => $refreshToken,
+                    'scope' => '*',
+                ]
+            );
+        } catch (OAuthServerException $e) {
             throw new InvalidRefreshTokenException(
-                message: 'Invalid or expired refresh token.',
+                message: 'The refresh token is invalid or has expired.',
                 previous: $e
             );
         }
     }
 
-    public function proxyRefreshTokenGrant(string $refreshToken, string $system): TokenDTO
+    public function logout(User $user, RequestMetadata $metadata): void
     {
-        $response = $this->makeInternalRequest(
-            parameters: [
-                'grant_type' => 'refresh_token',
-                'refresh_token' => $refreshToken,
-            ],
-            headers: [
-                'HTTP_X-Source-System' => $system,
-            ]
-        );
-
-        return TokenDTO::fromArray($response);
-    }
-
-    public function logout(User $user, string $ip, string $userAgent, string $timestamp): void
-    {
+        /** @var \Laravel\Passport\Token|null $accessToken */
         $accessToken = $user->token();
 
         if (! $accessToken) {
             return;
         }
 
-        // @phpstan-ignore-next-line
         $accessToken->revoke();
-        // @phpstan-ignore-next-line
         $accessToken->refreshToken?->revoke();
 
-        UserLoggedOut::dispatch($user, $ip, $userAgent, $timestamp);
+        UserLoggedOut::dispatch($user, $metadata);
     }
 
-    private function makeInternalRequest(array $parameters, array $headers = []): array
+    private function dispatchRequest(array $payload): TokenDTO
     {
-        $parameters['client_id'] = config('services.passport.password_client_id');
-        $parameters['client_secret'] = config('services.passport.password_client_secret');
-        $parameters['scope'] = '*'; // Token scopes are for clients only, not for users.
+        $clientId = Config::get('services.passport.password_client_id');
+        $clientSecret = Config::get('services.passport.password_client_secret');
 
-        $headers['HTTP_Content-Type'] = 'application/x-www-form-urlencoded';
-        $headers['HTTP_Accept'] = 'application/json';
-
-        $request = Request::create(
-            uri: route(
-                name: 'api.v1.auth.oauth.token',
-                absolute: false
-            ),
-            method: 'POST',
-            parameters: $parameters,
-            server: $headers
-        );
-
-        $response = app()->handle($request);
-
-        $result = json_decode(
-            json: $response->getContent(),
-            associative: true
-        );
-
-        if (! is_array($result) || $response->isServerError()) {
-            throw new UpstreamServiceException(
-                message: 'The authentication server is currently unavailable. Please try again later.'
+        if (! $clientId || ! $clientSecret) {
+            throw new RuntimeException(
+                message: 'OAuth Password Client credentials are missing from config.'
             );
         }
 
-        if (! $response->isSuccessful()) {
-            throw new InvalidCredentialsException(
-                message: 'Invalid credentials.'
-            );
-        }
+        $payload = array_merge($payload, [
+            'client_id' => $clientId,
+            'client_secret' => $clientSecret,
+        ]);
 
-        return $result;
+        $request = (new Psr7Request('POST', 'oauth/token'))
+            ->withParsedBody($payload);
+
+        $response = $this->server->respondToAccessTokenRequest(
+            request: $request,
+            response: new Psr7Response()
+        );
+
+        $data = json_decode((string) $response->getBody(), true);
+
+        return TokenDTO::fromArray($data);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
 use App\Traits\HasApiResponse;
@@ -23,9 +24,7 @@ final class LogoutController
     {
         $this->service->logout(
             user: $request->user(),
-            ip: $request->ip(),
-            userAgent: $request->userAgent(),
-            timestamp: now()->toIso8601String()
+            metadata: RequestMetadata::fromRequest($request)
         );
 
         return $this->noContent()

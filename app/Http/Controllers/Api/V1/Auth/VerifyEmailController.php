@@ -32,6 +32,7 @@ final class VerifyEmailController
 
     public function resend(Request $request): JsonResponse
     {
+        /** @var User $user */
         $user = $request->user();
 
         if ($user->hasVerifiedEmail()) {

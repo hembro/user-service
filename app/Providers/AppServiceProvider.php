@@ -6,7 +6,10 @@ namespace App\Providers;
 
 use Carbon\CarbonInterval;
 use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Uri;
@@ -28,6 +31,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configurePasswordDefaults($isProduction);
         $this->configureModels($isProduction);
         $this->configureEmailVerification();
+        $this->configureRateLimiting();
     }
 
     private function configurePassport(): void
@@ -78,6 +82,24 @@ final class AppServiceProvider extends ServiceProvider
                 ->withQuery($queryParams)
                 ->toStringable()
                 ->toString();
+        });
+    }
+
+    private function configureRateLimiting(): void
+    {
+        RateLimiter::for('auth.login', function (Request $request) {
+            return [
+                Limit::perMinute(5)->by($request->ip()),
+                Limit::perMinute(5)->by($request->input('email')),
+            ];
+        });
+
+        RateLimiter::for('auth.api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('auth.email', function (Request $request) {
+            return Limit::perMinute(1)->by($request->ip());
         });
     }
 }

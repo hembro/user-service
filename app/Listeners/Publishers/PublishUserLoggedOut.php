@@ -6,7 +6,7 @@ namespace App\Listeners\Publishers;
 
 use App\Events\UserLoggedOut;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class PublishUserLoggedOut implements ShouldQueue
 {
@@ -14,9 +14,13 @@ final class PublishUserLoggedOut implements ShouldQueue
 
     public $backoff = [10, 30, 60];
 
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {}
+
     public function handle(UserLoggedOut $event): void
     {
-        Log::info('broker: UserLoggedOut event', [
+        $this->logger->info('broker: UserLoggedOut event', [
             'user_id' => $event->user->id,
         ]);
     }

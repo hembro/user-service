@@ -8,7 +8,7 @@ use App\Exceptions\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 
-final class VerifyEmail
+final readonly class VerifyEmail
 {
     public function handle(User $user, string $hash): void
     {

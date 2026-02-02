@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\DTOs\Api\V1\Users;
 
+use App\Enums\Systems;
+
 final readonly class RegisterUserDTO
 {
     public function __construct(
@@ -16,7 +18,8 @@ final readonly class RegisterUserDTO
         public ?string $suffix,
         public string $sex,
         public ?string $mobileNumber,
-        public array $preferences
+        public array $preferences,
+        public Systems $system
     ) {}
 
     public static function fromArray(array $data): self
@@ -31,7 +34,8 @@ final readonly class RegisterUserDTO
             suffix: $data['suffix'] ?? null,
             sex: $data['sex'],
             mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? []
+            preferences: $data['preferences'] ?? [],
+            system: Systems::find($data['system']),
         );
     }
 }

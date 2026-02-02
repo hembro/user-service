@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Users;
 
 use App\Enums;
+use App\Enums\Systems;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -24,6 +25,22 @@ final class RegisterRequest extends FormRequest
             'sex' => ['required', 'string', Rule::enum(Enums\Sex::class)],
             'mobile_number' => ['nullable', 'string', 'min:10', 'max:11'],
             'preferences' => ['nullable', 'array'],
+            'system' => ['required', Rule::enum(Systems::class)],
         ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'system.required' => 'The system header is required.',
+            'system.enum' => 'The system header is invalid.',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'system' => $this->header('X-Source-System', ''),
+        ]);
     }
 }

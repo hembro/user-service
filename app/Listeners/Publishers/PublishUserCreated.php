@@ -7,7 +7,7 @@ namespace App\Listeners\Publishers;
 use App\Events\UserCreated;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Facades\Log;
+use Psr\Log\LoggerInterface;
 
 final class PublishUserCreated implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
@@ -15,9 +15,13 @@ final class PublishUserCreated implements ShouldHandleEventsAfterCommit, ShouldQ
 
     public $backoff = [10, 30, 60];
 
+    public function __construct(
+        private readonly LoggerInterface $logger
+    ) {}
+
     public function handle(UserCreated $event): void
     {
-        Log::info('broker: UserCreated event', [
+        $this->logger->info('broker: UserCreated event', [
             'user_id' => $event->user->id,
         ]);
     }

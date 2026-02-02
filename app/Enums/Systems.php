@@ -20,4 +20,13 @@ enum Systems: string
             default => self::UNKNOWN_SOURCE,
         };
     }
+
+    public function defaultRole(): Roles
+    {
+        return match ($this) {
+            self::PMS => Roles::PMS_PROPONENT,
+            self::HERDIN => Roles::HERDIN_USER,
+            self::PHRR => Roles::PHRR_USER,
+        };
+    }
 }

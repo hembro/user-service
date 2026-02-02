@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events;
 
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,8 +16,6 @@ final class UserLoggedOut
 
     public function __construct(
         public User $user,
-        public string $ip,
-        public string $userAgent,
-        public string $timestamp
+        public RequestMetadata $metadata
     ) {}
 }
