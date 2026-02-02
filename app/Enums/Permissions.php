@@ -7,70 +7,120 @@ namespace App\Enums;
 enum Permissions: string
 {
     // ==========================
-    // PROPOSAL: VIEW SCOPES
+    // PROPOSAL: VIEW
     // ==========================
-    // Super Admin, Planning Officer
+
+    /**
+     * Action: View All Proposals
+     * Roles: Admin, Records Officer, Planning Officer
+     */
     case PMS_PROPOSAL_VIEW_ALL = 'pms.proposal.view-all';
 
-    // Administrator, Records Officer, Division Chief, Senior Officer
+    /**
+     * Action: View Division's Proposals
+     * Roles: Division Admin, Division Chief, Senior Officer
+     */
     case PMS_PROPOSAL_VIEW_DIVISION = 'pms.proposal.view-division';
 
-    // Project Officer, Program Manager, Technical Reviewer
+    /**
+     * Action: View Proposals assigned to themselves
+     * Roles: Project Officer, Program Manager, Technical Reviewer
+     */
     case PMS_PROPOSAL_VIEW_ASSIGNED = 'pms.proposal.view-assigned';
 
-    // Proponent
+    /**
+     * Action: View Own Proposals
+     * Roles: Proponent
+     */
     case PMS_PROPOSAL_VIEW_OWN = 'pms.proposal.view-own';
 
     // ==========================
     // PROPOSAL: ACTIONS
     // ==========================
-    // Proponent: "Submit... proposal"
+
+    /**
+     * Action: Create Proposal
+     * Roles: Proponent
+     */
     case PMS_PROPOSAL_CREATE = 'pms.proposal.create';
 
-    // Records Officer: "Records the concept proposal"
+    /**
+     * Action: Record Proposal
+     * Roles: Records Officer
+     */
     case PMS_PROPOSAL_RECORD = 'pms.proposal.record';
 
-    // Division Chief, Senior Officer, Program Manager: "Assigns it accordingly"
-    case PMS_PROPOSAL_ASSIGN = 'pms.proposal.assign';
+    /**
+     * Action: Assign Proposal to Division
+     * Roles: Admin, Division Admin, Division Chief
+     */
+    case PMS_PROPOSAL_ASSIGN_TO_DIVISION = 'pms.proposal.assign-to-division';
 
-    // Division Chief, Senior Officer, Project Officer, Program Manager, Technical Reviewer: "Reviews the proposal"
-    case PMS_PROPOSAL_REVIEW = 'pms.proposal.review';
+    /**
+     * Action: Assign Proposal to Division
+     * Roles: Admin, Division Admin, Division Chief
+     */
+    case PMS_PROPOSAL_ASSIGN_TO_SENIOR_OFFICER = 'pms.proposal.assign-to-senior-officer';
 
-    // Proponent: "Track... their proposal"
-    case PMS_PROPOSAL_TRACK = 'pms.proposal.track';
+    /**
+     * Action: Assign Proposal to Division
+     * Roles: Admin, Division Admin, Division Chief, Senior Officer
+     */
+    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_MANAGER = 'pms.proposal.assign-to-project-manager';
 
-    // Divisoon Chief and Senior Officer: "Approves the clearance for assignment of the proposal"
+    /**
+     * Action: Assign Proposal to Division
+     * Roles: Admin, Division Admin, Division Chief, Senior Officer, Program Manager
+     */
+    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_OFFICER = 'pms.proposal.assign-to-project-officer';
+
+    /**
+     * Action: Assign Proposal to Project Officer with Clearance of DC or SO
+     * Roles: Project Officer
+     */
+    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_OFFICER_WITH_CLEARANCE = 'pms.proposal.assign-to-project-officer-with-clearance';
+
+    /**
+     * Action: Approve the clearance to change assignment of the proposal
+     * Roles: Division Chief, Senior Officer
+     */
     case PMS_PROPOSAL_APPROVE_CLEARANCE = 'pms.proposal.approve-clearance';
 
     // ==========================
     // USER PROFILE: MANAGEMENT
     // ==========================
-    // Super Admin: "Modify Every user"
+
+    /**
+     * Action: Modify all user profile
+     * Roles: Admin
+     */
     case PMS_USER_MANAGE_ALL = 'pms.user.manage-all';
 
-    // Administrator: "Modify user profile Division"
+    /**
+     * Action: Modify user profile within the division
+     * Roles: Division Admin
+     */
     case PMS_USER_MANAGE_DIVISION = 'pms.user.manage-division';
 
-    // Every User: "Modify Own"
+    /**
+     * Action: Modify own user profile
+     * Roles: All
+     */
     case PMS_USER_MANAGE_OWN = 'pms.user.manage-own';
 
     // ==========================
     // ROLES & PERMISSIONS: MANAGEMENT
     // ==========================
-    // Super Admin: "Assign or modify roles... Every User"
+
+    /**
+     * Action: Assign or modify roles and permissions
+     * Roles: Admin
+     */
     case PMS_ROLE_MANAGE_ALL = 'pms.role.manage-all';
 
-    // Administrator: "Assign or modify roles... Division"
+    /**
+     * Action: Assign or modify roles and permissions within Division
+     * Roles: Division Admin
+     */
     case PMS_ROLE_MANAGE_DIVISION = 'pms.role.manage-division';
-
-    // ==========================
-    // REPORTS
-    // ==========================
-    // Planning Officer: "Produce a report"
-    case PMS_REPORT_GENERATE = 'pms.report.generate';
-
-    public function pms(): array
-    {
-        return [];
-    }
 }
