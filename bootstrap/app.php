@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\CaptureRequestContext;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -18,17 +20,37 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->append(CaptureRequestContext::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (AuthenticationException $e, Request $request): JsonResponse {
-            return new JsonResponse(
-                data: [
-                    'success' => false,
-                    'message' => 'Invalid credentials.',
-                    'code' => Response::HTTP_UNAUTHORIZED,
-                ],
-                status: Response::HTTP_UNAUTHORIZED
-            );
+        $exceptions->render(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return new JsonResponse(
+                    data: [
+                        'success' => false,
+                        'message' => 'Invalid credentials.',
+                        'code' => Response::HTTP_UNAUTHORIZED,
+                    ],
+                    status: Response::HTTP_UNAUTHORIZED
+                );
+            }
+
+            return null;
+        });
+
+        $exceptions->render(function (ValidationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return new JsonResponse(
+                    data: [
+                        'status' => 'error',
+                        'message' => $e->validator->errors()->first(),
+                        'code' => 422,
+                        'errors' => $e->validator->errors(),
+                    ],
+                    status: Response::HTTP_UNPROCESSABLE_ENTITY
+                );
+            }
+
+            return null;
         });
     })->create();

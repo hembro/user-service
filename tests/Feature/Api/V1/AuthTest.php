@@ -4,22 +4,35 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1;
 
-use App\Enums\Users\UserStatus;
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Passport\ClientRepository;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Client;
+
+use function Pest\Laravel\call;
+use function Pest\Laravel\postJson;
+use function Pest\Laravel\withHeader;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $clientRepository = app(ClientRepository::class);
-    $client = $clientRepository->createPasswordGrantClient(
-        name: 'Password Grant Client',
-        provider: 'users',
-    );
+    $plainSecret = 'my-super-secret-password';
 
-    config(['services.passport.password_client_id' => $client->id]);
-    config(['services.passport.password_client_secret' => $client->secret]);
+    $client = Client::forceCreate([
+        'name' => 'Test Password Client',
+        'secret' => Hash::make($plainSecret),
+        'provider' => 'users',
+        'redirect_uris' => [],
+        'grant_types' => ['password', 'refresh_token'],
+        'owner_type' => null,
+        'owner_id' => null,
+        'revoked' => false,
+    ]);
+
+    Config::set('services.passport.password_client_id', $client->id);
+    Config::set('services.passport.password_client_secret', $plainSecret);
 });
 
 describe('Authentication Feature: The Happy Path', function (): void {
@@ -31,17 +44,23 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'password' => $password,
         ]);
 
-        $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
-            'password' => $password,
-        ]);
+        $response = postJson(
+            uri: route('api.v1.auth.login', false),
+            data: [
+                'email' => $user->email,
+                'password' => $password,
+            ],
+            headers: [
+                'X-Source-System' => 'pms',
+            ]
+        );
 
         $response->assertOk()
             ->assertJsonStructure([
                 'data' => [
+                    'token_type',
                     'access_token',
                     'expires_in',
-                    'token_type',
                 ],
             ])
             ->assertCookie('refresh_token');
@@ -54,17 +73,23 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
         ]);
 
-        $loginResponse = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
-            'password' => $password,
-        ]);
+        $loginResponse = postJson(
+            uri: route('api.v1.auth.login', false),
+            data: [
+                'email' => $user->email,
+                'password' => $password,
+            ],
+            headers: [
+                'X-Source-System' => 'pms',
+            ]
+        );
 
         $loginResponse->assertOk()
             ->assertJsonStructure([
                 'data' => [
+                    'token_type',
                     'access_token',
                     'expires_in',
-                    'token_type',
                 ],
             ]);
 
@@ -72,10 +97,11 @@ describe('Authentication Feature: The Happy Path', function (): void {
 
         $cookieValue = $loginResponse->getCookie('refresh_token', false)->getValue();
 
-        $response = $this->call(
+        $response = call(
             method: 'POST',
-            uri: route('api.v1.auth.refresh'),
-            cookies: ['refresh_token' => $cookieValue]
+            uri: route('api.v1.auth.refresh', false),
+            cookies: ['refresh_token' => $cookieValue],
+            server: ['HTTP_X-Source-System' => 'pms']
         );
 
         $response->assertOk()
@@ -99,14 +125,20 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
         ]);
 
-        $loginResponse = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
-            'password' => $password,
-        ]);
+        $loginResponse = postJson(
+            uri: route('api.v1.auth.login', false),
+            data: [
+                'email' => $user->email,
+                'password' => $password,
+            ],
+            headers: [
+                'X-Source-System' => 'pms',
+            ]
+        );
 
         $token = $loginResponse->json('data.access_token');
 
-        $response = $this->withHeader('Authorization', "Bearer $token")
+        $response = withHeader('Authorization', "Bearer $token")
             ->postJson(route('api.v1.auth.logout'));
 
         $response->assertNoContent()
@@ -114,7 +146,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
     });
 
     it('rejects logout if unauthenticated', function (): void {
-        $response = $this->postJson(route('api.v1.auth.logout'));
+        $response = postJson(route('api.v1.auth.logout'));
 
         $response->assertUnauthorized();
     });
@@ -123,7 +155,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
 describe('Authentication Feature: The Unhappy Path', function (): void {
 
     it('fails the validation with bad inputs', function (): void {
-        $response = $this->postJson(route('api.v1.auth.login'), [
+        $response = postJson(route('api.v1.auth.login'), [
             'email' => 'not-an-email',
             'password' => '',
         ]);
@@ -137,10 +169,16 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
             'status' => UserStatus::ACTIVE,
         ]);
 
-        $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
-            'password' => 'wrong-password',
-        ]);
+        $response = postJson(
+            uri: route('api.v1.auth.login', false),
+            data: [
+                'email' => $user->email,
+                'password' => 'wrong-password',
+            ],
+            headers: [
+                'X-Source-System' => 'pms',
+            ]
+        );
 
         $response->assertUnauthorized();
     });
@@ -151,19 +189,26 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
             'status' => UserStatus::BANNED,
         ]);
 
-        $response = $this->postJson(route('api.v1.auth.login'), [
-            'email' => $user->email,
-            'password' => 'password123',
-        ]);
+        $response = postJson(
+            uri: route('api.v1.auth.login', false),
+            data: [
+                'email' => $user->email,
+                'password' => 'password123',
+            ],
+            headers: [
+                'X-Source-System' => 'pms',
+            ]
+        );
 
         $response->assertUnauthorized();
     });
 
     it('rejects invalid or tampered refresh tokens', function (): void {
-        $response = $this->call(
+        $response = call(
             method: 'POST',
             uri: route('api.v1.auth.refresh'),
-            cookies: ['refresh_token' => 'this-is-a-fake-token']
+            cookies: ['refresh_token' => 'this-is-a-fake-token'],
+            server: ['HTTP_X-Source-System' => 'pms']
         );
 
         $response->assertUnauthorized()

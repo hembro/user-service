@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Users;
+namespace App\Enums;
 
 enum Sex: string
 {

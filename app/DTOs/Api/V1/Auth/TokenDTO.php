@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Tokens;
+namespace App\DTOs\Api\V1\Auth;
 
 final readonly class TokenDTO
 {

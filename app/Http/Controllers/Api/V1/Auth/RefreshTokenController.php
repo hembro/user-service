@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
+use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
 use App\Traits\HasApiResponse;
@@ -28,11 +29,7 @@ final class RefreshTokenController
         );
 
         return $this->success(
-            data: [
-                'token_type' => 'Bearer',
-                'access_token' => $token->accessToken,
-                'expires_in' => $token->expiresIn,
-            ]
+            data: new TokenResource($token)
         )->withCookie(
             cookie: $this->cookieFactory->make(
                 refreshToken: $token->refreshToken

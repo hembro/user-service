@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\DTOs\Api\V1\Auth\LoginCredentials;
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
+use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\AuthCookieService;
 use App\Services\AuthService;
 use App\Traits\HasApiResponse;
@@ -21,22 +24,16 @@ final class LoginController
 
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $token = $this->service->login(
-            email: $request->validated('email'),
-            password: $request->validated('password'),
-            ip: $request->ip(),
-            userAgent: $request->userAgent(),
+        $tokenDto = $this->service->login(
+            credentials: LoginCredentials::fromArray($request->validated()),
+            metadata: RequestMetadata::fromRequest($request)
         );
 
         return $this->success(
-            data: [
-                'token_type' => 'Bearer',
-                'access_token' => $token->accessToken,
-                'expires_in' => $token->expiresIn,
-            ]
+            data: new TokenResource($tokenDto)
         )->withCookie(
             cookie: $this->cookie->make(
-                refreshToken: $token->refreshToken
+                refreshToken: $tokenDto->refreshToken
             )
         );
     }
