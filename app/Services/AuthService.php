@@ -44,7 +44,7 @@ final readonly class AuthService
                     'grant_type' => 'password',
                     'username' => $credentials->email,
                     'password' => $credentials->password,
-                    'scope' => '*',
+                    'scope' => $user->roles->implode('name', ' '),
                 ]
             );
         } catch (OAuthServerException) {
