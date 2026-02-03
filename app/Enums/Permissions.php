@@ -4,88 +4,11 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+/**
+ * Definition of all permissions for the user-service
+ */
 enum Permissions: string
 {
-    // ==========================
-    // PROPOSAL: VIEW
-    // ==========================
-
-    /**
-     * Action: View All Proposals
-     * Roles: Admin, Records Officer, Planning Officer
-     */
-    case PMS_PROPOSAL_VIEW_ALL = 'pms.proposal.view-all';
-
-    /**
-     * Action: View Division's Proposals
-     * Roles: Division Admin, Division Chief, Senior Officer
-     */
-    case PMS_PROPOSAL_VIEW_DIVISION = 'pms.proposal.view-division';
-
-    /**
-     * Action: View Proposals assigned to themselves
-     * Roles: Project Officer, Program Manager, Technical Reviewer
-     */
-    case PMS_PROPOSAL_VIEW_ASSIGNED = 'pms.proposal.view-assigned';
-
-    /**
-     * Action: View Own Proposals
-     * Roles: Proponent
-     */
-    case PMS_PROPOSAL_VIEW_OWN = 'pms.proposal.view-own';
-
-    // ==========================
-    // PROPOSAL: ACTIONS
-    // ==========================
-
-    /**
-     * Action: Create Proposal
-     * Roles: Proponent
-     */
-    case PMS_PROPOSAL_CREATE = 'pms.proposal.create';
-
-    /**
-     * Action: Record Proposal
-     * Roles: Records Officer
-     */
-    case PMS_PROPOSAL_RECORD = 'pms.proposal.record';
-
-    /**
-     * Action: Assign Proposal to Division
-     * Roles: Admin, Division Admin, Division Chief
-     */
-    case PMS_PROPOSAL_ASSIGN_TO_DIVISION = 'pms.proposal.assign-to-division';
-
-    /**
-     * Action: Assign Proposal to Division
-     * Roles: Admin, Division Admin, Division Chief
-     */
-    case PMS_PROPOSAL_ASSIGN_TO_SENIOR_OFFICER = 'pms.proposal.assign-to-senior-officer';
-
-    /**
-     * Action: Assign Proposal to Division
-     * Roles: Admin, Division Admin, Division Chief, Senior Officer
-     */
-    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_MANAGER = 'pms.proposal.assign-to-project-manager';
-
-    /**
-     * Action: Assign Proposal to Division
-     * Roles: Admin, Division Admin, Division Chief, Senior Officer, Program Manager
-     */
-    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_OFFICER = 'pms.proposal.assign-to-project-officer';
-
-    /**
-     * Action: Assign Proposal to Project Officer with Clearance of DC or SO
-     * Roles: Project Officer
-     */
-    case PMS_PROPOSAL_ASSIGN_TO_PROJECT_OFFICER_WITH_CLEARANCE = 'pms.proposal.assign-to-project-officer-with-clearance';
-
-    /**
-     * Action: Approve the clearance to change assignment of the proposal
-     * Roles: Division Chief, Senior Officer
-     */
-    case PMS_PROPOSAL_APPROVE_CLEARANCE = 'pms.proposal.approve-clearance';
-
     // ==========================
     // USER PROFILE: MANAGEMENT
     // ==========================
