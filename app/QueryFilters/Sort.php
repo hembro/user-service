@@ -19,9 +19,7 @@ final class Sort
     public function handle(Builder $query, Closure $next)
     {
         if (! $this->sortField) {
-            $query->latest();
-
-            return $next($query);
+            return $next($query->latest());
         }
 
         $direction = 'asc';
@@ -33,9 +31,7 @@ final class Sort
         }
 
         if (! in_array($column, self::ALLOWED_SORTS)) {
-            $query->latest();
-
-            return $next($query);
+            return $next($query->latest());
         }
 
         if ($column === 'full_name') {
