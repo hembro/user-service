@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\QueryFilters;
+namespace App\QueryFilters\Users;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;

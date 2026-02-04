@@ -7,7 +7,7 @@ namespace App\Actions\Api\V1\Users;
 use App\DTOs\Api\V1\Users\UserIndexDTO;
 use App\Enums\Roles;
 use App\Models\User;
-use App\QueryFilters;
+use App\QueryFilters\Users;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pipeline\Pipeline;
@@ -34,10 +34,10 @@ final class FetchUsersForSystem
         return app(Pipeline::class)
             ->send($query)
             ->through([
-                new QueryFilters\FilterBySearch($dto->search),
-                new QueryFilters\FilterByRole($dto->role),
-                new QueryFilters\FilterByStatus($dto->status),
-                new QueryFilters\Sort($dto->sort),
+                new Users\FilterBySearch($dto->search),
+                new Users\FilterByRole($dto->role),
+                new Users\FilterByStatus($dto->status),
+                new Users\Sort($dto->sort),
             ])
             ->thenReturn();
     }
