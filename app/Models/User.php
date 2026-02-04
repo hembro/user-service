@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\Roles;
+use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Notifications\VerifyEmailQueued;
 use Carbon\CarbonInterface;
@@ -67,5 +69,16 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     public function sendEmailVerificationNotification(): void
     {
         $this->notify(new VerifyEmailQueued);
+    }
+
+    public function belongsToSystem(Systems $system): bool
+    {
+        foreach ($this->getRoleNames() as $name) {
+            if (Roles::find($name)?->system() === $system) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

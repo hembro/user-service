@@ -18,18 +18,8 @@ enum Permissions: string
      * Roles: Admin
      */
     case PMS_USER_MANAGE_ALL = 'pms.user.manage-all';
-
-    /**
-     * Action: Modify user profile within the division
-     * Roles: Division Admin
-     */
-    case PMS_USER_MANAGE_DIVISION = 'pms.user.manage-division';
-
-    /**
-     * Action: Modify own user profile
-     * Roles: All
-     */
-    case PMS_USER_MANAGE_OWN = 'pms.user.manage-own';
+    case HERDIN_USER_MANAGE_ALL = 'herdin.user.manage-all';
+    case PHRR_USER_MANAGE_ALL = 'phrr.user.manage-all';
 
     // ==========================
     // ROLES & PERMISSIONS: MANAGEMENT
@@ -40,10 +30,6 @@ enum Permissions: string
      * Roles: Admin
      */
     case PMS_ROLE_MANAGE_ALL = 'pms.role.manage-all';
-
-    /**
-     * Action: Assign or modify roles and permissions within Division
-     * Roles: Division Admin
-     */
-    case PMS_ROLE_MANAGE_DIVISION = 'pms.role.manage-division';
+    case HERDIN_ROLE_MANAGE_ALL = 'herdin.role.manage-all';
+    case PHRR_ROLE_MANAGE_ALL = 'phrr.role.manage-all';
 }

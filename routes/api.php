@@ -8,6 +8,6 @@ Route::prefix('v1/auth')
     ->name('api.v1.auth.')
     ->group(base_path('routes/api/v1/auth.php'));
 
-Route::prefix('v1/user')
-    ->name('api.v1.user.')
-    ->group(base_path('routes/api/v1/user.php'));
+Route::prefix('v1/users')
+    ->name('api.v1.users.')
+    ->group(base_path('routes/api/v1/users.php'));
