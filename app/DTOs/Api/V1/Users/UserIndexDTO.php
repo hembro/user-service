@@ -20,7 +20,7 @@ final readonly class UserIndexDTO
     public static function fromRequest(Request $request): self
     {
         return new self(
-            system: Systems::find($request->validated('system')),
+            system: Systems::tryFrom($request->validated('system')),
             page: $request->integer('page', 1),
             perPage: $request->integer('per_page', 10),
             search: $request->query('search'),

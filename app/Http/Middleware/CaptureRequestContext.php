@@ -17,7 +17,7 @@ final class CaptureRequestContext
     {
         $traceId = $request->header('X-Trace-ID', Str::uuid()->toString());
 
-        $system = Systems::find($request->header('X-Source-System', ''));
+        $system = Systems::tryFrom($request->header('X-Source-System', ''));
 
         Context::add([
             'trace_id' => $traceId,

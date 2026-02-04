@@ -35,7 +35,7 @@ final readonly class RegisterUserDTO
             sex: $data['sex'],
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            system: Systems::find($data['system']),
+            system: Systems::tryFrom($data['system']),
         );
     }
 }
