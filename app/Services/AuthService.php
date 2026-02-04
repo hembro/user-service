@@ -65,7 +65,7 @@ final readonly class AuthService
                 payload: [
                     'grant_type' => 'refresh_token',
                     'refresh_token' => $refreshToken,
-                    'scope' => '*',
+                    'scope' => '',
                 ]
             );
         } catch (OAuthServerException $e) {
