@@ -14,17 +14,21 @@ final readonly class UserIndexDTO
         public int $page,
         public int $perPage,
         public ?string $search,
-        public ?string $role
+        public ?string $role,
+        public ?string $status,
+        public ?string $sort
     ) {}
 
     public static function fromRequest(Request $request): self
     {
         return new self(
-            system: Systems::tryFrom($request->validated('system')),
+            system: Systems::from($request->validated('system')),
             page: $request->integer('page', 1),
             perPage: $request->integer('per_page', 10),
             search: $request->query('search'),
             role: $request->query('role'),
+            status: $request->query('status'),
+            sort: $request->query('sort'),
         );
     }
 
@@ -36,6 +40,8 @@ final readonly class UserIndexDTO
             'pp' => $this->perPage,
             'q' => $this->search,
             'role' => $this->role,
+            'st' => $this->status,
+            'srt' => $this->sort,
         ];
     }
 

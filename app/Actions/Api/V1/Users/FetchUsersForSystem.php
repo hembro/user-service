@@ -7,8 +7,10 @@ namespace App\Actions\Api\V1\Users;
 use App\DTOs\Api\V1\Users\UserIndexDTO;
 use App\Enums\Roles;
 use App\Models\User;
+use App\QueryFilters;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\Cache;
 
 final class FetchUsersForSystem
@@ -25,29 +27,18 @@ final class FetchUsersForSystem
 
     private function query(UserIndexDTO $dto): Builder
     {
-        return User::query()
+        $query = User::query()
             ->with(['profile', 'roles', 'permissions'])
+            ->role(Roles::forSystem($dto->system, true));
 
-            // A. System Scope
-            ->role(Roles::forSystem($dto->system, true))
-
-            // B. Search
-            ->when(
-                $dto->search,
-                fn (Builder $query, string $search) => $query->where(function (Builder $q) use ($search) {
-                    $q->where('first_name', 'like', "%{$search}%")
-                        ->orWhere('last_name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%");
-                })
-            )
-
-            // C. Role Filter
-            ->when(
-                $dto->role,
-                fn (Builder $query, string $role) => $query->role($role)
-            )
-
-            // D. Sorting
-            ->latest();
+        return app(Pipeline::class)
+            ->send($query)
+            ->through([
+                new QueryFilters\FilterBySearch($dto->search),
+                new QueryFilters\FilterByRole($dto->role),
+                new QueryFilters\FilterByStatus($dto->status),
+                new QueryFilters\Sort($dto->sort),
+            ])
+            ->thenReturn();
     }
 }

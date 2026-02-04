@@ -17,6 +17,17 @@ return new class extends Migration
                 ->constrained(table: 'users', column: 'id')
                 ->cascadeOnDelete();
 
+            $table->string('full_name')
+                ->storedAs("
+                    COALESCE(title || ' ', '') ||
+                    first_name ||
+                    ' ' ||
+                    COALESCE(middle_name || ' ', '') ||
+                    last_name ||
+                    COALESCE(' ' || suffix, '')
+                ")
+                ->index();
+
             $table->string('title')->nullable();
             $table->string('first_name');
             $table->string('middle_name')->nullable();
