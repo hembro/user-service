@@ -22,13 +22,13 @@ final class IndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'system' => ['required', Rule::enum(Systems::class)],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'search' => ['nullable', 'string', 'max:100'],
             'role' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', Rule::enum(UserStatus::class)],
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
+            'system' => ['required', Rule::enum(Systems::class)],
         ];
     }
 
