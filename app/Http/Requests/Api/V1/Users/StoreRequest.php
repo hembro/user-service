@@ -6,13 +6,19 @@ namespace App\Http\Requests\Api\V1\Users;
 
 use App\Enums;
 use App\Http\Requests\Traits\HasSystemAccess;
+use App\Rules\EnsureRoleBelongsToSystem;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-final class RegisterRequest extends FormRequest
+final class StoreRequest extends FormRequest
 {
     use HasSystemAccess;
+
+    public function authorize(): bool
+    {
+        return $this->authorizeSystemAccess();
+    }
 
     public function rules(): array
     {
@@ -27,6 +33,11 @@ final class RegisterRequest extends FormRequest
             'sex' => ['required', 'string', Rule::enum(Enums\Sex::class)],
             'mobile_number' => ['nullable', 'string', 'min:10', 'max:11'],
             'preferences' => ['nullable', 'array'],
+            'role' => [
+                'required',
+                Rule::enum(Enums\Roles::class),
+                new EnsureRoleBelongsToSystem($this->input('system')),
+            ],
             'system' => $this->systemRules(),
         ];
     }

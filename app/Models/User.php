@@ -74,7 +74,7 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     public function belongsToSystem(Systems $system): bool
     {
         foreach ($this->getRoleNames() as $name) {
-            if (Roles::find($name)?->system() === $system) {
+            if (Roles::tryFrom($name)?->system() === $system) {
                 return true;
             }
         }

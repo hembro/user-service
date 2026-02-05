@@ -4,15 +4,32 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Users;
 
-use Illuminate\Http\Request;
+use App\Actions\Api\V1\Users\AdminCreateUser;
+use App\DTOs\Api\V1\Users\CreateUserDTO;
+use App\Http\Requests\Api\V1\Users\StoreRequest;
+use App\Http\Resources\Api\V1\Users\UserResource;
+use App\Traits\HasApiResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 final class StoreController
 {
-    /**
-     * Handle the incoming request.
-     */
-    public function __invoke(Request $request)
+    use HasApiResponse;
+
+    public function __construct(
+        private readonly AdminCreateUser $action
+    ) {}
+
+    public function __invoke(StoreRequest $request)
     {
-        //
+        $user = $this->action->handle(
+            dto: CreateUserDTO::fromArray($request->validated()),
+            admin: $request->user()
+        );
+
+        return $this->success(
+            data: new UserResource($user),
+            message: 'User created successfully',
+            code: Response::HTTP_CREATED
+        );
     }
 }

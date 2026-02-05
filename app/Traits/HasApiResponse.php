@@ -57,6 +57,9 @@ trait HasApiResponse
             'message' => $message,
         ], $paginationData);
 
-        return new JsonResponse($response, $code);
+        return new JsonResponse(
+            data: $response,
+            status: $code
+        );
     }
 }

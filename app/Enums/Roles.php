@@ -35,24 +35,14 @@ enum Roles: string
     /**
      * Get all roles for a given system
      */
-    public static function forSystem(Systems $system, bool $string = false): array
+    public static function forSystem(Systems $system, bool $returnString = false): array
     {
         $roles = array_filter(
             self::cases(),
             fn (Roles $role) => $role->system() === $system
         );
 
-        return $string ? array_map(fn (Roles $role) => $role->value, $roles) : $roles;
-    }
-
-    public static function find(string $name): self
-    {
-        return match ($name) {
-            self::PMS_ADMIN->value => self::PMS_ADMIN,
-            self::HERDIN_ADMIN->value => self::HERDIN_ADMIN,
-            self::PHRR_ADMIN->value => self::PHRR_ADMIN,
-            default => null
-        };
+        return $returnString ? array_map(fn (Roles $role) => $role->value, $roles) : $roles;
     }
 
     /**

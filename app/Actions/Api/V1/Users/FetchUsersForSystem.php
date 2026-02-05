@@ -13,8 +13,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Facades\Cache;
 
-final class FetchUsersForSystem
+final readonly class FetchUsersForSystem
 {
+    public function __construct(
+        private Pipeline $pipeline
+    ) {}
+
     public function handle(UserIndexDTO $dto): LengthAwarePaginator
     {
         return Cache::tags(['users_index', "users_index.{$dto->system->value}"])
@@ -31,8 +35,7 @@ final class FetchUsersForSystem
             ->with(['profile', 'roles', 'permissions'])
             ->role(Roles::forSystem($dto->system, true));
 
-        return app(Pipeline::class)
-            ->send($query)
+        return $this->pipeline->send($query)
             ->through([
                 new Users\FilterBySearch($dto->search),
                 new Users\FilterByRole($dto->role),
