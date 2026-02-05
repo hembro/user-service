@@ -79,12 +79,12 @@ final readonly class AdminUpdateUser
             $profile = $user->profile;
 
             $profile->fill([
-                'title' => $dto->title,
+                'title' => $dto->title?->value,
                 'first_name' => $dto->firstName,
                 'last_name' => $dto->lastName,
                 'middle_name' => $dto->middleName,
-                'suffix' => $dto->suffix,
-                'sex' => $dto->sex,
+                'suffix' => $dto->suffix?->value,
+                'sex' => $dto->sex->value,
                 'mobile_number' => $dto->mobileNumber,
                 'preferences' => $dto->preferences,
             ]);
@@ -106,13 +106,13 @@ final readonly class AdminUpdateUser
                     "users_index.{$dto->system->value}",
                 ])->flush();
 
-                $this->logger->info('User updated by admin', [
+                $this->logger->info('admin user update initiated', [
                     'admin_id' => $admin->id,
                     'target_user_id' => $user->id,
                     'changes_count' => count($changes),
                 ]);
 
-                AdminUpdatedUser::dispatch($user, $admin, $changes);
+                AdminUpdatedUser::dispatch($admin, $user, $changes);
             }
 
             return $user->refresh();

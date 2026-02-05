@@ -15,6 +15,7 @@ final class AdminUpdatedUser
 
     public function __construct(
         public User $admin,
-        public User $target
+        public User $user,
+        public array $changes
     ) {}
 }

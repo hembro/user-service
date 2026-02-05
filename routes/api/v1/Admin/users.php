@@ -7,35 +7,34 @@ use App\Http\Controllers\Api\V1\Admin\Users;
 use App\Models\User;
 use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
-Route::middleware([CheckTokenForAnyScope::using(Roles::adminRoles()), 'can:viewAny,' . User::class])->group(function () {
+Route::middleware(['auth:api', CheckTokenForAnyScope::using(Roles::adminRoles(true))])->group(function () {
 
-    Route::get('/', Users\IndexController::class)
-        ->name('index');
+    Route::middleware('can:viewAny,' . User::class)->group(function () {
+        Route::get('/', Users\IndexController::class)->name('index');
+        Route::post('/', Users\StoreController::class)->name('store');
+    });
 
-    Route::post('/', Users\StoreController::class)
-        ->name('store');
+    Route::get('/{user}', Users\ShowController::class)
+        ->middleware('can:view,user')
+        ->name('show');
+
+    Route::put('/{user}', Users\UpdateController::class)
+        ->middleware('can:update,user')
+        ->name('update');
+
+    Route::delete('/{user}', Users\DeleteController::class)
+        ->middleware('can:delete,user')
+        ->name('delete');
+
+    Route::patch('/{user}/role', Users\UpdateRoleController::class)
+        ->middleware('can:updateRole,user')
+        ->name('role.update');
+
+    Route::patch('/{user}/status', Users\UpdateStatusController::class)
+        ->middleware('can:updateStatus,user')
+        ->name('status.update');
+
+    Route::post('/{user}/reset-password', Users\ResetPasswordController::class)
+        ->middleware('can:resetPassword,user')
+        ->name('password.reset');
 });
-
-Route::get('/{user}', Users\ShowController::class)
-    ->middleware('can:view,user')
-    ->name('show');
-
-Route::patch('/{user}', Users\UpdateController::class)
-    ->middleware('can:update,user')
-    ->name('update');
-
-Route::delete('/{user}', Users\DeleteController::class)
-    ->middleware('can:delete,user')
-    ->name('delete');
-
-Route::patch('/{user}/role', Users\UpdateRoleController::class)
-    ->middleware('can:updateRole,user')
-    ->name('role.update');
-
-Route::patch('/{user}/status', Users\UpdateStatusController::class)
-    ->middleware('can:updateStatus,user')
-    ->name('status.update');
-
-Route::post('/{user}/reset-password', Users\ResetPasswordController::class)
-    ->middleware('can:resetPassword,user')
-    ->name('password.reset');

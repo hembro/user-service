@@ -45,13 +45,20 @@ enum Roles: string
         return $returnString ? array_map(fn (Roles $role) => $role->value, $roles) : $roles;
     }
 
-    public static function adminRoles(): array
+    public static function adminRoles(bool $returnString = false): array
     {
-        return [
-            self::PMS_ADMIN->value,
-            self::HERDIN_ADMIN->value,
-            self::PHRR_ADMIN->value,
+        $adminRoles = [
+            self::PMS_ADMIN,
+            self::HERDIN_ADMIN,
+            self::PHRR_ADMIN,
         ];
+
+        if ($returnString) {
+            return array_map(fn (Roles $role) => $role->value, $adminRoles);
+        }
+
+        return $adminRoles;
+
     }
 
     /**

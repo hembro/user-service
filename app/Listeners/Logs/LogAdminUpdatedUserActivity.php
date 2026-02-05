@@ -22,8 +22,9 @@ final class LogAdminUpdatedUserActivity implements ShouldHandleEventsAfterCommit
     public function handle(AdminUpdatedUser $event): void
     {
         $this->logger->info('audit: admin updated user', [
-            'target_user_id' => $event->target->id,
+            'target_user_id' => $event->user->id,
             'admin_id' => $event->admin->id,
+            'changes' => $event->changes,
         ]);
     }
 }

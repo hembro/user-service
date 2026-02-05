@@ -30,7 +30,7 @@ final class EnsureRoleBelongsToSystem implements ValidationRule
         }
 
         if ($role->system() !== $system) {
-            $fail("The selected role is not valid for the {$system->value} system.");
+            $fail("The selected role is not valid for the `{$system->value}` system.");
         }
     }
 }
