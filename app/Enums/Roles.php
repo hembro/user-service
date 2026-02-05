@@ -23,16 +23,6 @@ enum Roles: string
     case PHRR_USER = 'phrr.user';
 
     /**
-     * Get the scopes for a given array of roles
-     */
-    public static function scopes(array $roles): string
-    {
-        $values = array_map(fn (Roles $role) => $role->value, $roles);
-
-        return 'scopes:' . implode(',', $values);
-    }
-
-    /**
      * Get all roles for a given system
      */
     public static function forSystem(Systems $system, bool $returnString = false): array
@@ -59,14 +49,6 @@ enum Roles: string
 
         return $adminRoles;
 
-    }
-
-    /**
-     * Get the scope for a given role
-     */
-    public function scope(): string
-    {
-        return "scope: {$this->value}";
     }
 
     public function permissions(): array
