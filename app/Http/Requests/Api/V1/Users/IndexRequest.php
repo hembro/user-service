@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Users;
 
-use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Http\Requests\Traits\HasSystemAccess;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +27,7 @@ final class IndexRequest extends FormRequest
             'role' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', Rule::enum(UserStatus::class)],
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
-            'system' => ['required', Rule::enum(Systems::class)],
+            'system' => $this->systemRules(),
         ];
     }
 
