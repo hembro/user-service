@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Users;
+namespace App\DTOs\Api\V1\Admin\Users;
 
 use App\Enums\Roles;
 use App\Enums\Sex;
@@ -23,7 +23,7 @@ final readonly class CreateUserDTO
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public Roles $role,
+        public array $roles,
         public Systems $system
     ) {}
 
@@ -40,7 +40,10 @@ final readonly class CreateUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            role: Roles::from($data['role']),
+            roles: array_map(
+                fn (string $role) => Roles::from($role),
+                $data['roles']
+            ),
             system: Systems::from($data['system'])
         );
     }

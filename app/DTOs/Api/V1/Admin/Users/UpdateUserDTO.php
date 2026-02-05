@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Users;
+namespace App\DTOs\Api\V1\Admin\Users;
 
 use App\Enums\Roles;
 use App\Enums\Sex;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Admin\Users;
 
-use App\DTOs\Api\V1\Users\UpdateUserDTO;
+use App\DTOs\Api\V1\Admin\Users\UpdateUserDTO;
 use App\Enums\Roles;
 use App\Events\AdminUpdatedUser;
 use App\Models\Role;
