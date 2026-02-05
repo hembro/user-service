@@ -15,26 +15,26 @@ Route::middleware(['auth:api', CheckTokenForAnyScope::using(Roles::adminRoles(tr
     });
 
     Route::get('/{user}', Users\ShowController::class)
-        ->middleware('can:view,user')
+        ->can('view,user')
         ->name('show');
 
     Route::put('/{user}', Users\UpdateController::class)
-        ->middleware('can:update,user')
+        ->can('update,user')
         ->name('update');
 
     Route::delete('/{user}', Users\DeleteController::class)
-        ->middleware('can:delete,user')
+        ->can('delete,user')
         ->name('delete');
 
     Route::patch('/{user}/role', Users\UpdateRoleController::class)
-        ->middleware('can:updateRole,user')
+        ->can('updateRole,user')
         ->name('role.update');
 
     Route::patch('/{user}/status', Users\UpdateStatusController::class)
-        ->middleware('can:updateStatus,user')
+        ->can('updateStatus,user')
         ->name('status.update');
 
     Route::post('/{user}/reset-password', Users\ResetPasswordController::class)
-        ->middleware('can:resetPassword,user')
+        ->can('resetPassword,user')
         ->name('password.reset');
 });

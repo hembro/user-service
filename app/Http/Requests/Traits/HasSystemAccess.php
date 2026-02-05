@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests\Traits;
 
 use App\Enums\Systems;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\Rule;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 trait HasSystemAccess
 {
@@ -29,7 +29,7 @@ trait HasSystemAccess
         }
 
         if (! $this->user()->belongsToSystem($system)) {
-            throw new AuthorizationException(
+            throw new AccessDeniedException(
                 "You are not authorized to perform actions for {$system->value}."
             );
         }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\AdminCreateUser;
+use App\Actions\Api\V1\Admin\Users\CreateUser;
 use App\DTOs\Api\V1\Admin\Users\CreateUserDTO;
 use App\Http\Requests\Api\V1\Admin\Users\StoreRequest as AdminStoreRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
@@ -16,7 +16,7 @@ final class StoreController
     use HasApiResponse;
 
     public function __construct(
-        private readonly AdminCreateUser $action
+        private readonly CreateUser $action
     ) {}
 
     public function __invoke(AdminStoreRequest $request)

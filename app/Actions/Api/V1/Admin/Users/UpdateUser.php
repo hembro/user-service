@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 
-final readonly class AdminUpdateUser
+final readonly class UpdateUser
 {
     public function __construct(
         private DatabaseManager $db,

@@ -12,7 +12,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Cache;
 use Psr\Log\LoggerInterface;
 
-final readonly class AdminCreateUser
+final readonly class CreateUser
 {
     public function __construct(
         private DatabaseManager $db,
