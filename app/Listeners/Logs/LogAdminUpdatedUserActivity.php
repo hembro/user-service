@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs;
 
-use App\Events\UserInvited;
+use App\Events\AdminUpdatedUser;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogAdminCreatedUserActivity implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogAdminUpdatedUserActivity implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'low';
 
@@ -19,10 +19,10 @@ final class LogAdminCreatedUserActivity implements ShouldHandleEventsAfterCommit
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserInvited $event): void
+    public function handle(AdminUpdatedUser $event): void
     {
-        $this->logger->info('audit: admin created user', [
-            'target_user_id' => $event->user->id,
+        $this->logger->info('audit: admin updated user', [
+            'target_user_id' => $event->target->id,
             'admin_id' => $event->admin->id,
         ]);
     }

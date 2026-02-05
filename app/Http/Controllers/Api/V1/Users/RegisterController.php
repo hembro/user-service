@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Users;
 
-use App\Actions\Api\V1\Users\CreateUser;
+use App\Actions\Api\V1\Users\RegisterUser;
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
@@ -17,7 +17,7 @@ final class RegisterController
     use HasApiResponse;
 
     public function __construct(
-        private readonly CreateUser $action
+        private readonly RegisterUser $action
     ) {}
 
     public function __invoke(RegisterRequest $request): JsonResponse

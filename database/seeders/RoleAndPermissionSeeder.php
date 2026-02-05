@@ -47,6 +47,6 @@ final class RoleAndPermissionSeeder extends Seeder
             }
         }
 
-        User::first()->assignRole(Roles::PMS_ADMIN);
+        User::first()?->assignRole(Roles::PMS_ADMIN);
     }
 }

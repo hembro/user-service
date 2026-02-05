@@ -45,6 +45,15 @@ enum Roles: string
         return $returnString ? array_map(fn (Roles $role) => $role->value, $roles) : $roles;
     }
 
+    public static function adminRoles(): array
+    {
+        return [
+            self::PMS_ADMIN->value,
+            self::HERDIN_ADMIN->value,
+            self::PHRR_ADMIN->value,
+        ];
+    }
+
     /**
      * Get the scope for a given role
      */

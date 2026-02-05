@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Api\V1\Users;
+namespace App\Actions\Api\V1\Admin\Users;
 
 use App\DTOs\Api\V1\Users\UserIndexDTO;
 use App\Enums\Roles;

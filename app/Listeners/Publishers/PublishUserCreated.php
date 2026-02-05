@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners\Publishers;
 
-use App\Events\UserCreated;
+use App\Events\UserInvited;
+use App\Events\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
@@ -19,7 +20,7 @@ final class PublishUserCreated implements ShouldHandleEventsAfterCommit, ShouldQ
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserCreated $event): void
+    public function handle(UserInvited|UserRegistered $event): void
     {
         $this->logger->info('broker: UserCreated event', [
             'user_id' => $event->user->id,

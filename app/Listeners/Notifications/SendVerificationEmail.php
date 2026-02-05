@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Notifications;
 
-use App\Events\UserCreated;
+use App\Events\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -14,7 +14,7 @@ final class SendVerificationEmail implements ShouldHandleEventsAfterCommit, Shou
 
     public int $tries = 3;
 
-    public function handle(UserCreated $event): void
+    public function handle(UserRegistered $event): void
     {
         $event->user->sendEmailVerificationNotification();
     }

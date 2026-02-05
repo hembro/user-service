@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Events\UserCreated;
+use App\Events\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -47,7 +47,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $payload = validRegistrationPayload();
 
         $response = postJson(
-            uri: route('api.v1.user.register', false),
+            uri: route('api.v1.users.register', false),
             data: $payload,
             headers: [
                 'X-Source-System' => Systems::PMS->value,
@@ -76,7 +76,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         expect($user->hasRole(Roles::PMS_PROPONENT))->toBeTrue()
             ->and($user->hasRole(Roles::HERDIN_USER))->toBeFalse();
 
-        Event::assertDispatched(UserCreated::class, fn ($event): bool => $event->user->id === $user->id);
+        Event::assertDispatched(UserRegistered::class, fn ($event): bool => $event->user->id === $user->id);
     });
 
     it('assigns the correct role based on the system', function (string $system, string $expectedRole): void {
@@ -85,7 +85,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $payload = validRegistrationPayload();
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: [
                 'X-Source-System' => $system,
@@ -105,7 +105,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $payload = validRegistrationPayload([$field => '']);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload
         )
             ->assertUnprocessable()
@@ -125,7 +125,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $payload = validRegistrationPayload(['email' => 'duplicate@example.com']);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload
         )
             ->assertUnprocessable()
@@ -136,7 +136,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $payload = validRegistrationPayload(['password' => 'weak', 'password_confirmation' => 'weak']);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload
         )
             ->assertUnprocessable()
@@ -150,7 +150,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         $payload = validRegistrationPayload();
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload
         )->assertUnprocessable();
     });
@@ -159,7 +159,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         $payload = validRegistrationPayload();
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: [
                 'X-Source-System' => 'HACKER_SYSTEM',
@@ -174,7 +174,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         ]);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
         )
@@ -186,7 +186,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         $payload = validRegistrationPayload(['email' => $invalidEmail]);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
         )
@@ -204,7 +204,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         $payload = validRegistrationPayload(['sex' => 'attack_helicopter']);
 
         postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
         )
@@ -225,7 +225,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         $payload = validRegistrationPayload();
 
         $response = postJson(
-            uri: route('api.v1.user.register'),
+            uri: route('api.v1.users.register'),
             data: $payload,
             headers: ['X-Source-System' => Systems::PMS->value]
         );

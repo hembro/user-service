@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Api\V1\Users;
+namespace App\Http\Requests\Api\V1\Admin\Users;
 
 use App\Enums\UserStatus;
 use App\Http\Requests\Traits\HasSystemAccess;

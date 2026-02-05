@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\DTOs\Api\V1\Users;
 
+use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
 
-final readonly class RegisterUserDTO
+final readonly class UpdateUserDTO
 {
     public function __construct(
         public string $email,
-        public string $password,
         public ?Titles $title,
         public string $firstName,
         public ?string $middleName,
@@ -22,6 +22,7 @@ final readonly class RegisterUserDTO
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
+        public array $roles,
         public Systems $system
     ) {}
 
@@ -29,7 +30,6 @@ final readonly class RegisterUserDTO
     {
         return new self(
             email: $data['email'],
-            password: $data['password'],
             title: ! empty($data['title']) ? Titles::from($data['title']) : null,
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
@@ -38,7 +38,11 @@ final readonly class RegisterUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            system: Systems::from($data['system']),
+            roles: array_map(
+                fn (string $role) => Roles::from($role),
+                $data['roles']
+            ),
+            system: Systems::from($data['system'])
         );
     }
 }

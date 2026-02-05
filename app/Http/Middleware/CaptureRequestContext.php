@@ -21,7 +21,7 @@ final class CaptureRequestContext
 
         Context::add([
             'trace_id' => $traceId,
-            'source_system' => $system->value,
+            'source_system' => $system?->value,
             'user_ip' => $request->ip(),
         ]);
 

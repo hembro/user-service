@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners\Publishers;
 
-use App\Events\UserInvited;
+use App\Events\AdminUpdatedUser;
+use App\Events\UserUpdatedProfile;
+use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserInvited implements ShouldQueue
+final class PublishUserUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public $tries = 5;
 
@@ -18,9 +20,9 @@ final class PublishUserInvited implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserInvited $event): void
+    public function handle(AdminUpdatedUser|UserUpdatedProfile $event): void
     {
-        $this->logger->info('broker: UserInvited event', [
+        $this->logger->info('broker: UserUpdated event', [
             'user_id' => $event->user->id,
         ]);
     }
