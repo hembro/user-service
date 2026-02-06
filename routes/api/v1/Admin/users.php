@@ -9,7 +9,7 @@ use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
 Route::middleware([
     'auth:api',
-    CheckTokenForAnyScope::using(Roles::adminRoles(true)),
+    CheckTokenForAnyScope::using(Roles::adminRoles(returnString: true)),
 ])->group(function () {
 
     Route::middleware('can:viewAny,' . User::class)->group(function () {

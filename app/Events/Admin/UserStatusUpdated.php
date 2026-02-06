@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Events\Admin;
 
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-final class UserDeleted
+final class UserStatusUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public string $userEmail,
+        public User $user,
         public User $admin,
+        public UserStatus $oldStatus,
+        public UserStatus $newStatus,
     ) {}
 }

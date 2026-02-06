@@ -4,18 +4,18 @@ declare(strict_types=1);
 
 namespace App\DTOs\Api\V1\Admin\Users;
 
-use App\Enums\Systems;
+use App\Enums\UserStatus;
 
-final readonly class DeleteUserDTO
+final readonly class UpdateUserStatusDTO
 {
     public function __construct(
-        public Systems $system
+        public UserStatus $status
     ) {}
 
     public static function fromArray(array $data): self
     {
         return new self(
-            system: Systems::from($data['system'])
+            status: UserStatus::from($data['status']),
         );
     }
 }

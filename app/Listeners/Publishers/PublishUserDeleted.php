@@ -11,9 +11,9 @@ use Psr\Log\LoggerInterface;
 
 final class PublishUserDeleted implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
-    public $tries = 5;
+    public int $tries = 5;
 
-    public $backoff = [10, 30, 60];
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         private readonly LoggerInterface $logger
