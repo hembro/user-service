@@ -32,7 +32,7 @@ final readonly class FetchUsersForSystem
     private function query(UserIndexDTO $dto): Builder
     {
         $query = User::query()
-            ->with(['profile', 'roles', 'permissions'])
+            ->with(['profile', 'roles'])
             ->role(Roles::forSystem($dto->system, true));
 
         return $this->pipeline->send($query)

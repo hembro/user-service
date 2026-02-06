@@ -7,7 +7,10 @@ use App\Http\Controllers\Api\V1\Admin\Users;
 use App\Models\User;
 use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
-Route::middleware(['auth:api', CheckTokenForAnyScope::using(Roles::adminRoles(true))])->group(function () {
+Route::middleware([
+    'auth:api',
+    CheckTokenForAnyScope::using(Roles::adminRoles(true)),
+])->group(function () {
 
     Route::middleware('can:viewAny,' . User::class)->group(function () {
         Route::get('/', Users\IndexController::class)->name('index');
