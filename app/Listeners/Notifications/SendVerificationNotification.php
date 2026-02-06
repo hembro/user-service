@@ -8,7 +8,7 @@ use App\Events\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-final class SendVerificationEmail implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class SendVerificationNotification implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'high';
 

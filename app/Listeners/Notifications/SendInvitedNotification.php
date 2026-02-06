@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Listeners\Notifications;
 
 use App\Events\UserInvited;
+use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class SendInvitedEmail implements ShouldQueue
+final class SendInvitedNotification implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'high';
 

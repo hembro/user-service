@@ -5,19 +5,11 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Admin\Users;
 
 use App\Enums\UserStatus;
-use App\Http\Requests\Traits\HasSystemAccess;
-use Illuminate\Foundation\Http\FormRequest;
+use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
 use Illuminate\Validation\Rule;
 
-final class IndexRequest extends FormRequest
+final class IndexRequest extends BaseAdminRequest
 {
-    use HasSystemAccess;
-
-    public function authorize(): bool
-    {
-        return $this->authorizeSystemAccess();
-    }
-
     public function rules(): array
     {
         return [
@@ -29,18 +21,5 @@ final class IndexRequest extends FormRequest
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
             'system' => $this->systemRules(),
         ];
-    }
-
-    public function messages(): array
-    {
-        return array_merge(
-            $this->systemMessages(),
-            []
-        );
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->mergeSystemHeader();
     }
 }

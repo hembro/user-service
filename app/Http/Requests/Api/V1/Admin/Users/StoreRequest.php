@@ -8,21 +8,13 @@ use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Titles;
-use App\Http\Requests\Traits\HasSystemAccess;
+use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
 use App\Rules\EnsureRoleBelongsToSystem;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-final class StoreRequest extends FormRequest
+final class StoreRequest extends BaseAdminRequest
 {
-    use HasSystemAccess;
-
-    public function authorize(): bool
-    {
-        return $this->authorizeSystemAccess();
-    }
-
     public function rules(): array
     {
         return [
@@ -40,18 +32,5 @@ final class StoreRequest extends FormRequest
             'roles.*' => ['required', Rule::enum(Roles::class), new EnsureRoleBelongsToSystem($this->input('system'))],
             'system' => $this->systemRules(),
         ];
-    }
-
-    public function messages(): array
-    {
-        return array_merge(
-            $this->systemMessages(),
-            []
-        );
-    }
-
-    protected function prepareForValidation(): void
-    {
-        $this->mergeSystemHeader();
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Admin\Users;
 
-use App\DTOs\Api\V1\Admin\Users\UserIndexDTO;
+use App\DTOs\Api\V1\Admin\Users\IndexUserDTO;
 use App\Enums\Roles;
 use App\Models\User;
 use App\QueryFilters\Users;
@@ -19,7 +19,7 @@ final readonly class FetchUsersForSystem
         private Pipeline $pipeline
     ) {}
 
-    public function handle(UserIndexDTO $dto): LengthAwarePaginator
+    public function handle(IndexUserDTO $dto): LengthAwarePaginator
     {
         return Cache::tags(['users_index', "users_index.{$dto->system->value}"])
             ->remember(
@@ -29,7 +29,7 @@ final readonly class FetchUsersForSystem
             );
     }
 
-    private function query(UserIndexDTO $dto): Builder
+    private function query(IndexUserDTO $dto): Builder
     {
         $query = User::query()
             ->with(['profile', 'roles'])

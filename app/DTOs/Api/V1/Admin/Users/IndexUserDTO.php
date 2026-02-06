@@ -7,7 +7,7 @@ namespace App\DTOs\Api\V1\Admin\Users;
 use App\Enums\Systems;
 use Illuminate\Http\Request;
 
-final readonly class UserIndexDTO
+final readonly class IndexUserDTO
 {
     public function __construct(
         public Systems $system,

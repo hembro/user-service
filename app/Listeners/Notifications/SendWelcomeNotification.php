@@ -10,6 +10,10 @@ use Psr\Log\LoggerInterface;
 
 final class SendWelcomeNotification implements ShouldQueue
 {
+    public string $queue = 'high';
+
+    public int $tries = 3;
+
     public function __construct(
         private readonly LoggerInterface $logger
     ) {}

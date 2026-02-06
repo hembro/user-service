@@ -6,7 +6,7 @@ namespace App\Http\Requests\Api\V1\Admin\Users;
 
 use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
 
-final class ShowRequest extends BaseAdminRequest
+final class DeleteRequest extends BaseAdminRequest
 {
     public function rules(): array
     {
