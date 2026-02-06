@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs\Admin;
 
-use App\Events\AdminUpdatedUser;
+use App\Events\Admin\UserUpdated;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
@@ -19,7 +19,7 @@ final class LogUserUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(AdminUpdatedUser $event): void
+    public function handle(UserUpdated $event): void
     {
         $this->logger->info('audit: admin updated user', [
             'user_id' => $event->user->id,

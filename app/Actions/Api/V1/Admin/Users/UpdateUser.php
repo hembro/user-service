@@ -6,7 +6,7 @@ namespace App\Actions\Api\V1\Admin\Users;
 
 use App\DTOs\Api\V1\Admin\Users\UpdateUserDTO;
 use App\Enums\Roles;
-use App\Events\AdminUpdatedUser;
+use App\Events\Admin\UserUpdated;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
@@ -112,7 +112,7 @@ final readonly class UpdateUser
                     'changes_count' => count($changes),
                 ]);
 
-                AdminUpdatedUser::dispatch($admin, $user, $changes);
+                UserUpdated::dispatch($admin, $user, $changes);
             }
 
             return $user->refresh();

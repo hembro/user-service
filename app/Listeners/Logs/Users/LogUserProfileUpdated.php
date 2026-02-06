@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs\User;
+namespace App\Listeners\Logs\Users;
 
 use App\Events\UserUpdatedProfile;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;

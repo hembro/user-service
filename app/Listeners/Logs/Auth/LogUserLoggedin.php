@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs\Auth;
 
-use App\Events\UserLoggedIn;
+use App\Events\Auth\UserLoggedIn;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;

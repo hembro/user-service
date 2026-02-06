@@ -6,7 +6,7 @@ namespace App\Actions\Api\V1\Admin\Users;
 
 use App\DTOs\Api\V1\Admin\Users\CreateUserDTO;
 use App\Enums\UserStatus;
-use App\Events\UserInvited;
+use App\Events\Admin\UserInvited;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Cache;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs\User;
+namespace App\Listeners\Logs\Users;
 
-use App\Events\UserRegistered;
+use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;

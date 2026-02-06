@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Api\V1\Admin\Users;
 
 use App\DTOs\Api\V1\Admin\Users\DeleteUserDTO;
-use App\Events\AdminDeletedUser;
+use App\Events\Admin\UserDeleted;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
@@ -23,7 +23,7 @@ final readonly class DeleteUser
 
                 $user->delete();
 
-                AdminDeletedUser::dispatch($user->email, $admin, $dto);
+                UserDeleted::dispatch($user->email, $admin, $dto);
             }
         );
     }

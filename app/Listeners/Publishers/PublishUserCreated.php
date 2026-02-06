@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Listeners\Publishers;
 
-use App\Events\UserInvited;
-use App\Events\UserRegistered;
+use App\Events\Admin\UserInvited;
+use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;

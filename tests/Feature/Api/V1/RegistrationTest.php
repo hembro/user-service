@@ -5,7 +5,7 @@ declare(strict_types=1);
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Events\UserRegistered;
+use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;

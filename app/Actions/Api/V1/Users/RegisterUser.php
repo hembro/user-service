@@ -6,7 +6,7 @@ namespace App\Actions\Api\V1\Users;
 
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
 use App\Enums\UserStatus;
-use App\Events\UserRegistered;
+use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;

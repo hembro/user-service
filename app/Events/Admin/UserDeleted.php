@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Events;
+namespace App\Events\Admin;
 
 use App\DTOs\Api\V1\Admin\Users\DeleteUserDTO;
 use App\Models\User;
@@ -10,7 +10,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-final class AdminDeletedUser
+final class UserDeleted
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

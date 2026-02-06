@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Publishers;
 
-use App\Events\AdminUpdatedUser;
+use App\Events\Admin\UserUpdated;
 use App\Events\UserUpdatedProfile;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,7 +20,7 @@ final class PublishUserUpdated implements ShouldHandleEventsAfterCommit, ShouldQ
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(AdminUpdatedUser|UserUpdatedProfile $event): void
+    public function handle(UserUpdated|UserUpdatedProfile $event): void
     {
         $this->logger->info('broker: UserUpdated event', [
             'user_id' => $event->user->id,

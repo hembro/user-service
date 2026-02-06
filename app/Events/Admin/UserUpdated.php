@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Events;
+namespace App\Events\Admin;
 
-use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-final class UserLoggedOut
+final class UserUpdated
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
+        public User $admin,
         public User $user,
-        public RequestMetadata $metadata
+        public array $changes
     ) {}
 }

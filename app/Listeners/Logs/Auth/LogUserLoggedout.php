@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs\Auth;
 
-use App\Events\UserLoggedOut;
+use App\Events\Auth\UserLoggedOut;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;

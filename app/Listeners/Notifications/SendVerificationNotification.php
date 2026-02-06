@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Listeners\Notifications;
 
-use App\Events\UserRegistered;
+use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 

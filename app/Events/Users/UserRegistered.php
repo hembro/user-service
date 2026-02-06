@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Events;
+namespace App\Events\Users;
 
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
