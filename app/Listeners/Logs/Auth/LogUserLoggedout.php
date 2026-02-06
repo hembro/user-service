@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs;
+namespace App\Listeners\Logs\Auth;
 
-use App\Events\UserLoggedIn;
+use App\Events\UserLoggedOut;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserLoginActivity implements ShouldQueue
+final class LogUserLoggedout implements ShouldQueue
 {
     public string $queue = 'low';
 
@@ -19,17 +19,13 @@ final class LogUserLoginActivity implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserLoggedIn $event): void
+    public function handle(UserLoggedOut $event): void
     {
-        $occurredAt = CarbonImmutable::createFromTimestamp($event->metadata->timestamp);
-
-        $event->user->updateQuietly(['last_login_at' => $occurredAt]);
-
-        $this->logger->info('audit: user logged-in', [
+        $this->logger->info('audit: user logged-out', [
             'user_id' => $event->user->id,
             'ip' => $event->metadata->ip,
             'user_agent' => $event->metadata->userAgent,
-            'timestamp' => $occurredAt->toIso8601String(),
+            'timestamp' => CarbonImmutable::createFromTimestamp($event->metadata->timestamp)->toIso8601String(),
         ]);
     }
 }

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs;
+namespace App\Listeners\Logs\Admin;
 
 use App\Events\UserInvited;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogAdminCreatedUserActivity implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogUserCreated implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'low';
 

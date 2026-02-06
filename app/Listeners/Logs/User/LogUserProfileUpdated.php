@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs;
+namespace App\Listeners\Logs\User;
 
-use App\Events\UserRegistered;
+use App\Events\UserUpdatedProfile;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserRegistration implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogUserProfileUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'low';
 
@@ -19,9 +19,9 @@ final class LogUserRegistration implements ShouldHandleEventsAfterCommit, Should
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserRegistered $event): void
+    public function handle(UserUpdatedProfile $event): void
     {
-        $this->logger->info('audit: user registered', [
+        $this->logger->info('audit: user updated profile', [
             'user_id' => $event->user->id,
         ]);
     }

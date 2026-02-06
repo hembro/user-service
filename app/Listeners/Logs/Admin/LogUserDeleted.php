@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs;
+namespace App\Listeners\Logs\Admin;
 
 use App\Events\AdminDeletedUser;
 use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogAdminDeletedUserActivity implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogUserDeleted implements ShouldHandleEventsAfterCommit, ShouldQueue
 {
     public string $queue = 'low';
 
