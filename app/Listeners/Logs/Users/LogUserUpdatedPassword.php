@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs\Admin;
+namespace App\Listeners\Logs\Users;
 
-use App\Events\Admin\UserUpdated;
+use App\Events\Users\UserPasswordUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserUpdated implements ShouldQueue
+final class LogUserUpdatedPassword implements ShouldQueue
 {
     public string $queue = 'low';
 
@@ -18,14 +18,12 @@ final class LogUserUpdated implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserUpdated $event): void
+    public function handle(UserPasswordUpdated $event): void
     {
         $this->logger->info(
-            message: 'audit: admin updated user',
+            message: 'audit: user updated password',
             context: [
                 'user_id' => $event->user->id,
-                'admin_id' => $event->admin->id,
-                'changes' => $event->changes,
             ]
         );
     }

@@ -25,11 +25,14 @@ final class LogUserLoggedin implements ShouldQueue
 
         $event->user->update(['last_login_at' => $occurredAt]);
 
-        $this->logger->info('audit: user logged-in', [
-            'user_id' => $event->user->id,
-            'ip' => $event->metadata->ip,
-            'user_agent' => $event->metadata->userAgent,
-            'timestamp' => $occurredAt->toIso8601String(),
-        ]);
+        $this->logger->info(
+            message: 'audit: user logged-in',
+            context: [
+                'user_id' => $event->user->id,
+                'ip' => $event->metadata->ip,
+                'user_agent' => $event->metadata->userAgent,
+                'timestamp' => $occurredAt->toIso8601String(),
+            ]
+        );
     }
 }

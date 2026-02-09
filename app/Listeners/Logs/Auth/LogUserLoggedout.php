@@ -21,11 +21,14 @@ final class LogUserLoggedout implements ShouldQueue
 
     public function handle(UserLoggedOut $event): void
     {
-        $this->logger->info('audit: user logged-out', [
-            'user_id' => $event->user->id,
-            'ip' => $event->metadata->ip,
-            'user_agent' => $event->metadata->userAgent,
-            'timestamp' => CarbonImmutable::createFromTimestamp($event->metadata->timestamp)->toIso8601String(),
-        ]);
+        $this->logger->info(
+            message: 'audit: user logged-out',
+            context: [
+                'user_id' => $event->user->id,
+                'ip' => $event->metadata->ip,
+                'user_agent' => $event->metadata->userAgent,
+                'timestamp' => CarbonImmutable::createFromTimestamp($event->metadata->timestamp)->toIso8601String(),
+            ]
+        );
     }
 }

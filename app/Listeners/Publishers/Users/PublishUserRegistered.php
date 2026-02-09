@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Logs\Users;
+namespace App\Listeners\Publishers\Users;
 
 use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserRegistered implements ShouldQueue
+final class PublishUserRegistered implements ShouldQueue
 {
-    public string $queue = 'low';
+    public int $tries = 5;
 
-    public int $tries = 3;
+    public array $backoff = [10, 30, 60];
 
     public function __construct(
         private readonly LoggerInterface $logger
@@ -21,9 +21,10 @@ final class LogUserRegistered implements ShouldQueue
     public function handle(UserRegistered $event): void
     {
         $this->logger->info(
-            message: 'audit: user registered',
+            message: 'broker: UserRegistered event',
             context: [
                 'user_id' => $event->user->id,
+                'source' => 'public_registration',
             ]
         );
     }

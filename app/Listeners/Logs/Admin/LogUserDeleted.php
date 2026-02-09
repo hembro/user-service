@@ -20,9 +20,12 @@ final class LogUserDeleted implements ShouldQueue
 
     public function handle(UserDeleted $event): void
     {
-        $this->logger->info('audit: admin deleted user', [
-            'user_id' => $event->userId,
-            'admin_id' => $event->admin->id,
-        ]);
+        $this->logger->info(
+            message: 'audit: admin deleted user',
+            context: [
+                'user_id' => $event->userId,
+                'admin_id' => $event->admin->id,
+            ]
+        );
     }
 }

@@ -52,7 +52,7 @@ final readonly class UpdateProfileDTO
         );
     }
 
-    public function toAttributes(): array
+    public function toProfileAttributes(): array
     {
         return [
             'title' => $this->title,

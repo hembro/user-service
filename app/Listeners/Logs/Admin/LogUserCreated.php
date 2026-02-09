@@ -20,9 +20,12 @@ final class LogUserCreated implements ShouldQueue
 
     public function handle(UserInvited $event): void
     {
-        $this->logger->info('audit: admin created user', [
-            'target_user_id' => $event->user->id,
-            'admin_id' => $event->admin->id,
-        ]);
+        $this->logger->info(
+            message: 'audit: admin created user',
+            context: [
+                'target_user_id' => $event->user->id,
+                'admin_id' => $event->admin->id,
+            ]
+        );
     }
 }

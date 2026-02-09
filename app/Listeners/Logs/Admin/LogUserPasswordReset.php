@@ -16,9 +16,12 @@ final class LogUserPasswordReset implements ShouldQueue
 
     public function handle(UserPasswordReset $event): void
     {
-        $this->logger->info('audit: admin reset user password', [
-            'user_id' => $event->user->id,
-            'admin_id' => $event->admin->id,
-        ]);
+        $this->logger->info(
+            message: 'audit: admin reset user password',
+            context: [
+                'user_id' => $event->user->id,
+                'admin_id' => $event->admin->id,
+            ]
+        );
     }
 }

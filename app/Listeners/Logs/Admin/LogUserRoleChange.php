@@ -20,11 +20,14 @@ final class LogUserRoleChange implements ShouldQueue
 
     public function handle(UserRoleUpdated $event): void
     {
-        $this->logger->info('audit: admin updated user role', [
-            'user_id' => $event->user->id,
-            'admin_id' => $event->admin->id,
-            'old_roles' => $event->oldRoles,
-            'new_roles' => $event->newRoles,
-        ]);
+        $this->logger->info(
+            message: 'audit: admin updated user role',
+            context: [
+                'user_id' => $event->user->id,
+                'admin_id' => $event->admin->id,
+                'old_roles' => $event->oldRoles,
+                'new_roles' => $event->newRoles,
+            ]
+        );
     }
 }

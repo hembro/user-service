@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners\Publishers\Admin;
 
 use App\Events\Admin\UserInvited;
-use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserCreated implements ShouldQueue
+final class PublishUserInvited implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -19,9 +18,9 @@ final class PublishUserCreated implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserInvited|UserRegistered $event): void
+    public function handle(UserInvited $event): void
     {
-        $this->logger->info('broker: UserCreated event', [
+        $this->logger->info('broker: UserInvited event', [
             'user_id' => $event->user->id,
         ]);
     }

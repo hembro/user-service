@@ -23,7 +23,7 @@ final readonly class UpdateProfile
                 $profile = $user->profile;
 
                 $profile->fill(
-                    attributes: $dto->toAttributes()
+                    attributes: $dto->toProfileAttributes()
                 );
 
                 $changes = [];

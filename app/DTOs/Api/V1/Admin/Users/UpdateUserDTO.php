@@ -59,7 +59,7 @@ final readonly class UpdateUserDTO
         );
     }
 
-    public function toAttributes(): array
+    public function toProfileAttributes(): array
     {
         return [
             'title' => $this->title,

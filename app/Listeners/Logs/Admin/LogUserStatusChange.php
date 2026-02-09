@@ -20,11 +20,14 @@ final class LogUserStatusChange implements ShouldQueue
 
     public function handle(UserStatusUpdated $event): void
     {
-        $this->logger->info('audit: admin updated user status', [
-            'user_id' => $event->user->id,
-            'admin_id' => $event->admin->id,
-            'old_status' => $event->oldStatus->value,
-            'new_status' => $event->newStatus->value,
-        ]);
+        $this->logger->info(
+            message: 'audit: admin updated user status',
+            context: [
+                'user_id' => $event->user->id,
+                'admin_id' => $event->admin->id,
+                'old_status' => $event->oldStatus->value,
+                'new_status' => $event->newStatus->value,
+            ]
+        );
     }
 }

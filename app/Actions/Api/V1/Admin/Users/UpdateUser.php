@@ -43,7 +43,7 @@ final readonly class UpdateUser
                 $profile = $user->profile;
 
                 $profile->fill(
-                    attributes: $dto->toAttributes()
+                    attributes: $dto->toProfileAttributes()
                 );
 
                 if ($profile->isDirty()) {

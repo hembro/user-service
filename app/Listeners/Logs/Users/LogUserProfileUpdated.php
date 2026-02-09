@@ -20,9 +20,12 @@ final class LogUserProfileUpdated implements ShouldQueue
 
     public function handle(UserUpdatedProfile $event): void
     {
-        $this->logger->info('audit: user updated profile', [
-            'user_id' => $event->user->id,
-            'changes' => $event->changes,
-        ]);
+        $this->logger->info(
+            message: 'audit: user updated profile',
+            context: [
+                'user_id' => $event->user->id,
+                'changes' => $event->changes,
+            ]
+        );
     }
 }
