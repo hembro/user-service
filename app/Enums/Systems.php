@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Traits\EnumOptions;
+
 enum Systems: string
 {
+    use EnumOptions;
+
     case PMS = 'pms';
     case HERDIN = 'herdin';
     case PHRR = 'phrr';

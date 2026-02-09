@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Traits\EnumOptions;
+
 enum Suffix: string
 {
+    use EnumOptions;
+
     case JR = 'Jr.';
     case SR = 'Sr.';
     case III = 'III';

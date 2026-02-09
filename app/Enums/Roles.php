@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Traits\EnumOptions;
 use InvalidArgumentException;
 
 enum Roles: string
 {
+    use EnumOptions;
+
     case PMS_ADMIN = 'pms.admin';
     case PMS_DIVISION_ADMIN = 'pms.division-admin';
     case PMS_DIVISION_CHIEF = 'pms.division-chief';
@@ -113,7 +116,6 @@ enum Roles: string
             str_starts_with($this->value, 'pms.') => Systems::PMS,
             str_starts_with($this->value, 'herdin.') => Systems::HERDIN,
             str_starts_with($this->value, 'phrr.') => Systems::PHRR,
-            default => Systems::UNKNOWN_SOURCE,
         };
     }
 }

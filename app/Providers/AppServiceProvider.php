@@ -96,6 +96,10 @@ final class AppServiceProvider extends ServiceProvider
 
     private function configureRateLimiting(bool $isProduction): void
     {
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
         RateLimiter::for('auth.login', function (Request $request) use ($isProduction) {
             return Limit::perMinute($isProduction ? 5 : 100)->by($request->input('email') ?? $request->ip());
         });

@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Traits\EnumOptions;
+
 /**
  * Definition of all permissions for the user-service
  */
 enum Permissions: string
 {
+    use EnumOptions;
+
     // ==========================
     // USER PROFILE: MANAGEMENT
     // ==========================
