@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace App\Listeners\Publishers;
 
 use App\Events\Admin\UserUpdated;
-use App\Events\UserUpdatedProfile;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
+use App\Events\Users\UserUpdatedProfile;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class PublishUserUpdated implements ShouldQueue
 {
     public int $tries = 5;
 

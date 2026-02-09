@@ -21,11 +21,7 @@ final class UserPolicy
 
     public function view(User $actor, User $target): bool
     {
-        if ($actor->id === $target->id) {
-            return true;
-        }
-
-        return $this->hasAdminAccess($actor, $target);
+        return $actor->id === $target->id || $this->canManageUsersInCommonSystem($actor, $target);
     }
 
     public function create(User $actor): bool
@@ -35,11 +31,7 @@ final class UserPolicy
 
     public function update(User $actor, User $target): bool
     {
-        if ($actor->id === $target->id) {
-            return true;
-        }
-
-        return $this->hasAdminAccess($actor, $target);
+        return $actor->id === $target->id || $this->canManageUsersInCommonSystem($actor, $target);
     }
 
     public function delete(User $actor, User $target): bool
@@ -48,37 +40,42 @@ final class UserPolicy
             return false;
         }
 
-        return $this->hasAdminAccess($actor, $target);
+        return $this->canManageUsersInCommonSystem($actor, $target);
     }
 
     public function updateRole(User $actor, User $target): bool
     {
-        return $this->hasAdminAccess($actor, $target);
+        return $this->canManageRolesInCommonSystem($actor, $target);
     }
 
     public function updateStatus(User $actor, User $target): bool
     {
-        return $this->hasAdminAccess($actor, $target);
+        return $this->canManageRolesInCommonSystem($actor, $target);
     }
 
     public function resetPassword(User $actor, User $target): bool
     {
-        return $this->hasAdminAccess($actor, $target);
+        return $this->canManageUsersInCommonSystem($actor, $target);
     }
 
-    private function hasAdminAccess(User $actor, User $target): bool
+    private function canManageUsersInCommonSystem(User $actor, User $target): bool
     {
         foreach (Systems::cases() as $system) {
-
             if ($actor->belongsToSystem($system) && $target->belongsToSystem($system)) {
+                if ($actor->hasPermissionTo($system->getUserManagementPermission())) {
+                    return true;
+                }
+            }
+        }
 
-                $requiredPermission = match ($system) {
-                    Systems::PMS => Permissions::PMS_USER_MANAGE_ALL,
-                    Systems::HERDIN => Permissions::HERDIN_USER_MANAGE_ALL,
-                    Systems::PHRR => Permissions::PHRR_USER_MANAGE_ALL,
-                };
+        return false;
+    }
 
-                if ($actor->hasPermissionTo($requiredPermission)) {
+    private function canManageRolesInCommonSystem(User $actor, User $target): bool
+    {
+        foreach (Systems::cases() as $system) {
+            if ($actor->belongsToSystem($system) && $target->belongsToSystem($system)) {
+                if ($actor->hasPermissionTo($system->getRoleManagementPermission())) {
                     return true;
                 }
             }

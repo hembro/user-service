@@ -23,8 +23,12 @@ final readonly class RegisterUser
         return $this->db->transaction(
             callback: function () use ($dto): User {
 
-                /** @var User $user */
-                $user = User::create([
+                $this->logger->debug(
+                    message: 'user registration initiated',
+                    context: ['email' => $dto->email]
+                );
+
+                $user = User::query()->create([
                     'email' => $dto->email,
                     'password' => $dto->password,
                     'status' => UserStatus::PENDING,
@@ -43,14 +47,11 @@ final readonly class RegisterUser
 
                 $user->assignRole($dto->system->defaultRole());
 
-                $this->logger->debug(
-                    message: 'user registration initiated',
-                    context: ['email' => $dto->email]
+                $this->db->afterCommit(
+                    fn () => UserRegistered::dispatch($user)
                 );
 
-                UserRegistered::dispatch($user);
-
-                return $user->load(['profile', 'roles', 'permissions']);
+                return $user->load(['profile', 'roles.permissions', 'permissions']);
             }
         );
     }

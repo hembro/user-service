@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Admin\Users;
 
 use App\Enums\UserStatus;
-use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
+use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 use Illuminate\Validation\Rule;
 
-final class IndexRequest extends BaseAdminRequest
+final class IndexRequest extends AdminBaseRequest
 {
     public function rules(): array
     {
@@ -19,7 +19,6 @@ final class IndexRequest extends BaseAdminRequest
             'role' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', Rule::enum(UserStatus::class)],
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
-            'system' => $this->systemRules(),
         ];
     }
 }

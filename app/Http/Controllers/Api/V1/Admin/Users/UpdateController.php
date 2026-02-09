@@ -7,11 +7,9 @@ namespace App\Http\Controllers\Api\V1\Admin\Users;
 use App\Actions\Api\V1\Admin\Users\UpdateUser;
 use App\DTOs\Api\V1\Admin\Users\UpdateUserDTO;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest as AdminUpdateRequest;
-use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Models\User;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 
 final class UpdateController
 {
@@ -23,16 +21,12 @@ final class UpdateController
 
     public function __invoke(AdminUpdateRequest $request, User $user): JsonResponse
     {
-        $updatedUser = $this->action->handle(
+        $this->action->handle(
+            dto: UpdateUserDTO::fromRequest($request),
             user: $user,
-            dto: UpdateUserDTO::fromArray($request->validated()),
             admin: $request->user()
         );
 
-        return $this->success(
-            data: new UserResource($updatedUser),
-            message: 'User updated successfully',
-            code: Response::HTTP_OK
-        );
+        return $this->noContent();
     }
 }

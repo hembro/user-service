@@ -5,74 +5,37 @@ declare(strict_types=1);
 namespace App\Actions\Api\V1\Admin\Users;
 
 use App\DTOs\Api\V1\Admin\Users\UpdateUserDTO;
-use App\Enums\Roles;
 use App\Events\Admin\UserUpdated;
-use App\Models\Role;
 use App\Models\User;
+use App\Notifications\VerifyEmailChangedByAdmin;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Cache;
-use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 
 final readonly class UpdateUser
 {
     public function __construct(
         private DatabaseManager $db,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {}
 
-    public function handle(User $user, UpdateUserDTO $dto, User $admin): User
+    public function handle(UpdateUserDTO $dto, User $user, User $admin): void
     {
-        /** @var Roles $roleEnum */
-        foreach ($dto->roles as $roleEnum) {
-            if ($roleEnum->system() !== $dto->system) {
-                throw new InvalidArgumentException(
-                    message: "Security Violation: Role '{$roleEnum->value}' does not belong to system '{$dto->system->value}'."
-                );
-            }
-        }
-
-        return $this->db->transaction(
-            callback: function () use ($user, $dto, $admin) {
+        $this->db->transaction(
+            callback: function () use ($user, $dto, $admin): void {
 
                 $changes = [];
-
-                // 1. Get all the current roles of the user for the current system
-                $currentSystemRoles = $user->roles
-                    ->filter(fn (Role $roleModel) => Roles::tryFrom($roleModel->name)?->system() === $dto->system);
-
-                // 2. Determine the new roles
-                $newRoleNames = array_map(fn (Roles $enum) => $enum->value, $dto->roles);
-
-                // 3. Check for Changes
-                $oldNames = $currentSystemRoles->pluck('name')->sort()->values()->all();
-                $sortedNewNames = collect($newRoleNames)->sort()->values()->all();
-
-                if ($oldNames !== $sortedNewNames) {
-
-                    if ($currentSystemRoles->isNotEmpty()) {
-                        $user->removeRole($currentSystemRoles);
-                    }
-
-                    $user->assignRole($dto->roles);
-
-                    $changes['roles'] = [
-                        'old' => implode(', ', $oldNames),
-                        'new' => implode(', ', $sortedNewNames),
-                    ];
-                }
 
                 $user->fill([
                     'email' => $dto->email,
                 ]);
 
-                if ($user->isDirty()) {
-                    foreach ($user->getDirty() as $key => $value) {
-                        $changes[$key] = [
-                            'old' => $user->getOriginal($key),
-                            'new' => $value,
-                        ];
-                    }
+                if ($user->isDirty('email')) {
+                    $user->email_verified_at = null;
+
+                    $changes['email'] = [
+                        'old' => $user->getOriginal('email'),
+                        'new' => $dto->email,
+                    ];
 
                     $user->save();
                 }
@@ -101,11 +64,17 @@ final readonly class UpdateUser
                     $profile->save();
                 }
 
+                if ($user->wasChanged('email')) {
+                    $this->db->afterCommit(
+                        fn () => $user->notify(
+                            instance: new VerifyEmailChangedByAdmin(
+                                adminName: $admin->profile?->full_name ?? 'Administrator'
+                            )
+                        )
+                    );
+                }
+
                 if (! empty($changes)) {
-                    Cache::tags([
-                        'users_index',
-                        "users_index.{$dto->system->value}",
-                    ])->flush();
 
                     $this->logger->info('admin user update initiated', [
                         'admin_id' => $admin->id,
@@ -113,10 +82,10 @@ final readonly class UpdateUser
                         'changes_count' => count($changes),
                     ]);
 
-                    UserUpdated::dispatch($admin, $user, $changes);
+                    $this->db->afterCommit(
+                        fn () => UserUpdated::dispatch($admin, $user, $changes)
+                    );
                 }
-
-                return $user->refresh();
             }
         );
     }

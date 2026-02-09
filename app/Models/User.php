@@ -7,9 +7,10 @@ namespace App\Models;
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Notifications\VerifyEmailQueued;
+use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -30,6 +31,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read CarbonInterface $updated_at
  * @property-read UserProfile $profile
  */
+#[ObservedBy([UserObserver::class])]
 final class User extends Authenticatable implements MustVerifyEmail, OAuthenticatable
 {
     use HasApiTokens;
@@ -64,11 +66,6 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
             foreignKey: 'user_id',
             localKey: 'id',
         );
-    }
-
-    public function sendEmailVerificationNotification(): void
-    {
-        $this->notify(new VerifyEmailQueued);
     }
 
     public function belongsToSystem(Systems $system): bool

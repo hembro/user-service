@@ -39,10 +39,6 @@ trait HasApiResponse
     protected function noContent(): JsonResponse
     {
         return new JsonResponse(
-            data: [
-                'success' => true,
-                'code' => Response::HTTP_NO_CONTENT,
-            ],
             status: Response::HTTP_NO_CONTENT
         );
     }

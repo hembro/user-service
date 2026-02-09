@@ -6,11 +6,10 @@ namespace App\Listeners\Publishers;
 
 use App\Events\Admin\UserInvited;
 use App\Events\Users\UserRegistered;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserCreated implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class PublishUserCreated implements ShouldQueue
 {
     public int $tries = 5;
 

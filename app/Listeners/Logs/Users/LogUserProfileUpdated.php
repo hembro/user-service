@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs\Users;
 
-use App\Events\UserUpdatedProfile;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
+use App\Events\Users\UserUpdatedProfile;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserProfileUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogUserProfileUpdated implements ShouldQueue
 {
     public string $queue = 'low';
 

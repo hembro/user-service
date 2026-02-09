@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DTOs\Api\V1\Admin\Users;
 
 use App\Enums\Systems;
-use Illuminate\Http\Request;
+use App\Http\Requests\Api\V1\Admin\Users\IndexRequest;
 
 final readonly class IndexUserDTO
 {
@@ -19,10 +19,10 @@ final readonly class IndexUserDTO
         public ?string $sort
     ) {}
 
-    public static function fromRequest(Request $request): self
+    public static function fromRequest(IndexRequest $request): self
     {
         return new self(
-            system: Systems::from($request->validated('system')),
+            system: $request->attributes->get('system'),
             page: $request->integer('page', 1),
             perPage: $request->integer('per_page', 10),
             search: $request->query('search'),
@@ -32,21 +32,16 @@ final readonly class IndexUserDTO
         );
     }
 
-    public function toArray(): array
+    public static function fromArray(array $data): self
     {
-        return [
-            'sys' => $this->system->value,
-            'pg' => $this->page,
-            'pp' => $this->perPage,
-            'q' => $this->search,
-            'role' => $this->role,
-            'st' => $this->status,
-            'srt' => $this->sort,
-        ];
-    }
-
-    public function generateCacheKey(): string
-    {
-        return md5(json_encode($this->toArray()));
+        return new self(
+            system: Systems::from($data['system']),
+            page: $data['page'] ?? null,
+            perPage: $data['per_page'] ?? null,
+            search: $data['search'] ?? null,
+            role: $data['role'] ?? null,
+            status: $data['status'] ?? null,
+            sort: $data['sort'] ?? null,
+        );
     }
 }

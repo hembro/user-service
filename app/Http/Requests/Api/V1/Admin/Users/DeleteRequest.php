@@ -4,14 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Users;
 
-use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
+use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 
-final class DeleteRequest extends BaseAdminRequest
-{
-    public function rules(): array
-    {
-        return [
-            'system' => $this->systemRules(),
-        ];
-    }
-}
+final class DeleteRequest extends AdminBaseRequest {}

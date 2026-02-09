@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners\Publishers;
 
 use App\Events\Admin\UserDeleted;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserDeleted implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class PublishUserDeleted implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -22,7 +21,7 @@ final class PublishUserDeleted implements ShouldHandleEventsAfterCommit, ShouldQ
     public function handle(UserDeleted $event): void
     {
         $this->logger->info('broker: UserDeleted event', [
-            'user_email' => $event->userEmail,
+            'user_id' => $event->userId,
         ]);
     }
 }

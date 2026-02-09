@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace App\Listeners\Notifications;
 
 use App\Events\Users\UserRegistered;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use App\Notifications\VerifyEmail;
 
-final class SendVerificationNotification implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class SendVerificationNotification
 {
-    public string $queue = 'high';
-
-    public int $tries = 3;
-
     public function handle(UserRegistered $event): void
     {
-        $event->user->sendEmailVerificationNotification();
+        $event->user->notify(
+            instance: new VerifyEmail
+        );
     }
 }

@@ -8,12 +8,12 @@ use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Titles;
-use App\Http\Requests\Api\V1\Admin\BaseAdminRequest;
+use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 use App\Rules\EnsureRoleBelongsToSystem;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-final class StoreRequest extends BaseAdminRequest
+final class StoreRequest extends AdminBaseRequest
 {
     public function rules(): array
     {
@@ -30,7 +30,6 @@ final class StoreRequest extends BaseAdminRequest
             'preferences' => ['nullable', 'array'],
             'roles' => ['required', 'array'],
             'roles.*' => ['required', Rule::enum(Roles::class), new EnsureRoleBelongsToSystem($this->input('system'))],
-            'system' => $this->systemRules(),
         ];
     }
 }

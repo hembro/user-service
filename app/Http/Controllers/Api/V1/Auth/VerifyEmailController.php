@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Api\V1\Auth\VerifyEmail;
 use App\Models\User;
+use App\Notifications\VerifyEmail as VerifyEmailNotification;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,9 @@ final class VerifyEmailController
             );
         }
 
-        $user->sendEmailVerificationNotification();
+        $user->notify(
+            instance: new VerifyEmailNotification
+        );
 
         return $this->success(
             code: Response::HTTP_ACCEPTED

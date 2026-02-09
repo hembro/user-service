@@ -19,18 +19,31 @@ final class UserResource extends JsonResource
             'status' => $this->resource->status,
             'email' => $this->resource->email,
 
-            'full_name' => $this->resource->profile?->full_name,
-            'title' => $this->resource->profile?->title,
-            'first_name' => $this->resource->profile?->first_name,
-            'middle_name' => $this->resource->profile?->middle_name,
-            'last_name' => $this->resource->profile?->last_name,
-            'suffix' => $this->resource->profile?->suffix,
-            'sex' => $this->resource->profile?->sex,
-            'mobile_number' => $this->resource->profile?->mobile_number,
+            $this->mergeWhen($this->resource->relationLoaded('profile'), fn () => [
+                'full_name' => $this->resource->profile?->full_name,
+                'title' => $this->resource->profile?->title,
+                'first_name' => $this->resource->profile?->first_name,
+                'middle_name' => $this->resource->profile?->middle_name,
+                'last_name' => $this->resource->profile?->last_name,
+                'suffix' => $this->resource->profile?->suffix,
+                'sex' => $this->resource->profile?->sex,
+                'mobile_number' => $this->resource->profile?->mobile_number,
+                'preferences' => $this->resource->profile?->preferences,
+            ]),
 
             'roles' => $this->whenLoaded(
                 relationship: 'roles',
                 value: fn () => $this->roles->pluck('name')
+            ),
+
+            'roles_permissions' => $this->when(
+                condition: $this->resource->relationLoaded('roles') && $this->resource->roles->first()?->relationLoaded('permissions'),
+                value: fn () => $this->resource->roles
+                    ->flatMap(fn ($role) => $role->permissions)
+                    ->pluck('name')
+                    ->unique()
+                    ->values()
+                    ->all()
             ),
 
             'direct_permissions' => $this->whenLoaded(
@@ -38,29 +51,7 @@ final class UserResource extends JsonResource
                 value: fn () => $this->permissions->pluck('name')
             ),
 
-            'role_permissions' => $this->when(
-                condition: $this->hasLoadedRolePermissions(),
-                value: fn () => $this->flattenPermissions()
-            ),
-
-            'preferences' => $this->resource->profile?->preferences,
             'created_at' => $this->resource->created_at->toIso8601String(),
         ];
-    }
-
-    private function hasLoadedRolePermissions(): bool
-    {
-        return $this->resource->relationLoaded('roles')
-            && ($this->resource->roles->isEmpty() || $this->resource->roles->first()->relationLoaded('permissions'));
-    }
-
-    private function flattenPermissions(): array
-    {
-        return $this->resource->roles
-            ->flatMap(fn ($role) => $role->permissions)
-            ->pluck('name')
-            ->unique()
-            ->values()
-            ->all();
     }
 }

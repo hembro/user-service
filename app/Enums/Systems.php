@@ -9,7 +9,6 @@ enum Systems: string
     case PMS = 'pms';
     case HERDIN = 'herdin';
     case PHRR = 'phrr';
-    case UNKNOWN_SOURCE = 'unknown_source';
 
     public function defaultRole(): Roles
     {
@@ -18,5 +17,29 @@ enum Systems: string
             self::HERDIN => Roles::HERDIN_USER,
             self::PHRR => Roles::PHRR_USER,
         };
+    }
+
+    public function getUserManagementPermission(): Permissions
+    {
+        return match ($this) {
+            self::PMS => Permissions::PMS_USER_MANAGE_ALL,
+            self::HERDIN => Permissions::HERDIN_USER_MANAGE_ALL,
+            self::PHRR => Permissions::PHRR_USER_MANAGE_ALL,
+        };
+    }
+
+    // Explicit Mapping: Who can promote/ban users?
+    public function getRoleManagementPermission(): Permissions
+    {
+        return match ($this) {
+            self::PMS => Permissions::PMS_ROLE_MANAGE_ALL,
+            self::HERDIN => Permissions::HERDIN_ROLE_MANAGE_ALL,
+            self::PHRR => Permissions::PHRR_ROLE_MANAGE_ALL,
+        };
+    }
+
+    public function uppercase(): string
+    {
+        return mb_strtoupper($this->value);
     }
 }

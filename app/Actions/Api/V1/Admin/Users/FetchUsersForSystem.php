@@ -21,10 +21,14 @@ final readonly class FetchUsersForSystem
 
     public function handle(IndexUserDTO $dto): LengthAwarePaginator
     {
+        if ($this->hasActiveFilters($dto)) {
+            return $this->query($dto)->paginate($dto->perPage);
+        }
+
         return Cache::tags(['users_index', "users_index.{$dto->system->value}"])
             ->remember(
-                key: $dto->generateCacheKey(),
-                ttl: now()->addHour(1),
+                key: "users_index.{$dto->system->value}.page_{$dto->page}",
+                ttl: now()->addMinutes(10),
                 callback: fn () => $this->query($dto)->paginate($dto->perPage)
             );
     }
@@ -32,7 +36,7 @@ final readonly class FetchUsersForSystem
     private function query(IndexUserDTO $dto): Builder
     {
         $query = User::query()
-            ->with(['profile', 'roles'])
+            ->with(['profile', 'roles.permissions', 'permissions'])
             ->role(Roles::forSystem($dto->system, true));
 
         return $this->pipeline->send($query)
@@ -43,5 +47,10 @@ final readonly class FetchUsersForSystem
                 new Users\Sort($dto->sort),
             ])
             ->thenReturn();
+    }
+
+    private function hasActiveFilters(IndexUserDTO $dto): bool
+    {
+        return ! empty($dto->search) || ! empty($dto->role) || ! empty($dto->status) || ! empty($dto->sort);
     }
 }

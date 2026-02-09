@@ -9,6 +9,7 @@ use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
+use App\Http\Requests\Api\V1\Admin\Users\StoreRequest;
 
 final readonly class CreateUserDTO
 {
@@ -27,16 +28,39 @@ final readonly class CreateUserDTO
         public Systems $system
     ) {}
 
+    public static function fromRequest(StoreRequest $request): self
+    {
+        $data = $request->validated();
+
+        return new self(
+            email: $data['email'],
+            password: $data['password'],
+            title: isset($data['title']) ? Titles::from($data['title']) : null,
+            firstName: $data['first_name'],
+            middleName: $data['middle_name'] ?? null,
+            lastName: $data['last_name'],
+            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
+            sex: Sex::from($data['sex']),
+            mobileNumber: $data['mobile_number'] ?? null,
+            preferences: $data['preferences'] ?? [],
+            roles: array_map(
+                fn (string $role) => Roles::from($role),
+                $data['roles']
+            ),
+            system: $request->attributes->get('system'),
+        );
+    }
+
     public static function fromArray(array $data): self
     {
         return new self(
             email: $data['email'],
             password: $data['password'],
-            title: ! empty($data['title']) ? Titles::from($data['title']) : null,
+            title: isset($data['title']) ? Titles::from($data['title']) : null,
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
             lastName: $data['last_name'],
-            suffix: ! empty($data['suffix']) ? Suffix::from($data['suffix']) : null,
+            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],

@@ -25,7 +25,7 @@ final class ShowController
         return $this->success(
             data: new UserResource(
                 resource: $this->action->handle(
-                    dto: ShowUserDTO::fromArray($request->validated()),
+                    dto: ShowUserDTO::fromRequest($request),
                     user: $user
                 )
             ),

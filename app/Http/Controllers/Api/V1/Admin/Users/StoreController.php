@@ -22,7 +22,7 @@ final class StoreController
     public function __invoke(AdminStoreRequest $request)
     {
         $user = $this->action->handle(
-            dto: CreateUserDTO::fromArray($request->validated()),
+            dto: CreateUserDTO::fromRequest($request),
             admin: $request->user()
         );
 

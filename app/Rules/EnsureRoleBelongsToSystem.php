@@ -12,25 +12,19 @@ use Illuminate\Contracts\Validation\ValidationRule;
 final class EnsureRoleBelongsToSystem implements ValidationRule
 {
     public function __construct(
-        private readonly ?string $systemValue
+        private readonly Systems $system
     ) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $system = Systems::tryFrom((string) $this->systemValue);
-
-        if ($system === null) {
-            return;
-        }
-
         $role = Roles::tryFrom((string) $value);
 
         if ($role === null) {
             return;
         }
 
-        if ($role->system() !== $system) {
-            $fail("The selected role is not valid for the `{$system->value}` system.");
+        if ($role->system() !== $this->system) {
+            $fail("The selected role is not valid for the `{$this->system->value}` system.");
         }
     }
 }

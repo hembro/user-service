@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property-read string $id
@@ -48,4 +49,11 @@ final class UserProfile extends Model
         'suffix' => Enums\Suffix::class,
         'preferences' => AsArrayObject::class,
     ];
+
+    protected $touches = ['user'];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 }

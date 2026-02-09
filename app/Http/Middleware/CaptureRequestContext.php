@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\Systems;
+use App\Exceptions\InvalidSystemHeaderException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
@@ -17,13 +18,19 @@ final class CaptureRequestContext
     {
         $traceId = $request->header('X-Trace-ID', Str::uuid()->toString());
 
-        $system = Systems::tryFrom($request->header('X-Source-System', ''));
+        $systemValue = $request->header('X-Source-System');
+
+        if (blank($systemValue) || ! $system = Systems::tryFrom($systemValue)) {
+            throw new InvalidSystemHeaderException();
+        }
 
         Context::add([
             'trace_id' => $traceId,
             'source_system' => $system?->value,
             'user_ip' => $request->ip(),
         ]);
+
+        $request->attributes->set('system', $system);
 
         $response = $next($request);
         $response->headers->set('X-Trace-ID', $traceId);

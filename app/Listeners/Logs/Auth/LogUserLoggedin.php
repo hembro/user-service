@@ -23,7 +23,7 @@ final class LogUserLoggedin implements ShouldQueue
     {
         $occurredAt = CarbonImmutable::createFromTimestamp($event->metadata->timestamp);
 
-        $event->user->updateQuietly(['last_login_at' => $occurredAt]);
+        $event->user->update(['last_login_at' => $occurredAt]);
 
         $this->logger->info('audit: user logged-in', [
             'user_id' => $event->user->id,

@@ -21,7 +21,7 @@ final class UpdateStatusController
     public function __invoke(AdminUpdateStatusRequest $request, User $user)
     {
         $this->action->handle(
-            dto: UpdateUserStatusDTO::fromArray($request->validated()),
+            dto: UpdateUserStatusDTO::fromRequest($request),
             user: $user,
             admin: $request->user()
         );

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use InvalidArgumentException;
+
 enum Roles: string
 {
     case PMS_ADMIN = 'pms.admin';
@@ -48,7 +50,46 @@ enum Roles: string
         }
 
         return $adminRoles;
+    }
 
+    /** @param array<int, Roles> $roles */
+    public static function ensureBelongsToSystem(array $roles, Systems $system): void
+    {
+        foreach ($roles as $role) {
+            if (! str_starts_with($role->value, "{$system->value}.")) {
+                throw new InvalidArgumentException(
+                    "Security Violation: Role '{$role}' does not belong to system '{$system->value}'."
+                );
+            }
+        }
+    }
+
+    public static function getPassportScopes(): array
+    {
+        return collect(self::cases())
+            ->mapWithKeys(fn (Roles $role) => [$role->value => $role->description()])
+            ->toArray();
+    }
+
+    public function description(): ?string
+    {
+        return match ($this) {
+            self::PMS_ADMIN => 'PMS Administrator',
+            self::PMS_DIVISION_ADMIN => 'PMS Division Admin',
+            self::PMS_DIVISION_CHIEF => 'PMS Division Chief',
+            self::PMS_SENIOR_OFFICER => 'PMS Senior Officer',
+            self::PMS_PROJECT_OFFICER => 'PMS Project Officer',
+            self::PMS_PROGRAM_MANAGER => 'PMS Program Manager',
+            self::PMS_PLANNING_OFFICER => 'PMS Planning Officer',
+            self::PMS_RECORDS_OFFICER => 'PMS Records Officer',
+            self::PMS_TECHNICAL_REVIEWER => 'PMS Technical Reviewer',
+            self::PMS_PROPONENT => 'PMS Proponent',
+            self::HERDIN_ADMIN => 'HERDIN Administrator',
+            self::HERDIN_USER => 'HERDIN User',
+            self::PHRR_ADMIN => 'PHRR Administrator',
+            self::PHRR_USER => 'PHRR User',
+            default => null
+        };
     }
 
     public function permissions(): array

@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Listeners\Logs\Admin;
 
 use App\Events\Admin\UserUpdated;
-use Illuminate\Contracts\Events\ShouldHandleEventsAfterCommit;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserUpdated implements ShouldHandleEventsAfterCommit, ShouldQueue
+final class LogUserUpdated implements ShouldQueue
 {
     public string $queue = 'low';
 
