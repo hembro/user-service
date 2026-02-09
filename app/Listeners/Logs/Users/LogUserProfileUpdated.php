@@ -22,6 +22,7 @@ final class LogUserProfileUpdated implements ShouldQueue
     {
         $this->logger->info('audit: user updated profile', [
             'user_id' => $event->user->id,
+            'changes' => $event->changes,
         ]);
     }
 }

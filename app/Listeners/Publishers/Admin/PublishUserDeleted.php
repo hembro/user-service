@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Publishers;
+namespace App\Listeners\Publishers\Admin;
 
 use App\Events\Admin\UserDeleted;
 use Illuminate\Contracts\Queue\ShouldQueue;

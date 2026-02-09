@@ -34,16 +34,9 @@ final readonly class RegisterUser
                     'status' => UserStatus::PENDING,
                 ]);
 
-                $user->profile()->create([
-                    'title' => $dto->title,
-                    'first_name' => $dto->firstName,
-                    'middle_name' => $dto->middleName,
-                    'last_name' => $dto->lastName,
-                    'suffix' => $dto->suffix,
-                    'sex' => $dto->sex,
-                    'mobile_number' => $dto->mobileNumber,
-                    'preferences' => $dto->preferences,
-                ]);
+                $user->profile()->create(
+                    attributes: $dto->toProfileAttributes()
+                );
 
                 $user->assignRole($dto->system->defaultRole());
 

@@ -58,4 +58,18 @@ final readonly class UpdateUserDTO
             system: Systems::from($data['system'])
         );
     }
+
+    public function toAttributes(): array
+    {
+        return [
+            'title' => $this->title,
+            'first_name' => $this->firstName,
+            'middle_name' => $this->middleName,
+            'last_name' => $this->lastName,
+            'suffix' => $this->suffix,
+            'sex' => $this->sex,
+            'mobile_number' => $this->mobileNumber,
+            'preferences' => $this->preferences,
+        ];
+    }
 }

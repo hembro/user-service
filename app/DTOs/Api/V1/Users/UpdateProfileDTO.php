@@ -6,15 +6,12 @@ namespace App\DTOs\Api\V1\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
-use App\Http\Requests\Api\V1\Users\RegisterRequest;
+use App\Http\Requests\Api\V1\Users\UpdateProfileRequest;
 
-final readonly class RegisterUserDTO
+final readonly class UpdateProfileDTO
 {
     public function __construct(
-        public string $email,
-        public string $password,
         public ?Titles $title,
         public string $firstName,
         public ?string $middleName,
@@ -22,17 +19,14 @@ final readonly class RegisterUserDTO
         public ?Suffix $suffix,
         public Sex $sex,
         public ?string $mobileNumber,
-        public array $preferences,
-        public Systems $system
+        public array $preferences
     ) {}
 
-    public static function fromRequest(RegisterRequest $request): self
+    public static function fromRequest(UpdateProfileRequest $request): self
     {
         $data = $request->validated();
 
         return new self(
-            email: $data['email'],
-            password: $data['password'],
             title: isset($data['title']) ? Titles::from($data['title']) : null,
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
@@ -41,15 +35,12 @@ final readonly class RegisterUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            system: $request->attributes->get('system'),
         );
     }
 
     public static function fromArray(array $data): self
     {
         return new self(
-            email: $data['email'],
-            password: $data['password'],
             title: isset($data['title']) ? Titles::from($data['title']) : null,
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
@@ -58,11 +49,10 @@ final readonly class RegisterUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            system: Systems::from($data['system']),
         );
     }
 
-    public function toProfileAttributes(): array
+    public function toAttributes(): array
     {
         return [
             'title' => $this->title,

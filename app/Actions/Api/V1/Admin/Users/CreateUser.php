@@ -38,16 +38,9 @@ final readonly class CreateUser
                     'status' => UserStatus::ACTIVE,
                 ]);
 
-                $user->profile()->create([
-                    'title' => $dto->title,
-                    'first_name' => $dto->firstName,
-                    'last_name' => $dto->lastName,
-                    'middle_name' => $dto->middleName,
-                    'suffix' => $dto->suffix,
-                    'sex' => $dto->sex,
-                    'mobile_number' => $dto->mobileNumber,
-                    'preferences' => $dto->preferences,
-                ]);
+                $user->profile()->create(
+                    attributes: $dto->toProfileAttributes()
+                );
 
                 $user->assignRole($dto->roles);
 

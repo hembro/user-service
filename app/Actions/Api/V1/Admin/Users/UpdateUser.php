@@ -42,16 +42,9 @@ final readonly class UpdateUser
 
                 $profile = $user->profile;
 
-                $profile->fill([
-                    'title' => $dto->title?->value,
-                    'first_name' => $dto->firstName,
-                    'last_name' => $dto->lastName,
-                    'middle_name' => $dto->middleName,
-                    'suffix' => $dto->suffix?->value,
-                    'sex' => $dto->sex->value,
-                    'mobile_number' => $dto->mobileNumber,
-                    'preferences' => $dto->preferences,
-                ]);
+                $profile->fill(
+                    attributes: $dto->toAttributes()
+                );
 
                 if ($profile->isDirty()) {
                     foreach ($profile->getDirty() as $key => $value) {

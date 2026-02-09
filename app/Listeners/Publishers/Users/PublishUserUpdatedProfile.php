@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Publishers;
+namespace App\Listeners\Publishers\Users;
 
-use App\Events\Admin\UserUpdated;
 use App\Events\Users\UserUpdatedProfile;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserUpdated implements ShouldQueue
+final class PublishUserUpdatedProfile implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -19,9 +18,9 @@ final class PublishUserUpdated implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserUpdated|UserUpdatedProfile $event): void
+    public function handle(UserUpdatedProfile $event): void
     {
-        $this->logger->info('broker: UserUpdated event', [
+        $this->logger->info('broker: UserProfileUpdated event', [
             'user_id' => $event->user->id,
         ]);
     }

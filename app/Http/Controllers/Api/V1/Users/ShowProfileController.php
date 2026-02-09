@@ -9,7 +9,7 @@ use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-final class MeController
+final class ShowProfileController
 {
     use HasApiResponse;
 

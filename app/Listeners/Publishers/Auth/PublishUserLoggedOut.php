@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Publishers;
+namespace App\Listeners\Publishers\Auth;
 
-use App\Events\Admin\UserInvited;
-use App\Events\Users\UserRegistered;
+use App\Events\Auth\UserLoggedOut;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserCreated implements ShouldQueue
+final class PublishUserLoggedOut implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -19,9 +18,9 @@ final class PublishUserCreated implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserInvited|UserRegistered $event): void
+    public function handle(UserLoggedOut $event): void
     {
-        $this->logger->info('broker: UserCreated event', [
+        $this->logger->info('broker: UserLoggedOut event', [
             'user_id' => $event->user->id,
         ]);
     }

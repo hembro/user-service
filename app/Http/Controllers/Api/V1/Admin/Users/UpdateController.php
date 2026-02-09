@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Admin\Users;
 use App\Actions\Api\V1\Admin\Users\UpdateUser;
 use App\DTOs\Api\V1\Admin\Users\UpdateUserDTO;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest as AdminUpdateRequest;
+use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Models\User;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -27,6 +28,9 @@ final class UpdateController
             admin: $request->user()
         );
 
-        return $this->noContent();
+        return $this->success(
+            data: new UserResource($user->refresh()->load(['profile', 'roles.permissions', 'permissions'])),
+            message: 'User updated successfully'
+        );
     }
 }

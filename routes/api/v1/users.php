@@ -9,14 +9,14 @@ Route::post('/register', Users\RegisterController::class)
     ->middleware(['guest', 'throttle:auth.register'])
     ->name('register');
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api', 'throttle:auth.api'])->group(function () {
 
-    Route::get('/me', Users\MeController::class)
-        ->name('me');
+    Route::get('/profile', Users\ShowProfileController::class)
+        ->name('profile');
 
-    Route::put('/me', Users\UpdateMyProfileController::class)
-        ->name('me.update');
+    Route::put('/profile', Users\UpdateProfileController::class)
+        ->name('profile.update');
 
-    Route::patch('/me/password', Users\UpdateMyPasswordController::class)
-        ->name('me.password.update');
+    Route::patch('/profile/password', Users\UpdatePasswordController::class)
+        ->name('profile.password.update');
 });

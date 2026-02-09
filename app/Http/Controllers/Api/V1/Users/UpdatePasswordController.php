@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\V1\Users;
 
 use Illuminate\Http\Request;
 
-final class UpdateMyProfileController
+final class UpdatePasswordController
 {
     /**
      * Handle the incoming request.
