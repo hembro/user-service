@@ -20,8 +20,11 @@ final class PublishUserLoggedOut implements ShouldQueue
 
     public function handle(UserLoggedOut $event): void
     {
-        $this->logger->info('broker: UserLoggedOut event', [
-            'user_id' => $event->user->id,
-        ]);
+        $this->logger->info(
+            message: 'broker: UserLoggedOut event',
+            context: [
+                'user_id' => $event->user->id,
+            ]
+        );
     }
 }

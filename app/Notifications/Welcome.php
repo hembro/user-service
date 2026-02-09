@@ -19,8 +19,10 @@ final class Welcome extends Notification implements ShouldQueue
 
     public array $backoff = [10, 60];
 
-    public function __construct(public User $user, public Systems $system)
-    {
+    public function __construct(
+        public readonly User $user,
+        public readonly Systems $system
+    ) {
         $this->queue = 'high';
     }
 
@@ -32,13 +34,13 @@ final class Welcome extends Notification implements ShouldQueue
     /** @param  User $notifiable */
     public function toMail(object $notifiable): MailMessage
     {
-        $system = $this->system->uppercase();
+        $systemName = $this->system->uppercase();
 
         return (new MailMessage)
-            ->subject("Welcome to {$system}")
+            ->subject("Welcome to {$systemName}")
             ->greeting("Hello {$notifiable->profile?->first_name},")
-            ->line("Welcome to {$system}")
+            ->line("Welcome to {$systemName}")
             ->line('We are excited to have you on board.')
-            ->salutation("Best Regards, {$system} Team");
+            ->salutation("Best Regards, {$systemName} Team");
     }
 }

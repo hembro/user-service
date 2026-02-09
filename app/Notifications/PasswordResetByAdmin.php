@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Notifications;
 
+use App\Enums\Systems;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -20,7 +21,8 @@ final class PasswordResetByAdmin extends Notification implements ShouldQueue
     public array $backoff = [10, 60];
 
     public function __construct(
-        public string $adminName
+        public readonly string $adminName,
+        public readonly Systems $system
     ) {}
 
     public function via(object $notifiable): array
@@ -31,6 +33,8 @@ final class PasswordResetByAdmin extends Notification implements ShouldQueue
     /** @param  \App\Models\User $notifiable */
     public function toMail(object $notifiable): MailMessage
     {
+        $systemName = $this->system->uppercase();
+
         return (new MailMessage)
             ->subject('Security Alert: Your password has been reset')
             ->greeting('Hello ' . $notifiable->profile?->first_name . ',')
@@ -38,6 +42,6 @@ final class PasswordResetByAdmin extends Notification implements ShouldQueue
             ->line('All your existing active sessions have been terminated for security purposes.')
             ->line('If you requested this change, you can ignore this email.')
             ->line('If you did NOT request this, please contact the us immediately.')
-            ->salutation('Regards, System Security');
+            ->salutation("Best Regards, {$systemName} Team");
     }
 }

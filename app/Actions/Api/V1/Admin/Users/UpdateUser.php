@@ -61,7 +61,8 @@ final readonly class UpdateUser
                     $this->db->afterCommit(
                         fn () => $user->notify(
                             instance: new VerifyEmailChangedByAdmin(
-                                adminName: $admin->profile?->full_name ?? 'Administrator'
+                                adminName: $admin->profile?->full_name ?? 'Administrator',
+                                system: $dto->system
                             )
                         )
                     );

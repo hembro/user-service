@@ -9,8 +9,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Config;
 
-final class UserInvited extends Notification implements ShouldQueue
+final class ResetPasswordLink extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -19,7 +20,7 @@ final class UserInvited extends Notification implements ShouldQueue
     public array $backoff = [10, 60];
 
     public function __construct(
-        public readonly string $adminName,
+        public readonly string $token,
         public readonly Systems $system
     ) {
         $this->queue = 'high';
@@ -30,16 +31,22 @@ final class UserInvited extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    /** @param  \App\Models\User $notifiable */
     public function toMail(object $notifiable): MailMessage
     {
+        $url = Config::get('app.frontend.url') . '/auth/reset-password?' . http_build_query([
+            'token' => $this->token,
+            'email' => $notifiable->getEmailForPasswordReset(),
+        ]);
+
         $systemName = $this->system->uppercase();
 
         return (new MailMessage)
-            ->subject('You have been invited')
+            ->subject('Reset your password')
             ->greeting('Hello ' . $notifiable->profile?->first_name . ',')
-            ->line("This is a security notification to inform you that you have been invited by an administrator ({$this->adminName}).")
-            ->line('If you did NOT request this, please contact the us immediately.')
+            ->line('You are receiving this email because we received a password reset request for your account.')
+            ->action('Reset Password', $url)
+            ->line('This password reset link will expire in ' . Config::get('auth.passwords.users.expire') . ' minutes.')
+            ->line('If you did not request a password reset, no further action is required.')
             ->salutation("Best Regards, {$systemName} Team");
     }
 }

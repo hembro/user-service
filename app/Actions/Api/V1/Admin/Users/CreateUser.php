@@ -45,7 +45,7 @@ final readonly class CreateUser
                 $user->assignRole($dto->roles);
 
                 $this->db->afterCommit(
-                    fn () => UserInvited::dispatch($user, $admin)
+                    fn () => UserInvited::dispatch($user, $admin, $dto->system)
                 );
 
                 return $user->load(['profile', 'roles', 'permissions']);

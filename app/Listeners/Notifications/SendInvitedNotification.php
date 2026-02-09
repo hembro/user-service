@@ -13,7 +13,8 @@ final class SendInvitedNotification
     {
         $event->user->notify(
             instance: new UserInvitedNotification(
-                adminName: $event->admin->profile?->full_name ?? 'Administrator'
+                adminName: $event->admin->profile?->full_name ?? 'Administrator',
+                system: $event->system
             )
         );
     }

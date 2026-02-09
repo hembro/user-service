@@ -25,7 +25,7 @@ final readonly class ResetPassword
                 $user->tokens()->delete();
 
                 $this->db->afterCommit(
-                    fn () => UserPasswordReset::dispatch($user, $admin)
+                    fn () => UserPasswordReset::dispatch($user, $admin, $dto->system)
                 );
             }
         );

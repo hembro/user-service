@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Admin;
 
+use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -15,6 +16,7 @@ final class UserInvited
 
     public function __construct(
         public User $user,
-        public User $admin
+        public User $admin,
+        public Systems $system
     ) {}
 }

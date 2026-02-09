@@ -17,7 +17,8 @@ final class SendPasswordResetNotification
 
         $event->user->notify(
             new PasswordResetByAdmin(
-                adminName: $event->admin->profile?->full_name ?? 'Administrator'
+                adminName: $event->admin->profile?->full_name ?? 'Administrator',
+                system: $event->system
             )
         );
     }

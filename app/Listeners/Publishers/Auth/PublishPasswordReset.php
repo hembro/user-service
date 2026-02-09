@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Publishers\Users;
+namespace App\Listeners\Publishers\Auth;
 
-use App\Events\Users\UserUpdatedProfile;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserUpdatedProfile implements ShouldQueue
+final class PublishPasswordReset implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -18,12 +18,13 @@ final class PublishUserUpdatedProfile implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserUpdatedProfile $event): void
+    public function handle(PasswordReset $event): void
     {
         $this->logger->info(
-            message: 'broker: UserProfileUpdated event',
+            message: 'broker: PasswordReset event',
             context: [
                 'user_id' => $event->user->id,
+                'source' => 'forgot_password_flow',
             ]
         );
     }
