@@ -40,4 +40,9 @@ Route::middleware([
     Route::post('/{user}/reset-password', Users\ResetPasswordController::class)
         ->can('resetPassword,user')
         ->name('password.reset');
+
+    Route::patch('/{user}/restore', Users\RestoreController::class)
+        ->withTrashed()
+        ->can('restore,user')
+        ->name('restore');
 });

@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Context;
@@ -41,6 +42,7 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     use HasRoles;
     use HasUlids;
     use Notifiable;
+    use SoftDeletes;
 
     protected $fillable = [
         'status',

@@ -16,7 +16,7 @@ final class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email:rfc', 'min:3', 'max:255', 'unique:users'],
+            'email' => ['required', 'min:3', 'max:255', 'email:rfc',  Rule::unique('users')->whereNull('deleted_at')],
             'password' => ['required', 'confirmed', Password::defaults()],
             'title' => ['nullable', 'string', Rule::enum(Titles::class)],
             'first_name' => ['required', 'string', 'min:2', 'max:100'],

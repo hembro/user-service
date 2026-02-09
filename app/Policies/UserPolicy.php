@@ -43,6 +43,11 @@ final class UserPolicy
         return $this->canManageUsersInCommonSystem($actor, $target);
     }
 
+    public function restore(User $actor, User $target): bool
+    {
+        return $this->canManageUsersInCommonSystem($actor, $target);
+    }
+
     public function updateRole(User $actor, User $target): bool
     {
         return $this->canManageRolesInCommonSystem($actor, $target);

@@ -20,19 +20,20 @@ final class LookupsController
 
     public function __invoke(): JsonResponse
     {
-        $data = Cache::rememberForever('api.v1.system.lookups', function () {
+        $data = Cache::rememberForever('api.v1.system.lookups', function (): array {
+
+            $rolesBySystem = [];
+            foreach (Systems::cases() as $system) {
+                $rolesBySystem[$system->value] = Roles::forSystem($system, true);
+            }
+
             return [
                 'titles' => Titles::options(),
                 'suffixes' => Suffix::options(),
                 'sexes' => Sex::options(),
                 'statuses' => UserStatus::options(),
                 'systems' => Systems::options(),
-
-                'roles' => [
-                    'pms' => $this->getRolesFor(Systems::PMS),
-                    'herdin' => $this->getRolesFor(Systems::HERDIN),
-                    'phrr' => $this->getRolesFor(Systems::PHRR),
-                ],
+                'roles' => $rolesBySystem,
             ];
         });
 
@@ -40,13 +41,5 @@ final class LookupsController
             data: $data,
             message: 'System lookups retrieved successfully.'
         );
-    }
-
-    private function getRolesFor(Systems $system): array
-    {
-        return array_map(fn (Roles $role) => [
-            'label' => $role->label(),
-            'value' => $role->value,
-        ], Roles::forSystem($system));
     }
 }

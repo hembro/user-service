@@ -37,7 +37,11 @@ enum Roles: string
             fn (Roles $role) => $role->system() === $system
         );
 
-        return $returnString ? array_map(fn (Roles $role) => $role->value, $roles) : $roles;
+        $result = $returnString
+            ? array_map(fn (Roles $role) => $role->value, $roles)
+            : $roles;
+
+        return array_values($result);
     }
 
     public static function adminRoles(bool $returnString = false): array

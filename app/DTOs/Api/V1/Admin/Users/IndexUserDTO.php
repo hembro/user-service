@@ -16,7 +16,8 @@ final readonly class IndexUserDTO
         public ?string $search,
         public ?string $role,
         public ?string $status,
-        public ?string $sort
+        public ?string $sort,
+        public ?string $trashed
     ) {}
 
     public static function fromRequest(IndexRequest $request): self
@@ -29,6 +30,7 @@ final readonly class IndexUserDTO
             role: $request->query('role'),
             status: $request->query('status'),
             sort: $request->query('sort'),
+            trashed: $request->query('trashed'),
         );
     }
 
@@ -42,6 +44,7 @@ final readonly class IndexUserDTO
             role: $data['role'] ?? null,
             status: $data['status'] ?? null,
             sort: $data['sort'] ?? null,
+            trashed: $data['trashed'] ?? null
         );
     }
 }

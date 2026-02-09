@@ -45,6 +45,7 @@ final readonly class FetchUsersForSystem
                 new Users\FilterByRole($dto->role),
                 new Users\FilterByStatus($dto->status),
                 new Users\Sort($dto->sort),
+                new Users\FilterByTrashed($dto->trashed),
             ])
             ->thenReturn();
     }

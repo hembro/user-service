@@ -19,6 +19,7 @@ final class IndexRequest extends AdminBaseRequest
             'role' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', Rule::enum(UserStatus::class)],
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
+            'trashed' => ['nullable', 'string', 'in:with,only,without'],
         ];
     }
 }
