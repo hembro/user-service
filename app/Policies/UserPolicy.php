@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Enums\Permissions;
+use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Models\User;
 
@@ -12,16 +12,18 @@ final class UserPolicy
 {
     public function viewAny(User $actor): bool
     {
-        return $actor->hasAnyPermission([
-            Permissions::PMS_USER_MANAGE_ALL,
-            Permissions::HERDIN_USER_MANAGE_ALL,
-            Permissions::PHRR_USER_MANAGE_ALL,
-        ]);
+        $permissions = array_map(
+            fn (Systems $system) => $system->getUserManagementPermission(),
+            Systems::cases()
+        );
+
+        return $actor->hasAnyPermission($permissions);
     }
 
     public function view(User $actor, User $target): bool
     {
-        return $actor->id === $target->id || $this->canManageUsersInCommonSystem($actor, $target);
+        return $actor->id === $target->id
+            || $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
     public function create(User $actor): bool
@@ -31,7 +33,8 @@ final class UserPolicy
 
     public function update(User $actor, User $target): bool
     {
-        return $actor->id === $target->id || $this->canManageUsersInCommonSystem($actor, $target);
+        return $actor->id === $target->id
+            || $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
     public function delete(User $actor, User $target): bool
@@ -40,47 +43,60 @@ final class UserPolicy
             return false;
         }
 
-        return $this->canManageUsersInCommonSystem($actor, $target);
+        return $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
     public function restore(User $actor, User $target): bool
     {
-        return $this->canManageUsersInCommonSystem($actor, $target);
+        return $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
     public function updateRole(User $actor, User $target): bool
     {
-        return $this->canManageRolesInCommonSystem($actor, $target);
+        return $this->hasCommonSystemPermission($actor, $target, 'role');
     }
 
     public function updateStatus(User $actor, User $target): bool
     {
-        return $this->canManageRolesInCommonSystem($actor, $target);
+        return $this->hasCommonSystemPermission($actor, $target, 'role');
     }
 
     public function resetPassword(User $actor, User $target): bool
     {
-        return $this->canManageUsersInCommonSystem($actor, $target);
+        return $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
-    private function canManageUsersInCommonSystem(User $actor, User $target): bool
+    public function impersonate(User $actor, User $target): bool
     {
-        foreach (Systems::cases() as $system) {
-            if ($actor->belongsToSystem($system) && $target->belongsToSystem($system)) {
-                if ($actor->hasPermissionTo($system->getUserManagementPermission())) {
-                    return true;
-                }
-            }
+        // 1. You cannot impersonate yourself
+        if ($actor->id === $target->id) {
+            return false;
         }
 
-        return false;
+        // 2. You cannot impersonate another admin (Security Best Practice)
+        if ($target->hasAnyRole(Roles::adminRoles())) {
+            return false;
+        }
+
+        return $this->hasCommonSystemPermission($actor, $target, 'user');
     }
 
-    private function canManageRolesInCommonSystem(User $actor, User $target): bool
+    private function hasCommonSystemPermission(User $actor, User $target, string $type): bool
     {
         foreach (Systems::cases() as $system) {
-            if ($actor->belongsToSystem($system) && $target->belongsToSystem($system)) {
-                if ($actor->hasPermissionTo($system->getRoleManagementPermission())) {
+
+            if (! $actor->belongsToSystem($system)) {
+                continue;
+            }
+
+            if ($target->belongsToSystem($system)) {
+
+                $permission = match ($type) {
+                    'user' => $system->getUserManagementPermission(),
+                    'role' => $system->getRoleManagementPermission(),
+                };
+
+                if ($actor->hasPermissionTo($permission)) {
                     return true;
                 }
             }

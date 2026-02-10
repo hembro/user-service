@@ -45,4 +45,8 @@ Route::middleware([
         ->withTrashed()
         ->can('restore,user')
         ->name('restore');
+
+    Route::post('/{user}/impersonate', Users\ImpersonateController::class)
+        ->can('impersonate,user')
+        ->name('impersonate');
 });

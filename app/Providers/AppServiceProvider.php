@@ -40,9 +40,14 @@ final class AppServiceProvider extends ServiceProvider
 
     private function configurePassport(): void
     {
+        // Enables logging-in with access and refresh tokens.
         Passport::enablePasswordGrant();
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
+
+        // Enables logging-in with PATs for impersonation only.
+        Passport::personalAccessTokensExpireIn(CarbonInterval::minutes(30));
+
         Passport::tokensCan(Roles::getPassportScopes());
     }
 
