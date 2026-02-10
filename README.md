@@ -26,10 +26,19 @@ php artisan passport:keys
 
 ### 2. Create a Password Client
 
-Create a client to handle password grant tokens (required for generating access and refresh tokens):
+Create a client to handle password grant tokens (required for generating access and refresh tokens for standard login):
 
 ```bash
 php artisan passport:client --password
+
+```
+
+### 3. Create a Personal Access Client (Required for Impersonation)
+
+This client is required to issue tokens on behalf of users without their password (e.g., when an Admin uses the **"Login as User"** feature).
+
+```bash
+php artisan passport:client --personal
 
 ```
 
