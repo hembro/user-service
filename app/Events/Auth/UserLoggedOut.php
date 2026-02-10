@@ -15,7 +15,7 @@ final class UserLoggedOut
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user,
-        public RequestMetadata $metadata
+        public readonly User $user,
+        public readonly RequestMetadata $metadata
     ) {}
 }

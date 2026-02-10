@@ -14,7 +14,7 @@ final class UserImpersonated
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $targetUser,
-        public User $admin
+        public readonly User $targetUser,
+        public readonly User $admin
     ) {}
 }

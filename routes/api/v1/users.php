@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Users;
+use App\Http\Controllers\Api\V1\Users\EmailChangeController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', Users\RegisterController::class)
@@ -22,4 +23,10 @@ Route::middleware(['auth:api', 'throttle:auth.api'])->group(function () {
 
     Route::post('/profile/avatar', Users\UpdateAvatarController::class)
         ->name('profile.avatar.update');
+
+    Route::post('/profile/email/request', [EmailChangeController::class, 'request'])
+        ->name('email.change.request');
+
+    Route::post('/profile/email/verify', [EmailChangeController::class, 'verify'])
+        ->name('email.change.verify');
 });

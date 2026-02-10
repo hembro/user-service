@@ -14,7 +14,7 @@ final class UserProfileUpdated
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user,
-        public array $changes
+        public readonly User $user,
+        public readonly array $changes
     ) {}
 }

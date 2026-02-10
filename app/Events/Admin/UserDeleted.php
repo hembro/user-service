@@ -14,7 +14,7 @@ final class UserDeleted
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public string $userId,
-        public User $admin,
+        public readonly string $userId,
+        public readonly User $admin,
     ) {}
 }

@@ -15,8 +15,8 @@ final class UserPasswordReset
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user,
-        public User $admin,
-        public Systems $system
+        public readonly User $user,
+        public readonly User $admin,
+        public readonly Systems $system
     ) {}
 }

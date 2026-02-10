@@ -15,9 +15,9 @@ final class UserStatusUpdated
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user,
-        public User $admin,
-        public UserStatus $oldStatus,
-        public UserStatus $newStatus,
+        public readonly User $user,
+        public readonly User $admin,
+        public readonly UserStatus $oldStatus,
+        public readonly UserStatus $newStatus,
     ) {}
 }

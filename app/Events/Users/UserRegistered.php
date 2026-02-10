@@ -14,6 +14,6 @@ final class UserRegistered
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public User $user
+        public readonly User $user
     ) {}
 }

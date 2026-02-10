@@ -27,6 +27,8 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $id
  * @property-read UserStatus $status
  * @property-read string $email
+ * @property-read string $pending_email
+ * @property-read string $pending_email_token
  * @property-read string $password
  * @property-read CarbonInterface $last_login_at
  * @property-read CarbonInterface $email_verified_at
@@ -50,10 +52,13 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         'password',
         'email_verified_at',
         'last_login_at',
+        'pending_email',
+        'pending_email_token',
     ];
 
     protected $hidden = [
         'password',
+        'pending_email_token',
     ];
 
     protected $casts = [
