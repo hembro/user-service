@@ -19,4 +19,7 @@ Route::middleware(['auth:api', 'throttle:auth.api'])->group(function () {
 
     Route::patch('/profile/password', Users\UpdatePasswordController::class)
         ->name('profile.password.update');
+
+    Route::post('/profile/avatar', Users\UpdateAvatarController::class)
+        ->name('profile.avatar.update');
 });

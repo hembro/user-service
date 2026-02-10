@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Api\V1\Users;
 
 use App\DTOs\Api\V1\Users\UpdateProfileDTO;
-use App\Events\Users\UserUpdatedProfile;
+use App\Events\Users\UserProfileUpdated;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
@@ -38,7 +38,7 @@ final readonly class UpdateProfile
                     $profile->save();
 
                     $this->db->afterCommit(
-                        fn () => UserUpdatedProfile::dispatch($user, $changes)
+                        fn () => UserProfileUpdated::dispatch($user, $changes)
                     );
                 }
             }

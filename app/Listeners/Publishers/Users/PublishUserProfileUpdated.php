@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners\Publishers\Users;
 
-use App\Events\Users\UserUpdatedProfile;
+use App\Events\Users\UserProfileUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class PublishUserUpdatedProfile implements ShouldQueue
+final class PublishUserProfileUpdated implements ShouldQueue
 {
     public int $tries = 5;
 
@@ -18,7 +18,7 @@ final class PublishUserUpdatedProfile implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserUpdatedProfile $event): void
+    public function handle(UserProfileUpdated $event): void
     {
         $this->logger->info(
             message: 'broker: UserProfileUpdated event',

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Listeners\Logs\Users;
 
-use App\Events\Users\UserProfileUpdated;
+use App\Events\Users\UserAvatarUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Psr\Log\LoggerInterface;
 
-final class LogUserProfileUpdated implements ShouldQueue
+final class LogUserAvatarUpdated implements ShouldQueue
 {
     public string $queue = 'low';
 
@@ -18,13 +18,13 @@ final class LogUserProfileUpdated implements ShouldQueue
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(UserProfileUpdated $event): void
+    public function handle(UserAvatarUpdated $event): void
     {
         $this->logger->info(
-            message: 'audit: user updated profile',
+            message: 'audit: user updated avatar',
             context: [
                 'user_id' => $event->user->id,
-                'changes' => $event->changes,
+                'avatar_path' => $event->user->profile->avatar_path,
             ]
         );
     }

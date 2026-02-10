@@ -42,4 +42,15 @@ php artisan passport:client --personal
 
 ```
 
+## 📂 Filesystem Setup
+
+To expose the public disk (for user avatars and public assets) to the web, you must create a symbolic link from `public/storage` to `storage/app/public`.
+
+Run this command:
+
+```bash
+php artisan storage:link
+
+```
+
 ---
