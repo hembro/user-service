@@ -29,7 +29,11 @@ final class StoreRequest extends AdminBaseRequest
             'mobile_number' => ['nullable', 'string', 'min:10', 'max:11'],
             'preferences' => ['nullable', 'array'],
             'roles' => ['required', 'array'],
-            'roles.*' => ['required', Rule::enum(Roles::class), new EnsureRoleBelongsToSystem($this->input('system'))],
+            'roles.*' => [
+                'required',
+                Rule::enum(Roles::class),
+                new EnsureRoleBelongsToSystem($this->attributes->get('system')),
+            ],
         ];
     }
 }
