@@ -18,34 +18,49 @@ use function Pest\Laravel\withHeader;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    // 1. Create a Passport Client to act as our "Frontend"
     $plainSecret = 'my-super-secret-password';
+    $hashedSecret = Hash::make($plainSecret);
 
     $client = Client::forceCreate([
         'name' => 'Test Password Client',
-        'secret' => Hash::make($plainSecret),
+        'secret' => $hashedSecret,
         'provider' => 'users',
         'redirect_uris' => [],
         'grant_types' => ['password', 'refresh_token'],
-        'owner_type' => null,
-        'owner_id' => null,
         'revoked' => false,
     ]);
 
-    Config::set('services.passport.password_client_id', $client->id);
-    Config::set('services.passport.password_client_secret', $plainSecret);
+    // 2. Mock the Config structure expected by AuthService & RevokeSystemTokens
+    // We map ALL systems to this one test client for simplicity
+    Config::set('services.passport.frontend_clients', [
+        'pms' => [
+            'client_id' => $client->id,
+            'client_secret' => $plainSecret,
+        ],
+        'herdin' => [
+            'client_id' => $client->id,
+            'client_secret' => $plainSecret,
+        ],
+        'phrr' => [
+            'client_id' => $client->id,
+            'client_secret' => $plainSecret,
+        ],
+    ]);
 });
 
 describe('Authentication Feature: The Happy Path', function (): void {
 
     it('logs in, receives tokens, and sets cookie', function (): void {
         $password = 'password123';
+        /** @var User $user */
         $user = User::factory()->create([
             'status' => UserStatus::ACTIVE,
-            'password' => $password,
+            'password' => $password, // Factory usually hashes this automatically
         ]);
 
         $response = postJson(
-            uri: route('api.v1.auth.login', false),
+            uri: route('api.v1.auth.login', absolute: false),
             data: [
                 'email' => $user->email,
                 'password' => $password,
@@ -63,7 +78,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                     'expires_in',
                 ],
             ])
-            ->assertCookie('refresh_token');
+            ->assertCookie(config('cookie.refresh_token.name')); // Use config name
     });
 
     it('refreshes token using a valid refresh token cookie', function (): void {
@@ -73,35 +88,27 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
         ]);
 
+        // 1. Login to get the initial Refresh Token Cookie
         $loginResponse = postJson(
-            uri: route('api.v1.auth.login', false),
+            uri: route('api.v1.auth.login', absolute: false),
             data: [
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: [
-                'X-Source-System' => 'pms',
-            ]
+            headers: ['X-Source-System' => 'pms']
         );
 
-        $loginResponse->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'token_type',
-                    'access_token',
-                    'expires_in',
-                ],
-            ]);
-
+        $cookieName = config('cookie.refresh_token.name');
+        $cookieValue = $loginResponse->getCookie($cookieName, false)->getValue();
         $originalAccessToken = $loginResponse->json('data.access_token');
 
-        $cookieValue = $loginResponse->getCookie('refresh_token', false)->getValue();
-
+        // 2. Attempt Refresh
         $response = call(
             method: 'POST',
-            uri: route('api.v1.auth.refresh', false),
-            cookies: ['refresh_token' => $cookieValue],
-            server: ['HTTP_X-Source-System' => 'pms']
+            uri: route('api.v1.auth.refresh', absolute: false),
+            parameters: [],
+            cookies: [$cookieName => $cookieValue],
+            server: ['HTTP_X-Source-System' => 'pms'] // Simulate Header in internal call
         );
 
         $response->assertOk()
@@ -114,7 +121,6 @@ describe('Authentication Feature: The Happy Path', function (): void {
             ]);
 
         $newAccessToken = $response->json('data.access_token');
-
         expect($newAccessToken)->not->toBe($originalAccessToken);
     });
 
@@ -126,27 +132,32 @@ describe('Authentication Feature: The Happy Path', function (): void {
         ]);
 
         $loginResponse = postJson(
-            uri: route('api.v1.auth.login', false),
+            uri: route('api.v1.auth.login', absolute: false),
             data: [
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: [
-                'X-Source-System' => 'pms',
-            ]
+            headers: ['X-Source-System' => 'pms']
         );
 
         $token = $loginResponse->json('data.access_token');
 
+        // Logout requires Authorization header
         $response = withHeader('Authorization', "Bearer $token")
-            ->postJson(route('api.v1.auth.logout'));
+            ->postJson(
+                uri: route('api.v1.auth.logout'),
+                headers: ['X-Source-System' => 'pms']
+            );
 
         $response->assertNoContent()
-            ->assertCookieExpired('refresh_token');
+            ->assertCookieExpired(config('cookie.refresh_token.name'));
     });
 
     it('rejects logout if unauthenticated', function (): void {
-        $response = postJson(route('api.v1.auth.logout'));
+        $response = postJson(
+            uri: route('api.v1.auth.logout', absolute: false),
+            headers: ['X-Source-System' => 'pms']
+        );
 
         $response->assertUnauthorized();
     });
@@ -155,10 +166,14 @@ describe('Authentication Feature: The Happy Path', function (): void {
 describe('Authentication Feature: The Unhappy Path', function (): void {
 
     it('fails the validation with bad inputs', function (): void {
-        $response = postJson(route('api.v1.auth.login'), [
-            'email' => 'not-an-email',
-            'password' => '',
-        ]);
+        $response = postJson(
+            uri: route('api.v1.auth.login', absolute: false),
+            data: [
+                'email' => 'not-an-email',
+                'password' => '',
+            ],
+            headers: ['X-Source-System' => 'pms']
+        );
 
         $response->assertUnprocessable();
     });
@@ -170,14 +185,12 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
         ]);
 
         $response = postJson(
-            uri: route('api.v1.auth.login', false),
+            uri: route('api.v1.auth.login', absolute: false),
             data: [
                 'email' => $user->email,
                 'password' => 'wrong-password',
             ],
-            headers: [
-                'X-Source-System' => 'pms',
-            ]
+            headers: ['X-Source-System' => 'pms']
         );
 
         $response->assertUnauthorized();
@@ -190,28 +203,29 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
         ]);
 
         $response = postJson(
-            uri: route('api.v1.auth.login', false),
+            uri: route('api.v1.auth.login', absolute: false),
             data: [
                 'email' => $user->email,
                 'password' => 'password123',
             ],
-            headers: [
-                'X-Source-System' => 'pms',
-            ]
+            headers: ['X-Source-System' => 'pms']
         );
 
         $response->assertUnauthorized();
     });
 
     it('rejects invalid or tampered refresh tokens', function (): void {
+        $cookieName = config('cookie.refresh_token.name');
+
         $response = call(
             method: 'POST',
             uri: route('api.v1.auth.refresh'),
-            cookies: ['refresh_token' => 'this-is-a-fake-token'],
+            parameters: [],
+            cookies: [$cookieName => 'this-is-a-fake-token'],
             server: ['HTTP_X-Source-System' => 'pms']
         );
 
         $response->assertUnauthorized()
-            ->assertCookieExpired('refresh_token');
+            ->assertCookieExpired($cookieName);
     });
 });
