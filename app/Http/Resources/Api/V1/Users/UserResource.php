@@ -20,6 +20,7 @@ final class UserResource extends JsonResource
             'email' => $this->resource->email,
 
             $this->mergeWhen($this->resource->relationLoaded('profile'), fn () => [
+                'avatar' => $this->resource->profile?->avatarUrl,
                 'full_name' => $this->resource->profile?->full_name,
                 'title' => $this->resource->profile?->title,
                 'first_name' => $this->resource->profile?->first_name,
