@@ -51,7 +51,7 @@ final readonly class HandleSocialLogin
                 'email' => $user->email,
                 'is_new_user' => $user->wasRecentlyCreated,
             ],
-            'tokens' => $tokenDto,
+            'token' => $tokenDto,
         ];
     }
 }

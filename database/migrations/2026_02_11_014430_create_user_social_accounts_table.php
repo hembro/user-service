@@ -11,7 +11,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('user_social_accounts', function (Blueprint $table) {
-            $table->ulid()->primary();
+            $table->ulid('id')->primary();
 
             $table->foreignUlid('user_id')
                 ->constrained(table: 'users', column: 'id')
