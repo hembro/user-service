@@ -39,3 +39,11 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
     Route::post('/reset-password', Auth\ResetPasswordController::class)
         ->name('password.update');
 });
+
+Route::prefix('social/{provider}')
+    ->name('social.')
+    ->middleware(['guest', 'throttle:auth.login'])
+    ->group(function () {
+        Route::get('/redirect', [Auth\SocialAuthController::class, 'redirect'])->name('redirect');
+        Route::post('/callback', [Auth\SocialAuthController::class, 'callback'])->name('callback');
+    });
