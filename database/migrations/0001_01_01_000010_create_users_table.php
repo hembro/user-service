@@ -15,12 +15,17 @@ return new class extends Migration
             $table->ulid('id')->primary();
 
             $table->string('status')->default(UserStatus::PENDING);
+
             $table->string('email')->unique();
+            $table->string('pending_email')->nullable();
+            $table->string('pending_email_token')->nullable();
+
             $table->string('password');
 
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('last_login_at')->nullable();
 
+            $table->softDeletes();
             $table->timestamps();
         });
 

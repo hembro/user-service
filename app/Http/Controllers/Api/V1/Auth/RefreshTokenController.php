@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
+use App\DTOs\Api\V1\Auth\RefreshTokenDTO;
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\AuthCookieService;
@@ -22,10 +23,8 @@ final class RefreshTokenController
 
     public function __invoke(RefreshTokenRequest $request): JsonResponse
     {
-        $refreshToken = $request->cookie('refresh_token') ?? $request->validated('refresh_token', '');
-
         $token = $this->service->refresh(
-            refreshToken: $refreshToken
+            dto: RefreshTokenDTO::fromRequest($request)
         );
 
         return $this->success(

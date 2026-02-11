@@ -13,9 +13,22 @@ return new class extends Migration
         Schema::create('user_profiles', function (Blueprint $table): void {
             $table->ulid('id')->primary();
 
+            $table->string('avatar_path')->nullable();
+
             $table->foreignUlid('user_id')
                 ->constrained(table: 'users', column: 'id')
                 ->cascadeOnDelete();
+
+            $table->string('full_name')
+                ->storedAs("
+                    COALESCE(title || ' ', '') ||
+                    first_name ||
+                    ' ' ||
+                    COALESCE(middle_name || ' ', '') ||
+                    last_name ||
+                    COALESCE(' ' || suffix, '')
+                ")
+                ->index();
 
             $table->string('title')->nullable();
             $table->string('first_name');

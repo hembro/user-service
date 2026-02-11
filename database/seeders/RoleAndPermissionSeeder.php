@@ -8,6 +8,7 @@ use App\Enums\Permissions;
 use App\Enums\Roles;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 final class RoleAndPermissionSeeder extends Seeder
@@ -45,5 +46,7 @@ final class RoleAndPermissionSeeder extends Seeder
                 $roleModel->syncPermissions($permissionNames);
             }
         }
+
+        User::first()?->assignRole(Roles::PMS_ADMIN);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Symfony\Component\HttpFoundation\Response;
 
 trait HasApiResponse
@@ -38,11 +39,23 @@ trait HasApiResponse
     protected function noContent(): JsonResponse
     {
         return new JsonResponse(
-            data: [
-                'success' => true,
-                'code' => Response::HTTP_NO_CONTENT,
-            ],
             status: Response::HTTP_NO_CONTENT
+        );
+    }
+
+    protected function paginated(JsonResource $resource, string $message = 'Success', int $code = 200): JsonResponse
+    {
+        $paginationData = $resource->response()->getData(true);
+
+        $response = array_merge([
+            'success' => true,
+            'code' => $code,
+            'message' => $message,
+        ], $paginationData);
+
+        return new JsonResponse(
+            data: $response,
+            status: $code
         );
     }
 }

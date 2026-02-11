@@ -38,8 +38,22 @@ return [
     ],
 
     'passport' => [
-        'password_client_id' => env('PASSPORT_PASSWORD_CLIENT_ID'),
-        'password_client_secret' => env('PASSPORT_PASSWORD_CLIENT_SECRET'),
+        'frontend_clients' => [
+            'pms' => [
+                'client_id' => env('PASSPORT_PMS_CLIENT_ID'),
+                'client_secret' => env('PASSPORT_PMS_CLIENT_SECRET'),
+            ],
+
+            'herdin' => [
+                'client_id' => env('PASSPORT_HERDIN_CLIENT_ID'),
+                'client_secret' => env('PASSPORT_HERDIN_CLIENT_SECRET'),
+            ],
+
+            'phrr' => [
+                'client_id' => env('PASSPORT_PHRR_CLIENT_ID'),
+                'client_secret' => env('PASSPORT_PHRR_CLIENT_SECRET'),
+            ],
+        ],
     ],
 
 ];

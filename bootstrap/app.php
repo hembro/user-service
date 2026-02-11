@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return new JsonResponse(
                     data: [
-                        'status' => 'error',
+                        'success' => false,
                         'message' => $e->validator->errors()->first(),
                         'code' => 422,
                         'errors' => $e->validator->errors(),

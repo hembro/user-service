@@ -25,7 +25,7 @@ final class LoginController
     public function __invoke(LoginRequest $request): JsonResponse
     {
         $tokenDto = $this->service->login(
-            credentials: LoginCredentials::fromArray($request->validated()),
+            credentials: LoginCredentials::fromRequest($request),
             metadata: RequestMetadata::fromRequest($request)
         );
 
