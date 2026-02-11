@@ -8,6 +8,7 @@ use App\DTOs\Api\V1\Auth\LoginCredentials;
 use App\DTOs\Api\V1\Auth\RefreshTokenDTO;
 use App\DTOs\Api\V1\Auth\TokenDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\Enums\SocialProviders;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
@@ -15,9 +16,7 @@ use App\Events\Auth\UserLoggedOut;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Str;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -79,6 +78,7 @@ final readonly class AuthService
                 system: $dto->system
             );
         } catch (OAuthServerException $e) {
+            $this->logger->error('OAuth Login Failed', ['exception' => $e]);
             throw new InvalidRefreshTokenException(
                 message: 'The refresh token is invalid or has expired.',
                 previous: $e
@@ -101,7 +101,7 @@ final readonly class AuthService
         UserLoggedOut::dispatch($user, $metadata);
     }
 
-    public function socialLogin(User $user, Systems $system, RequestMetadata $metadata): TokenDTO
+    public function socialLogin(User $user, Systems $system, SocialProviders $provider, RequestMetadata $metadata): TokenDTO
     {
         if ($user->status !== UserStatus::ACTIVE) {
             throw new InvalidCredentialsException(
@@ -111,27 +111,21 @@ final readonly class AuthService
 
         $user->loadMissing('roles');
 
-        $secret = Str::random(40);
-        Cache::put("social_login_secret_{$user->id}", $secret, 15);
-
         try {
             $tokenDto = $this->dispatchRequest(
                 payload: [
-                    'grant_type' => 'password',
-                    'username' => $user->email,
-                    'password' => $secret,
+                    'grant_type' => 'social',
+                    'user_id' => $user->id,
+                    'provider' => $provider->value,
+                    'internal_signature' => config('app.key'),
                     'scope' => $user->roles->implode('name', ' '),
                 ],
                 system: $system
             );
         } catch (OAuthServerException $e) {
-            $this->logger->error(
-                message: $e->getMessage(),
-                context: $e->getTrace()
-            );
-
+            $this->logger->error('OAuth Social Grant Failed', ['exception' => $e]);
             throw new InvalidCredentialsException(
-                message: 'Invalid social login credentials.'
+                message: 'Failed to authenticate social credentials.'
             );
         }
 

@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Api\V1\Auth\HandleSocialLogin;
 use App\Enums\SocialProviders;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
+use App\Http\Resources\Api\V1\Auth\AuthUserResource;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -40,7 +41,7 @@ final class SocialAuthController
         return $this->success(
             message: 'Authentication successful.',
             data: [
-                'user' => $data['user'],
+                'user' => new AuthUserResource($data['user']),
                 'token' => new TokenResource($data['token']),
             ]
         );

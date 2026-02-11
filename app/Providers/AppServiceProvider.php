@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\Roles;
+use App\OAuth\Grants\SocialGrant;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
@@ -18,7 +19,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Passport\Bridge\RefreshTokenRepository;
 use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +39,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureModels($isProduction);
         $this->configureEmailVerification();
         $this->configureRateLimiting($isProduction);
+        $this->registerInternalUserGrant();
     }
 
     private function configurePassport(): void
@@ -120,5 +124,21 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth.register', function (Request $request) use ($isProduction) {
             return Limit::perHour($isProduction ? 5 : 100)->by($request->ip());
         });
+    }
+
+    private function registerInternalUserGrant(): void
+    {
+        /** @var AuthorizationServer $server */
+        $server = $this->app->make(AuthorizationServer::class);
+
+        $grant = new SocialGrant(
+            $this->app->make(RefreshTokenRepository::class)
+        );
+        $grant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+        $server->enableGrantType(
+            grantType: $grant,
+            accessTokenTTL: Passport::tokensExpireIn()
+        );
     }
 }

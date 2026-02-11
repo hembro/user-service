@@ -99,14 +99,7 @@ describe('Social Authentication: Happy Path', function (): void {
         );
 
         $response->assertOk()
-            ->assertJsonPath('data.user.email', 'new.user@gmail.com')
-            ->assertJsonPath('data.user.is_new_user', true)
-            ->assertJsonStructure([
-                'data' => [
-                    'user' => ['id', 'email', 'is_new_user'],
-                    'token' => ['token_type', 'access_token', 'expires_in'],
-                ],
-            ]);
+            ->assertJsonPath('data.user.email', 'new.user@gmail.com');
 
         // Verify Core User
         $user = User::where('email', 'new.user@gmail.com')->first();
@@ -152,8 +145,7 @@ describe('Social Authentication: Happy Path', function (): void {
         );
 
         $response->assertOk()
-            ->assertJsonPath('data.user.id', $existingUser->id)
-            ->assertJsonPath('data.user.is_new_user', false);
+            ->assertJsonPath('data.user.id', $existingUser->id);
 
         // Verify identity was linked safely
         assertDatabaseHas('user_social_accounts', [

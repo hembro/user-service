@@ -24,11 +24,6 @@ final readonly class CreateSocialUser
         return $this->db->transaction(
             callback: function () use ($dto, $system) {
 
-                $this->logger->debug(
-                    message: 'social user registration initiated',
-                    context: ['email' => $dto->email]
-                );
-
                 $user = User::query()
                     ->firstOrCreate(
                         attributes: ['email' => $dto->email],
@@ -40,6 +35,12 @@ final readonly class CreateSocialUser
                     );
 
                 if ($user->wasRecentlyCreated) {
+
+                    $this->logger->debug(
+                        message: 'social user registration initiated',
+                        context: ['email' => $dto->email]
+                    );
+
                     $user->profile()->create([
                         'first_name' => $dto->firstName,
                         'last_name' => $dto->lastName,
