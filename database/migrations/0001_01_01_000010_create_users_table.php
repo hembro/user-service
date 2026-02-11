@@ -20,13 +20,13 @@ return new class extends Migration
             $table->string('pending_email')->nullable();
             $table->string('pending_email_token')->nullable();
 
-            $table->string('password');
+            $table->string('password')->nullable();
 
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamp('last_login_at')->nullable();
 
-            $table->softDeletes();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {

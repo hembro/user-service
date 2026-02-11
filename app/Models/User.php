@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Roles;
+use App\Enums\SocialProviders;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Notifications\ResetPasswordLink;
@@ -14,6 +15,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -75,6 +77,22 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
             foreignKey: 'user_id',
             localKey: 'id',
         );
+    }
+
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(
+            related: UserSocialAccount::class,
+            foreignKey: 'user_id',
+            localKey: 'id'
+        );
+    }
+
+    public function hasSocialAccount(SocialProviders $provider): bool
+    {
+        return $this->socialAccounts()
+            ->where('provider_name', $provider->value)
+            ->exists();
     }
 
     public function belongsToSystem(Systems $system): bool
