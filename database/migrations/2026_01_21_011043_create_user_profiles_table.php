@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('user_profiles', function (Blueprint $table): void {
             $table->ulid('id')->primary();
 
-            $table->string('avatar')->nullable();
+            $table->string('avatar_path')->nullable();
 
             $table->foreignUlid('user_id')
                 ->constrained(table: 'users', column: 'id')

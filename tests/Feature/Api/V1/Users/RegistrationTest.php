@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Api\V1;
+namespace Tests\Feature\Api\V1\Users;
 
 use App\Enums\Roles;
 use App\Enums\Systems;

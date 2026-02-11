@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Feature\Api\V1;
+namespace Tests\Feature\Api\V1\Auth;
 
 use App\Enums\UserStatus;
 use App\Models\User;
