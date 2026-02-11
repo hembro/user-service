@@ -15,7 +15,9 @@ use App\Events\Auth\UserLoggedOut;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -101,6 +103,43 @@ final readonly class AuthService
         $accessToken->refreshToken?->revoke();
 
         UserLoggedOut::dispatch($user, $metadata);
+    }
+
+    public function socialLogin(User $user, Systems $system, RequestMetadata $metadata): TokenDTO
+    {
+        if ($user->status !== UserStatus::ACTIVE) {
+            throw new InvalidCredentialsException(
+                message: 'Invalid social login credentials.'
+            );
+        }
+
+        $secret = Str::random(40);
+        Cache::put("social_login_secret_{$user->id}", $secret, 15);
+
+        try {
+            $tokenDto = $this->dispatchRequest(
+                payload: [
+                    'grant_type' => 'password',
+                    'username' => $user->email,
+                    'password' => $secret,
+                    'scope' => $user->roles->implode('name', ' '),
+                ],
+                system: $system
+            );
+        } catch (OAuthServerException $e) {
+            $this->logger->error(
+                message: $e->getMessage(),
+                context: $e->getTrace()
+            );
+
+            throw new InvalidCredentialsException(
+                message: 'Invalid social login credentials.'
+            );
+        }
+
+        UserLoggedIn::dispatch($user, $metadata);
+
+        return $tokenDto;
     }
 
     private function dispatchRequest(array $payload, Systems $system): TokenDTO
