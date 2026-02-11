@@ -11,15 +11,24 @@ final class AuthCookieService
     public function make(string $refreshToken): Cookie
     {
         return cookie(
-            name: config('cookie.refresh_token.name'),
+            name: config('cookie.refresh_token.name', 'refresh_token'),
             value: $refreshToken,
             minutes: config('cookie.refresh_token.minutes'),
             path: config('cookie.refresh_token.path'),
-            domain: null,
-            secure: app()->isProduction(),
+
+            // Allow cross-subdomain transmission (e.g., '.pms.test')
+            domain: config('cookie.refresh_token.domain'),
+
+            // STRICT: True if the request is HTTPS, regardless of environment
+            secure: request()->secure(),
+
+            // STRICT: True to prevent XSS JavaScript theft
             httpOnly: true,
+
             raw: false,
-            sameSite: 'strict'
+
+            // 'lax' allows subdomains. Use 'none' ONLY if frontend and backend are completely different root domains.
+            sameSite: config('cookie.refresh_token.samesite', 'lax')
         );
     }
 
