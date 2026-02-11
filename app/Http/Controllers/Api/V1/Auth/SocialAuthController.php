@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Api\V1\Auth\HandleSocialLogin;
+use App\DTOs\Api\V1\Auth\TokenDTO;
 use App\Enums\SocialProviders;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthUserResource;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
+use App\Services\AuthCookieService;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Laravel\Socialite\Facades\Socialite;
@@ -16,6 +18,10 @@ use Laravel\Socialite\Facades\Socialite;
 final class SocialAuthController
 {
     use HasApiResponse;
+
+    public function __construct(
+        private AuthCookieService $cookie
+    ) {}
 
     public function redirect(SocialProviders $provider): JsonResponse
     {
@@ -38,12 +44,20 @@ final class SocialAuthController
             provider: $provider
         );
 
+        /** @var TokenDTO */
+        $tokenDTO = $data['token'];
+
+        /** @var User */
+        $user = $data['user'];
+
         return $this->success(
             message: 'Authentication successful.',
             data: [
-                'user' => new AuthUserResource($data['user']),
-                'token' => new TokenResource($data['token']),
+                'user' => new AuthUserResource($user),
+                'token' => new TokenResource($tokenDTO),
             ]
+        )->withCookie(
+            cookie: $this->cookie->make($tokenDTO->refreshToken)
         );
     }
 }
