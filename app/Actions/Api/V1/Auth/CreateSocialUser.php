@@ -25,6 +25,7 @@ final readonly class CreateSocialUser
             callback: function () use ($dto, $system) {
 
                 $user = User::query()
+                    ->withTrashed()
                     ->firstOrCreate(
                         attributes: ['email' => $dto->email],
                         values: [

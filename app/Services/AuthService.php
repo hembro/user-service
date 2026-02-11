@@ -134,6 +134,31 @@ final readonly class AuthService
         return $tokenDto;
     }
 
+    public function impersonate(User $admin, User $target, Systems $system): TokenDTO
+    {
+        $target->loadMissing('roles');
+
+        try {
+            $tokenDto = $this->dispatchRequest(
+                payload: [
+                    'grant_type' => 'impersonate',
+                    'target_user_id' => $target->id,
+                    'admin_user_id' => $admin->id,
+                    'internal_signature' => config('app.key'),
+                    'scope' => $target->roles->implode('name', ' '),
+                ],
+                system: $system
+            );
+        } catch (OAuthServerException $e) {
+            $this->logger->error('OAuth Impersonate Grant Failed', ['exception' => $e]);
+            throw new RuntimeException(
+                message: 'Failed to impersonate user'
+            );
+        }
+
+        return $tokenDto;
+    }
+
     private function dispatchRequest(array $payload, Systems $system): TokenDTO
     {
         $clients = Config::get('services.passport.frontend_clients');

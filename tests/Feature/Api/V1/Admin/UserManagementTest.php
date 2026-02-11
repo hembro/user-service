@@ -269,6 +269,8 @@ describe('Admin User Management: The Happy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
+        dump($response->json());
+
         $response->assertOk()
             ->assertJsonStructure(['data' => ['access_token']]);
 
@@ -364,11 +366,11 @@ describe('Admin User Management: The Unhappy Path', function (): void {
 function setUpPassportClient(): void
 {
     \Laravel\Passport\Client::forceCreate([
-        'name' => 'Test Personal Client',
-        'secret' => 'secret',
+        'name' => 'Test Password Client',
+        'secret' => Hash::make('secret'),
         'provider' => 'users',
         'redirect_uris' => [],
-        'grant_types' => ['personal_access'],
+        'grant_types' => ['password', 'refresh_token'],
         'revoked' => false,
     ]);
 }

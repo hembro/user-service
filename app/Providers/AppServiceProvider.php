@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\Roles;
+use App\OAuth\Grants\ImpersonateGrant;
 use App\OAuth\Grants\SocialGrant;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
+use DateInterval;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -39,7 +41,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureModels($isProduction);
         $this->configureEmailVerification();
         $this->configureRateLimiting($isProduction);
-        $this->registerInternalUserGrant();
+        $this->registerCustomGrants();
     }
 
     private function configurePassport(): void
@@ -126,19 +128,30 @@ final class AppServiceProvider extends ServiceProvider
         });
     }
 
-    private function registerInternalUserGrant(): void
+    private function registerCustomGrants(): void
     {
         /** @var AuthorizationServer $server */
         $server = $this->app->make(AuthorizationServer::class);
 
-        $grant = new SocialGrant(
-            $this->app->make(RefreshTokenRepository::class)
-        );
-        $grant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->app->make(RefreshTokenRepository::class);
+
+        // --- 1. Social Grant ---
+        $socialGrant = new SocialGrant($refreshTokenRepository);
+        $socialGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
 
         $server->enableGrantType(
-            grantType: $grant,
+            grantType: $socialGrant,
             accessTokenTTL: Passport::tokensExpireIn()
+        );
+
+        // --- 2. Impersonate Grant ---
+        $impersonateGrant = new ImpersonateGrant($refreshTokenRepository);
+        $impersonateGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+        $server->enableGrantType(
+            grantType: $impersonateGrant,
+            accessTokenTTL: new DateInterval('PT1H')
         );
     }
 }
