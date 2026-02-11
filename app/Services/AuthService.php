@@ -35,6 +35,7 @@ final readonly class AuthService
     public function login(LoginCredentials $credentials, RequestMetadata $metadata): TokenDTO
     {
         $user = User::query()
+            ->with('roles')
             ->where('email', $credentials->email)
             ->first();
 
@@ -55,12 +56,7 @@ final readonly class AuthService
                 system: $credentials->system
             );
         } catch (OAuthServerException $e) {
-
-            $this->logger->error(
-                message: $e->getMessage(),
-                context: $e->getTrace()
-            );
-
+            $this->logger->error('OAuth Login Failed', ['exception' => $e]);
             throw new InvalidCredentialsException(
                 message: 'Invalid credentials.'
             );
@@ -112,6 +108,8 @@ final readonly class AuthService
                 message: 'Invalid social login credentials.'
             );
         }
+
+        $user->loadMissing('roles');
 
         $secret = Str::random(40);
         Cache::put("social_login_secret_{$user->id}", $secret, 15);
@@ -166,7 +164,11 @@ final readonly class AuthService
             response: new Psr7Response()
         );
 
-        $data = json_decode((string) $response->getBody(), true);
+        $data = json_decode(
+            json: (string) $response->getBody(),
+            associative: true,
+            flags: JSON_THROW_ON_ERROR
+        );
 
         return TokenDTO::fromArray($data);
     }
