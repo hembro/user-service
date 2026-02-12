@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Roles;
+use App\Enums\SocialProviders;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Notifications\ResetPasswordLink;
@@ -14,11 +15,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -77,6 +81,22 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         );
     }
 
+    public function socialAccounts(): HasMany
+    {
+        return $this->hasMany(
+            related: UserSocialAccount::class,
+            foreignKey: 'user_id',
+            localKey: 'id'
+        );
+    }
+
+    public function hasSocialAccount(SocialProviders $provider): bool
+    {
+        return $this->socialAccounts()
+            ->where('provider_name', $provider->value)
+            ->exists();
+    }
+
     public function belongsToSystem(Systems $system): bool
     {
         foreach ($this->getRoleNames() as $name) {
@@ -95,5 +115,21 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         $this->notify(
             instance: new ResetPasswordLink($token, $system)
         );
+    }
+
+    /**
+     * Override Passport's default password validation.
+     * This allows us to use a short-lived Cache token for Social Logins,
+     * while keeping standard email/password logins secure.
+     */
+    public function validateForPassportPasswordGrant(string $password): bool
+    {
+        $cacheKey = "social_login_secret_{$this->id}";
+
+        if (Cache::has($cacheKey) && Cache::pull($cacheKey) === $password) {
+            return true;
+        }
+
+        return Hash::check($password, $this->password);
     }
 }

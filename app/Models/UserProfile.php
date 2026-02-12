@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 /**
  * @property-read string $id
  * @property-read string $user_id
- * @property-read string $avatar_path
+ * @property-read string $avatarUrl
  * @property-read Enums\Titles $title
  * @property-read string $first_name
  * @property-read string $middle_name
