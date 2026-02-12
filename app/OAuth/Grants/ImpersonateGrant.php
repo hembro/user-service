@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\OAuth\Grants;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Laravel\Passport\Bridge\User as PassportUser;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\UserEntityInterface;
@@ -35,11 +36,11 @@ final class ImpersonateGrant extends AbstractInternalGrant
         $user = User::query()->find($targetUserId);
 
         if (! $user) {
-            \Illuminate\Support\Facades\Log::error('Impersonate Gate 2 failed', ['id' => $targetUserId]);
+            Log::error('Impersonate Gate 2 failed', ['id' => $targetUserId]);
             throw OAuthServerException::invalidCredentials();
         }
 
-        \Illuminate\Support\Facades\Log::notice('Impersonation session issued', [
+        Log::notice('Impersonation session issued', [
             'admin_id' => $adminUserId,
             'target_id' => $targetUserId,
         ]);
