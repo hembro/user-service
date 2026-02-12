@@ -271,8 +271,6 @@ describe('Admin User Management: The Happy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
-        dump($response->json());
-
         $response->assertOk()
             ->assertJsonStructure(['data' => ['access_token']]);
 

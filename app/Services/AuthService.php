@@ -16,18 +16,15 @@ use App\Events\Auth\UserLoggedOut;
 use App\Exceptions\InvalidCredentialsException;
 use App\Exceptions\InvalidRefreshTokenException;
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
-use League\OAuth2\Server\AuthorizationServer;
+use App\Services\Auth\OAuthTokenBroker;
 use League\OAuth2\Server\Exception\OAuthServerException;
-use Nyholm\Psr7\Response as Psr7Response;
-use Nyholm\Psr7\ServerRequest as Psr7Request;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 final readonly class AuthService
 {
     public function __construct(
-        private AuthorizationServer $server,
+        private OAuthTokenBroker $broker,
         private LoggerInterface $logger
     ) {}
 
@@ -38,27 +35,18 @@ final readonly class AuthService
             ->where('email', $credentials->email)
             ->first();
 
-        if (! $user || $user->status !== UserStatus::ACTIVE) {
-            throw new InvalidCredentialsException(
-                message: 'Invalid credentials.'
-            );
-        }
+        $this->ensureActiveUser($user);
 
         try {
-            $tokenDto = $this->dispatchRequest(
-                payload: [
-                    'grant_type' => 'password',
-                    'username' => $credentials->email,
-                    'password' => $credentials->password,
-                    'scope' => $user->roles->implode('name', ' '),
-                ],
-                system: $credentials->system
-            );
+            $tokenDto = $this->broker->issueToken([
+                'grant_type' => 'password',
+                'username' => $credentials->email,
+                'password' => $credentials->password,
+                'scope' => $this->resolveScopes($user),
+            ], $credentials->system);
         } catch (OAuthServerException $e) {
-            $this->logger->error('OAuth Login Failed', ['exception' => $e]);
-            throw new InvalidCredentialsException(
-                message: 'Invalid credentials.'
-            );
+            $this->logger->error('OAuth Password Login Failed', ['exception' => $e]);
+            throw new InvalidCredentialsException('Invalid credentials.');
         }
 
         UserLoggedIn::dispatch($user, $metadata);
@@ -66,19 +54,57 @@ final readonly class AuthService
         return $tokenDto;
     }
 
+    public function socialLogin(User $user, Systems $system, SocialProviders $provider, RequestMetadata $metadata): TokenDTO
+    {
+        $this->ensureActiveUser($user);
+        $user->loadMissing('roles');
+
+        try {
+            $tokenDto = $this->broker->issueToken([
+                'grant_type' => 'social',
+                'user_id' => $user->id,
+                'provider' => $provider->value,
+                'internal_signature' => config('app.key'),
+                'scope' => $this->resolveScopes($user),
+            ], $system);
+        } catch (OAuthServerException $e) {
+            $this->logger->error('OAuth Social Grant Failed', ['exception' => $e]);
+            throw new InvalidCredentialsException('Failed to authenticate social credentials.');
+        }
+
+        UserLoggedIn::dispatch($user, $metadata);
+
+        return $tokenDto;
+    }
+
+    public function impersonate(User $admin, User $target, Systems $system): TokenDTO
+    {
+        $target->loadMissing('roles');
+
+        try {
+            return $this->broker->issueToken([
+                'grant_type' => 'impersonate',
+                'target_user_id' => $target->id,
+                'admin_user_id' => $admin->id,
+                'internal_signature' => config('app.key'),
+                'scope' => $this->resolveScopes($target),
+            ], $system);
+        } catch (OAuthServerException $e) {
+            $this->logger->error('OAuth Impersonation Failed', ['exception' => $e]);
+            throw new RuntimeException('Failed to impersonate user.');
+        }
+    }
+
     public function refresh(RefreshTokenDTO $dto): TokenDTO
     {
         try {
-            return $this->dispatchRequest(
-                payload: [
-                    'grant_type' => 'refresh_token',
-                    'refresh_token' => $dto->refreshToken,
-                    'scope' => '',
-                ],
-                system: $dto->system
-            );
+            return $this->broker->issueToken([
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $dto->refreshToken,
+                'scope' => '',
+            ], $dto->system);
         } catch (OAuthServerException $e) {
-            $this->logger->error('OAuth Login Failed', ['exception' => $e]);
+            $this->logger->error('OAuth Refresh Failed', ['exception' => $e]);
             throw new InvalidRefreshTokenException(
                 message: 'The refresh token is invalid or has expired.',
                 previous: $e
@@ -101,94 +127,15 @@ final readonly class AuthService
         UserLoggedOut::dispatch($user, $metadata);
     }
 
-    public function socialLogin(User $user, Systems $system, SocialProviders $provider, RequestMetadata $metadata): TokenDTO
+    private function ensureActiveUser(?User $user): void
     {
-        if ($user->status !== UserStatus::ACTIVE) {
-            throw new InvalidCredentialsException(
-                message: 'Invalid social login credentials.'
-            );
+        if (! $user || $user->status !== UserStatus::ACTIVE) {
+            throw new InvalidCredentialsException('Invalid credentials.');
         }
-
-        $user->loadMissing('roles');
-
-        try {
-            $tokenDto = $this->dispatchRequest(
-                payload: [
-                    'grant_type' => 'social',
-                    'user_id' => $user->id,
-                    'provider' => $provider->value,
-                    'internal_signature' => config('app.key'),
-                    'scope' => $user->roles->implode('name', ' '),
-                ],
-                system: $system
-            );
-        } catch (OAuthServerException $e) {
-            $this->logger->error('OAuth Social Grant Failed', ['exception' => $e]);
-            throw new InvalidCredentialsException(
-                message: 'Failed to authenticate social credentials.'
-            );
-        }
-
-        UserLoggedIn::dispatch($user, $metadata);
-
-        return $tokenDto;
     }
 
-    public function impersonate(User $admin, User $target, Systems $system): TokenDTO
+    private function resolveScopes(User $user): string
     {
-        $target->loadMissing('roles');
-
-        try {
-            $tokenDto = $this->dispatchRequest(
-                payload: [
-                    'grant_type' => 'impersonate',
-                    'target_user_id' => $target->id,
-                    'admin_user_id' => $admin->id,
-                    'internal_signature' => config('app.key'),
-                    'scope' => $target->roles->implode('name', ' '),
-                ],
-                system: $system
-            );
-        } catch (OAuthServerException $e) {
-            $this->logger->error('OAuth Impersonate Grant Failed', ['exception' => $e]);
-            throw new RuntimeException(
-                message: 'Failed to impersonate user'
-            );
-        }
-
-        return $tokenDto;
-    }
-
-    private function dispatchRequest(array $payload, Systems $system): TokenDTO
-    {
-        $clients = Config::get('services.passport.frontend_clients');
-        $client = $clients[$system->value] ?? null;
-
-        if (! $client || empty($client['client_id']) || empty($client['client_secret'])) {
-            throw new RuntimeException(
-                message: 'OAuth Password Client credentials are missing from config.'
-            );
-        }
-
-        $payload = array_merge($payload, [
-            'client_id' => $client['client_id'],
-            'client_secret' => $client['client_secret'],
-        ]);
-
-        $request = (new Psr7Request('POST', 'oauth/token'))
-            ->withParsedBody($payload);
-
-        $response = $this->server->respondToAccessTokenRequest(
-            request: $request,
-            response: new Psr7Response()
-        );
-
-        $data = json_decode(
-            json: (string) $response->getBody(),
-            associative: true,
-            flags: JSON_THROW_ON_ERROR
-        );
-
-        return TokenDTO::fromArray($data);
+        return $user->roles->implode('name', ' ');
     }
 }

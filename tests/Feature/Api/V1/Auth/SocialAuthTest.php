@@ -62,7 +62,6 @@ beforeEach(function (): void {
             'client_secret' => $plainSecret,
         ],
     ]);
-
 });
 describe('Social Authentication: Happy Path', function (): void {
 
@@ -201,7 +200,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         )
             ->assertUnauthorized()
-            ->assertJsonPath('message', 'Invalid social login credentials.');
+            ->assertJsonPath('message', 'Invalid credentials.');
     });
 
     it('requires a code payload in the callback request', function (): void {
