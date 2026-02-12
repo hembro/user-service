@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\Roles;
+use App\OAuth\Grants\ImpersonateGrant;
+use App\OAuth\Grants\SocialGrant;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
+use DateInterval;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -18,7 +21,9 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Passport\Bridge\RefreshTokenRepository;
 use Laravel\Passport\Passport;
+use League\OAuth2\Server\AuthorizationServer;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +41,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureModels($isProduction);
         $this->configureEmailVerification();
         $this->configureRateLimiting($isProduction);
+        $this->registerCustomGrants();
     }
 
     private function configurePassport(): void
@@ -120,5 +126,32 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth.register', function (Request $request) use ($isProduction) {
             return Limit::perHour($isProduction ? 5 : 100)->by($request->ip());
         });
+    }
+
+    private function registerCustomGrants(): void
+    {
+        /** @var AuthorizationServer $server */
+        $server = $this->app->make(AuthorizationServer::class);
+
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->app->make(RefreshTokenRepository::class);
+
+        // --- 1. Social Grant ---
+        $socialGrant = new SocialGrant($refreshTokenRepository);
+        $socialGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+        $server->enableGrantType(
+            grantType: $socialGrant,
+            accessTokenTTL: Passport::tokensExpireIn()
+        );
+
+        // --- 2. Impersonate Grant ---
+        $impersonateGrant = new ImpersonateGrant($refreshTokenRepository);
+        $impersonateGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+
+        $server->enableGrantType(
+            grantType: $impersonateGrant,
+            accessTokenTTL: new DateInterval('PT1H')
+        );
     }
 }

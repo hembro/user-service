@@ -42,15 +42,12 @@ final readonly class HandleSocialLogin
         $tokenDto = $this->authService->socialLogin(
             user: $user,
             system: $system,
+            provider: $provider,
             metadata: RequestMetadata::fromRequest($request)
         );
 
         return [
-            'user' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'is_new_user' => $user->wasRecentlyCreated,
-            ],
+            'user' => $user,
             'token' => $tokenDto,
         ];
     }

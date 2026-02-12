@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * @property-read string $id
@@ -64,9 +65,17 @@ final class UserProfile extends Model
     protected function avatarUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->avatar_path
-                ? Storage::disk('public')->url($this->avatar_path)
-                : null,
+            get: function (): ?string {
+                if (empty($this->avatar_path)) {
+                    return null;
+                }
+
+                if (Str::startsWith($this->avatar_path, ['http://', 'https://'])) {
+                    return $this->avatar_path;
+                }
+
+                return Storage::disk('public')->url($this->avatar_path);
+            }
         );
     }
 }

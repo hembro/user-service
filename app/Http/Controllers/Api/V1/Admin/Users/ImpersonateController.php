@@ -24,7 +24,8 @@ final class ImpersonateController
             data: new TokenResource(
                 resource: $this->action->handle(
                     admin: $request->user(),
-                    targetUser: $user
+                    target: $user,
+                    system: $request->attributes->get('system')
                 )
             ),
             message: "Impersonating {$user->email}"
