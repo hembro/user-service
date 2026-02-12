@@ -70,7 +70,7 @@ final readonly class UpdateUser
 
                 if (! empty($changes)) {
 
-                    $this->logger->info('admin user update initiated', [
+                    $this->logger->debug('admin user update initiated', [
                         'admin_id' => $admin->id,
                         'target_user_id' => $user->id,
                         'changes_count' => count($changes),

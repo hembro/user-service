@@ -18,8 +18,10 @@ use App\Events\Admin\UserUpdated;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -365,12 +367,29 @@ describe('Admin User Management: The Unhappy Path', function (): void {
  */
 function setUpPassportClient(): void
 {
-    \Laravel\Passport\Client::forceCreate([
+    $password = 'my-super-secret-password';
+
+    $client = Client::forceCreate([
         'name' => 'Test Password Client',
-        'secret' => Hash::make('secret'),
+        'secret' => Hash::make($password),
         'provider' => 'users',
         'redirect_uris' => [],
         'grant_types' => ['password', 'refresh_token'],
         'revoked' => false,
+    ]);
+
+    Config::set('services.passport.frontend_clients', [
+        'pms' => [
+            'client_id' => $client->id,
+            'client_secret' => $password,
+        ],
+        'herdin' => [
+            'client_id' => $client->id,
+            'client_secret' => $password,
+        ],
+        'phrr' => [
+            'client_id' => $client->id,
+            'client_secret' => $password,
+        ],
     ]);
 }

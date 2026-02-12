@@ -41,8 +41,8 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
 });
 
 Route::prefix('social/{provider}')
-    ->name('social.')
     ->middleware(['guest', 'throttle:auth.login'])
+    ->name('social.')
     ->group(function () {
         Route::get('/redirect', [Auth\SocialAuthController::class, 'redirect'])->name('redirect');
         Route::post('/callback', [Auth\SocialAuthController::class, 'callback'])->name('callback');
