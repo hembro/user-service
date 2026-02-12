@@ -7,9 +7,11 @@ namespace App\OAuth\Grants;
 use DateInterval;
 use Illuminate\Support\Facades\Config;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
+use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use League\OAuth2\Server\Grant\AbstractGrant;
 use League\OAuth2\Server\Repositories\RefreshTokenRepositoryInterface;
+use League\OAuth2\Server\ResponseTypes\ResponseTypeInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 abstract class AbstractInternalGrant extends AbstractGrant
@@ -20,13 +22,13 @@ abstract class AbstractInternalGrant extends AbstractGrant
         $this->refreshTokenTTL = new DateInterval('P1M');
     }
 
-    abstract protected function validateUser(ServerRequestInterface $request, ClientEntityInterface $client): \League\OAuth2\Server\Entities\UserEntityInterface;
+    abstract protected function validateUser(ServerRequestInterface $request, ClientEntityInterface $client): UserEntityInterface;
 
     public function respondToAccessTokenRequest(
         ServerRequestInterface $request,
-        \League\OAuth2\Server\ResponseTypes\ResponseTypeInterface $responseType,
+        ResponseTypeInterface $responseType,
         DateInterval $accessTokenTTL
-    ): \League\OAuth2\Server\ResponseTypes\ResponseTypeInterface {
+    ): ResponseTypeInterface {
 
         $client = $this->validateClient($request);
         $scopes = $this->validateScopes($this->getRequestParameter('scope', $request, $this->defaultScope));
