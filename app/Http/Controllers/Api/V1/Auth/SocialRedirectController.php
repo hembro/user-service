@@ -30,8 +30,8 @@ final class SocialRedirectController
 
         return $this->success(
             data: [
-                'redirect_url' => $url,
                 'provider' => $provider->value,
+                'redirect_url' => $url,
             ]
         );
     }
