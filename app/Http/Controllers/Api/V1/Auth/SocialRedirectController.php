@@ -28,6 +28,11 @@ final class SocialRedirectController
             ),
         );
 
-        return $this->success(data: ['url' => $url]);
+        return $this->success(
+            data: [
+                'redirect_url' => $url,
+                'provider' => $provider->value,
+            ]
+        );
     }
 }

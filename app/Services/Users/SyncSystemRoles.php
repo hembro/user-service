@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Api\V1\Auth;
+namespace App\Services\Users;
 
 use App\Enums\Roles;
 use App\Enums\Systems;

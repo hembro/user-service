@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\LoginCredentials;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\UserStatus;
 use App\Events\Auth\DeviceUsed;
+use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\InvalidCredentialsException;
 use App\Models\User;
 use App\Notifications\VerifyDeviceLogin;
-use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -21,7 +22,7 @@ use Illuminate\Support\Str;
 final readonly class AttemptLogin
 {
     public function __construct(
-        private DeviceTrustService $deviceService,
+        private DeviceTrustVerifier $deviceService,
         private TokenIssuer $tokenIssuer,
     ) {}
 
@@ -29,7 +30,8 @@ final readonly class AttemptLogin
     {
         $user = User::query()
             ->with('roles')
-            ->where('email', $credentials->email)->first();
+            ->where('email', $credentials->email)
+            ->first();
 
         if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($credentials->password, $user->password)) {
             throw new InvalidCredentialsException('Invalid credentials.');
@@ -44,6 +46,7 @@ final readonly class AttemptLogin
         }
 
         DeviceUsed::dispatch($user, $metadata);
+        UserLoggedIn::dispatch($user, $metadata);
 
         return AuthenticationOutcomeDTO::authenticated(
             $this->tokenIssuer->issueFullToken($user, $credentials->system)

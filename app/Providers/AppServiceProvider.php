@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
 use App\OAuth\Grants\SystemVerifiedGrant;
+use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
@@ -29,6 +31,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Passport::ignoreRoutes();
+        $this->bindContracts();
     }
 
     public function boot(): void
@@ -154,5 +157,11 @@ final class AppServiceProvider extends ServiceProvider
                 internalSignature: config('app.key')
             );
         });
+    }
+
+    private function bindContracts(): void
+    {
+        // For testing purposes
+        $this->app->bind(DeviceTrustVerifier::class, DeviceTrustService::class);
     }
 }

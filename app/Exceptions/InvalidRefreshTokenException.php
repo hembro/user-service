@@ -23,7 +23,7 @@ final class InvalidRefreshTokenException extends Exception
             message: $this->getMessage(),
             code: Response::HTTP_UNAUTHORIZED,
         )->withCookie(
-            cookie: $cookieService->forget()
+            cookie: $cookieService->forgetRefreshToken()
         );
     }
 }

@@ -36,7 +36,7 @@ final class VerifyChallengeController
 
         if ($outcome->deviceId) {
             $response->withCookie(
-                cookie: $this->cookie->makeDeviceIdCookie($outcome->deviceId)
+                $this->cookie->makeDeviceIdCookie($outcome->deviceId)
             );
         }
 

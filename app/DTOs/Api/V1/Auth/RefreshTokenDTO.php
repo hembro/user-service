@@ -19,7 +19,7 @@ final readonly class RefreshTokenDTO
         $data = $request->validated();
 
         return new self(
-            refreshToken: $request->cookie('refresh_token') ?? $data('refresh_token', ''),
+            refreshToken: $request->cookie(config('cookie.refresh_token.name')) ?? $data('refresh_token', ''),
             system: $request->attributes->get('system'),
         );
     }
@@ -27,7 +27,7 @@ final readonly class RefreshTokenDTO
     public static function fromArray(array $data): self
     {
         return new self(
-            refreshToken: $data['refresh_token'],
+            refreshToken: $data[config('cookie.refresh_token.name')],
             system: Systems::from($data['system']),
         );
     }

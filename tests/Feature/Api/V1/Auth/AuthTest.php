@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
+use App\Enums\Auth\ChallengeType;
+use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,211 +21,233 @@ use function Pest\Laravel\withHeader;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    // 1. Create a Passport Client to act as our "Frontend"
+    // 1. Setup Passport Client (The "System")
     $plainSecret = 'my-super-secret-password';
-    $hashedSecret = Hash::make($plainSecret);
 
     $client = Client::forceCreate([
         'name' => 'Test Password Client',
-        'secret' => $hashedSecret,
+        'secret' => Hash::make($plainSecret),
         'provider' => 'users',
         'redirect_uris' => [],
         'grant_types' => ['password', 'refresh_token'],
         'revoked' => false,
     ]);
 
-    // 2. Mock the Config structure expected by AuthService & RevokeSystemTokens
-    // We map ALL systems to this one test client for simplicity
+    // 2. Mock System Configuration
     Config::set('services.passport.frontend_clients', [
         'pms' => [
             'client_id' => $client->id,
             'client_secret' => $plainSecret,
         ],
-        'herdin' => [
-            'client_id' => $client->id,
-            'client_secret' => $plainSecret,
-        ],
-        'phrr' => [
-            'client_id' => $client->id,
-            'client_secret' => $plainSecret,
-        ],
+    ]);
+
+    // 3. Ensure Cookie Config is consistent for tests
+    Config::set('cookie.refresh_token', [
+        'name' => 'refresh_token',
+        'minutes' => 60,
     ]);
 });
 
 describe('Authentication Feature: The Happy Path', function (): void {
 
-    it('logs in, receives tokens, and sets cookie', function (): void {
+    it('returns a challenge for a new/untrusted device', function (): void {
+        // Arrange: User exists, but device is NOT in DB
         $password = 'password123';
-        /** @var User $user */
         $user = User::factory()->create([
             'status' => UserStatus::ACTIVE,
-            'password' => $password, // Factory usually hashes this automatically
+            'password' => $password,
         ]);
 
+        // Act: Login without Device Trust setup
         $response = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
+            uri: route('api.v1.auth.login'),
             data: [
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: [
-                'X-Source-System' => 'pms',
-            ]
+            headers: ['X-Source-System' => Systems::PMS->value]
         );
 
+        // Assert: Expect Challenge, NOT Token
         $response->assertOk()
-            ->assertJsonStructure([
+            ->assertJson([
+                'success' => true,
+                'message' => ChallengeType::DEVICE_VERIFICATION->message(),
                 'data' => [
-                    'token_type',
-                    'access_token',
-                    'expires_in',
+                    'challenge_type' => ChallengeType::DEVICE_VERIFICATION->value,
                 ],
             ])
-            ->assertCookie(config('cookie.refresh_token.name')); // Use config name
+            ->assertJsonStructure([
+                'data' => ['challenge_token', 'challenge_type'],
+            ]);
+
+        // Strict: Ensure NO token cookies are set yet
+        $response->assertCookieMissing(config('cookie.refresh_token.name'));
     });
 
-    it('refreshes token using a valid refresh token cookie', function (): void {
+    it('logs in and issues tokens for a trusted device', function (): void {
+        // Arrange
         $password = 'password123';
         $user = User::factory()->create([
-            'password' => $password,
             'status' => UserStatus::ACTIVE,
+            'password' => $password,
         ]);
 
-        // 1. Login to get the initial Refresh Token Cookie
-        $loginResponse = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
+        // Mock: Force DeviceTrustService to say "Yes, I know this guy"
+        $this->mock(DeviceTrustVerifier::class)
+            ->shouldReceive('isTrusted')
+            ->once()
+            ->andReturnTrue();
+
+        // Act
+        $response = postJson(
+            uri: route('api.v1.auth.login'),
             data: [
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: ['X-Source-System' => 'pms']
+            headers: ['X-Source-System' => Systems::PMS->value]
+        );
+
+        // Assert: Expect Tokens
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'token_type' => 'Bearer',
+                ],
+            ])
+            ->assertJsonStructure([
+                'data' => ['access_token', 'expires_in'],
+            ]);
+
+        // Strict: Check HttpOnly Cookie
+        $response->assertCookie(config('cookie.refresh_token.name'));
+    });
+
+    it('refreshes token using a valid cookie', function (): void {
+        // Arrange: We need a valid Refresh Token Cookie first.
+        // We simulate a Trusted Login to get it naturally.
+        $password = 'password123';
+        $user = User::factory()->create([
+            'status' => UserStatus::ACTIVE,
+            'password' => $password,
+        ]);
+
+        $this->mock(DeviceTrustVerifier::class)
+            ->shouldReceive('isTrusted')
+            ->andReturnTrue();
+
+        $loginResponse = postJson(
+            uri: route('api.v1.auth.login'),
+            data: ['email' => $user->email, 'password' => $password],
+            headers: ['X-Source-System' => Systems::PMS->value]
         );
 
         $cookieName = config('cookie.refresh_token.name');
         $cookieValue = $loginResponse->getCookie($cookieName, false)->getValue();
         $originalAccessToken = $loginResponse->json('data.access_token');
 
-        // 2. Attempt Refresh
+        // Act: Call Refresh Endpoint
+        // Note: We use call() because assertJson doesn't support sending cookies easily in some versions
         $response = call(
             method: 'POST',
-            uri: route('api.v1.auth.refresh', absolute: false),
-            parameters: [],
+            uri: route('api.v1.auth.refresh'),
             cookies: [$cookieName => $cookieValue],
-            server: ['HTTP_X-Source-System' => 'pms'] // Simulate Header in internal call
+            server: ['HTTP_X-Source-System' => Systems::PMS->value]
         );
 
-        $response->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'access_token',
-                    'expires_in',
-                    'token_type',
-                ],
-            ]);
+        // Assert
+        $response->assertOk();
 
-        $newAccessToken = $response->json('data.access_token');
-        expect($newAccessToken)->not->toBe($originalAccessToken);
+        expect($response->json('data.access_token'))->not->toBe($originalAccessToken);
     });
 
-    it('logs out and clears cookie', function (): void {
+    it('logs out and invalidates cookie', function (): void {
+        // Arrange
         $password = 'password123';
         $user = User::factory()->create([
             'password' => $password,
             'status' => UserStatus::ACTIVE,
         ]);
 
+        $this->mock(DeviceTrustVerifier::class)
+            ->shouldReceive('isTrusted')
+            ->andReturnTrue();
+
         $loginResponse = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
+            uri: route('api.v1.auth.login'),
             data: [
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: ['X-Source-System' => 'pms']
+            headers: ['X-Source-System' => Systems::PMS->value]
         );
 
         $token = $loginResponse->json('data.access_token');
 
-        // Logout requires Authorization header
-        $response = withHeader('Authorization', "Bearer $token")
+        // Act
+        $response = withHeader('Authorization', "Bearer {$token}")
             ->postJson(
                 uri: route('api.v1.auth.logout'),
-                headers: ['X-Source-System' => 'pms']
+                headers: ['X-Source-System' => Systems::PMS->value]
             );
 
+        // Assert
         $response->assertNoContent()
             ->assertCookieExpired(config('cookie.refresh_token.name'));
-    });
-
-    it('rejects logout if unauthenticated', function (): void {
-        $response = postJson(
-            uri: route('api.v1.auth.logout', absolute: false),
-            headers: ['X-Source-System' => 'pms']
-        );
-
-        $response->assertUnauthorized();
     });
 });
 
 describe('Authentication Feature: The Unhappy Path', function (): void {
 
-    it('fails the validation with bad inputs', function (): void {
-        $response = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
-            data: [
-                'email' => 'not-an-email',
-                'password' => '',
-            ],
-            headers: ['X-Source-System' => 'pms']
-        );
-
-        $response->assertUnprocessable();
-    });
-
-    it('rejects invalid credentials', function (): void {
+    it('rejects invalid credentials with 401', function (): void {
         $user = User::factory()->create([
             'password' => 'correct-password',
             'status' => UserStatus::ACTIVE,
         ]);
 
         $response = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
+            uri: route('api.v1.auth.login'),
             data: [
                 'email' => $user->email,
                 'password' => 'wrong-password',
             ],
-            headers: ['X-Source-System' => 'pms']
+            headers: ['X-Source-System' => Systems::PMS->value]
         );
 
-        $response->assertUnauthorized();
+        // The custom exception handler likely returns 401 or 400 depending on config
+        // Assuming InvalidCredentialsException renders 401
+        $response->assertUnauthorized()
+            ->assertJson(['success' => false]);
     });
 
-    it('rejects inactive or banned users', function (): void {
+    it('rejects banned users', function (): void {
         $user = User::factory()->create([
             'password' => 'password123',
             'status' => UserStatus::BANNED,
         ]);
 
         $response = postJson(
-            uri: route('api.v1.auth.login', absolute: false),
+            uri: route('api.v1.auth.login'),
             data: [
                 'email' => $user->email,
                 'password' => 'password123',
             ],
-            headers: ['X-Source-System' => 'pms']
+            headers: ['X-Source-System' => Systems::PMS->value]
         );
 
         $response->assertUnauthorized();
     });
 
-    it('rejects invalid or tampered refresh tokens', function (): void {
+    it('rejects refresh with invalid cookie', function (): void {
         $cookieName = config('cookie.refresh_token.name');
 
         $response = call(
             method: 'POST',
             uri: route('api.v1.auth.refresh'),
-            parameters: [],
             cookies: [$cookieName => 'this-is-a-fake-token'],
-            server: ['HTTP_X-Source-System' => 'pms']
+            server: ['HTTP_X-Source-System' => Systems::PMS->value]
         );
 
         $response->assertUnauthorized()

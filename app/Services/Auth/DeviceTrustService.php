@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
-final readonly class DeviceTrustService
+final readonly class DeviceTrustService implements DeviceTrustVerifier
 {
     private const CHALLENGE_TTL_SECONDS = 300; // 5 Minutes
 

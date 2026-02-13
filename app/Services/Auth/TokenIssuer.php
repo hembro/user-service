@@ -5,19 +5,15 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\DTOs\Api\V1\Auth\TokenDTO;
-use App\Enums\Auth\ChallengeType;
 use App\Enums\Auth\GrantType;
 use App\Enums\Systems;
 use App\Models\User;
-use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Nyholm\Psr7\Response as Psr7Response;
 use Nyholm\Psr7\ServerRequest as Psr7Request;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 final readonly class TokenIssuer
@@ -42,43 +38,6 @@ final readonly class TokenIssuer
             ],
             scopes: $user->roles->implode('name', ' ')
         );
-    }
-
-    /**
-     * Issues a Stateless, Encrypted Challenge Token.
-     */
-    public function issueChallengeToken(User $user, ChallengeType $type, array $claims = []): string
-    {
-        $payload = array_merge($claims, [
-            'sub' => $user->id,
-            'type' => $type->value,
-            'exp' => now()->addMinutes(5)->timestamp,
-            'scope' => 'auth:challenge',
-        ]);
-
-        return Crypt::encrypt($payload);
-    }
-
-    /**
-     * Decrypts and validates the challenge token.
-     */
-    public function decryptChallengeToken(string $token): array
-    {
-        try {
-            $payload = Crypt::decrypt($token);
-        } catch (DecryptException $e) {
-            throw new RuntimeException('Invalid Challenge Token', Response::HTTP_UNAUTHORIZED);
-        }
-
-        if (! is_array($payload) || ! isset($payload['exp'], $payload['sub'])) {
-            throw new RuntimeException('Malformed Token Payload', Response::HTTP_UNAUTHORIZED);
-        }
-
-        if (now()->timestamp > $payload['exp']) {
-            throw new RuntimeException('Challenge Token Expired', Response::HTTP_UNAUTHORIZED);
-        }
-
-        return $payload;
     }
 
     public function issueRefreshToken(string $refreshToken, Systems $system): TokenDTO
@@ -128,7 +87,7 @@ final readonly class TokenIssuer
                 json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR)
             );
         } catch (OAuthServerException $e) {
-            throw new RuntimeException("OAuth Error: {$e->getErrorType()} - {$e->getMessage()}", 0, $e);
+            throw $e;
         } catch (Throwable $e) {
             throw new RuntimeException('Critical Token Issuance Failure', 0, $e);
         }
