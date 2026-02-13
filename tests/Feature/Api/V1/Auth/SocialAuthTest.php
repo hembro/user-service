@@ -98,7 +98,9 @@ describe('Social Authentication: Happy Path', function (): void {
         );
 
         $response->assertOk()
-            ->assertJsonPath('data.auth_state', 'authenticated');
+            ->assertJsonPath('data.auth_state', 'authenticated')
+            ->assertCookieNotExpired('refresh_token')
+            ->assertCookieNotExpired('device_id');
 
         // Verify Core User
         $user = User::where('email', 'new.user@gmail.com')->first();
