@@ -44,10 +44,11 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
         ->name('password.update');
 });
 
-Route::prefix('social/{provider}')
-    ->middleware(['guest', 'throttle:auth.login'])
-    ->name('social.')
-    ->group(function () {
-        Route::get('/redirect', [Auth\SocialAuthController::class, 'redirect'])->name('redirect');
-        Route::post('/callback', [Auth\SocialAuthController::class, 'callback'])->name('callback');
-    });
+Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
+
+    Route::get('/social/{provider}/redirect', Auth\SocialRedirectController::class)
+        ->name('social.redirect');
+
+    Route::post('social/{provider}/callback', Auth\SocialAuthController::class)
+        ->name('social.callback');
+});

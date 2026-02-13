@@ -16,7 +16,7 @@ final class LogPasswordReset implements ShouldQueue
 
     public function handle(PasswordReset $event): void
     {
-        Log::channel('audit')->info(
+        Log::channel('auth')->info(
             message: 'user reset password (recovery)',
             context: [
                 'user_id' => $event->user->id,

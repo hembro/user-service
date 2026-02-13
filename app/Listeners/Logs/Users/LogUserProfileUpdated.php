@@ -17,7 +17,7 @@ final class LogUserProfileUpdated implements ShouldQueue
     public function handle(UserProfileUpdated $event): void
     {
         Log::channel('audit')->info(
-            message: 'audit: user updated profile',
+            message: 'user updated profile',
             context: [
                 'user_id' => $event->user->id,
                 'changes' => $event->changes,

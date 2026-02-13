@@ -71,7 +71,6 @@ final readonly class DeviceTrustService
         $data = implode('|', [
             $metadata->userAgent,
             $metadata->clientType,
-            // $metadata->ip // Uncomment if you want to invalidate trust on IP change (High Friction)
         ]);
 
         return hash_hmac('sha256', $data, config('app.key'));

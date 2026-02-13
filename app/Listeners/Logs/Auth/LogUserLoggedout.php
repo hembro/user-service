@@ -17,7 +17,7 @@ final class LogUserLoggedout implements ShouldQueue
 
     public function handle(UserLoggedOut $event): void
     {
-        Log::channel('audit')->info(
+        Log::channel('auth')->info(
             message: 'user logged-out',
             context: [
                 'user_id' => $event->user->id,

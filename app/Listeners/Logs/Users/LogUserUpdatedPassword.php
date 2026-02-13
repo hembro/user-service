@@ -17,7 +17,7 @@ final class LogUserUpdatedPassword implements ShouldQueue
     public function handle(UserPasswordUpdated $event): void
     {
         Log::channel('audit')->info(
-            message: 'audit: user updated password',
+            message: 'user updated password',
             context: [
                 'user_id' => $event->user->id,
             ]

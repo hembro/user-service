@@ -17,7 +17,7 @@ final class LogUserRegistered implements ShouldQueue
     public function handle(UserRegistered $event): void
     {
         Log::channel('audit')->info(
-            message: 'audit: user registered',
+            message: 'user registered',
             context: [
                 'user_id' => $event->user->id,
             ]

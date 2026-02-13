@@ -21,7 +21,7 @@ final class LogUserLoggedin implements ShouldQueue
 
         $event->user->update(['last_login_at' => $occurredAt]);
 
-        Log::channel('audit')->info(
+        Log::channel('auth')->info(
             message: 'user logged-in',
             context: [
                 'user_id' => $event->user->id,
