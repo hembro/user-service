@@ -6,14 +6,15 @@ namespace App\Actions\Api\V1\Admin\Auth;
 
 use App\DTOs\Api\V1\Auth\TokenDTO;
 use App\Enums\Systems;
+use App\Events\Admin\UserImpersonated;
 use App\Models\User;
-use App\Services\Auth\OAuthTokenBroker;
+use App\Services\Auth\TokenIssuer;
 use Illuminate\Support\Facades\Log;
 
 final readonly class ImpersonateUser
 {
     public function __construct(
-        private OAuthTokenBroker $broker,
+        private TokenIssuer $tokenIssuer,
     ) {}
 
     public function handle(User $admin, User $target, Systems $system): TokenDTO
@@ -28,10 +29,11 @@ final readonly class ImpersonateUser
             ]
         );
 
-        return $this->broker->issueSystemVerifiedToken(
+        UserImpersonated::dispatch($target, $admin);
+
+        return $this->tokenIssuer->issueFullToken(
             user: $target,
-            system: $system,
-            scopes: $target->roles->implode('name', ' ')
+            system: $system
         );
     }
 }

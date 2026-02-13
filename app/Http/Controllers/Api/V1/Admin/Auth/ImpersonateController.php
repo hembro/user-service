@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Api\V1\Admin\Users;
+namespace App\Http\Controllers\Api\V1\Admin\Auth;
 
-use App\Actions\Api\V1\Admin\Users\ImpersonateUser;
+use App\Actions\Api\V1\Admin\Auth\ImpersonateUser;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Models\User;
 use App\Traits\HasApiResponse;

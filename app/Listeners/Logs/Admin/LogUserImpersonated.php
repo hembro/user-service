@@ -16,7 +16,7 @@ final class LogUserImpersonated implements ShouldQueue
 
     public function handle(UserImpersonated $event): void
     {
-        Log::channel('audit')->warning(
+        Log::channel('auth')->warning(
             message: 'admin impersonated user',
             context: [
                 'user_id' => $event->targetUser->id,

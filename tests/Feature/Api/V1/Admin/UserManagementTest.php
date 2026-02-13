@@ -267,7 +267,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         $targetUser->assignRole(Roles::PMS_PROPONENT);
 
         $response = postJson(
-            uri: route('api.v1.admin.users.impersonate', $targetUser->id),
+            uri: route('api.v1.admin.auth.impersonate', $targetUser->id),
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
@@ -335,7 +335,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
         $otherAdmin->assignRole(Roles::PMS_ADMIN);
 
         postJson(
-            uri: route('api.v1.admin.users.impersonate', $otherAdmin->id),
+            uri: route('api.v1.admin.auth.impersonate', $otherAdmin->id),
             headers: ['X-Source-System' => Systems::PMS->value]
         )->assertForbidden();
     });

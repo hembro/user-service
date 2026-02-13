@@ -18,6 +18,10 @@ Route::prefix('v1')->group(function () {
         ->name('api.v1.admin.users.')
         ->group(base_path('routes/api/v1/Admin/users.php'));
 
+    Route::prefix('admin/auth')
+        ->name('api.v1.admin.auth.')
+        ->group(base_path('routes/api/v1/Admin/auth.php'));
+
     Route::prefix('system')
         ->name('api.v1.system.')
         ->group(base_path('routes/api/v1/system.php'));
