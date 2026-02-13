@@ -6,18 +6,23 @@ namespace App\Listeners\Logs\Users;
 
 use App\Events\Users\UserEmailChanged;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserEmailChanged implements ShouldQueue
 {
-    public function __construct(private LoggerInterface $logger) {}
+    public string $queue = 'low';
+
+    public int $tries = 3;
 
     public function handle(UserEmailChanged $event): void
     {
-        $this->logger->warning('audit: user confirmed email change', [
-            'user_id' => $event->user->id,
-            'old_email' => $event->oldEmail,
-            'new_email' => $event->user->email,
-        ]);
+        Log::channel('audit')->warning(
+            message: 'user confirmed email change',
+            context: [
+                'user_id' => $event->user->id,
+                'old_email' => $event->oldEmail,
+                'new_email' => $event->user->email,
+            ]
+        );
     }
 }

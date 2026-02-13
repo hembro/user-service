@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Admin;
 
 use App\Events\Admin\UserStatusUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserStatusChange implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserStatusChange implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserStatusUpdated $event): void
     {
-        $this->logger->info(
-            message: 'audit: admin updated user status',
+        Log::channel('audit')->info(
+            message: 'admin updated user status',
             context: [
                 'user_id' => $event->user->id,
                 'admin_id' => $event->admin->id,

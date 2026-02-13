@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Users;
 
 use App\Events\Users\UserPasswordUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserUpdatedPassword implements ShouldQueue
 {
@@ -14,13 +14,9 @@ final class LogUserUpdatedPassword implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserPasswordUpdated $event): void
     {
-        $this->logger->info(
+        Log::channel('audit')->info(
             message: 'audit: user updated password',
             context: [
                 'user_id' => $event->user->id,

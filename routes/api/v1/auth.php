@@ -11,6 +11,10 @@ Route::post('/login', Auth\LoginController::class)
     ->middleware(['guest', 'throttle:auth.login'])
     ->name('login');
 
+Route::post('login/challenge', Auth\VerifyChallengeController::class)
+    ->middleware(['guest', 'throttle:auth.login'])
+    ->name('login.challenge');
+
 // Standard Auth Utilities
 Route::middleware('throttle:auth.api')->group(function () {
 

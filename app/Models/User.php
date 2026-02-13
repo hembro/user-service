@@ -20,9 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Context;
-use Illuminate\Support\Facades\Hash;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -54,6 +52,9 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         'status',
         'email',
         'password',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
         'email_verified_at',
         'last_login_at',
         'pending_email',
@@ -70,6 +71,9 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         'password' => 'hashed',
         'last_login_at' => 'datetime',
         'email_verified_at' => 'datetime',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_secret' => 'encrypted',
+        'two_factor_recovery_codes' => 'encrypted:array',
     ];
 
     public function profile(): HasOne
@@ -85,6 +89,15 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     {
         return $this->hasMany(
             related: UserSocialAccount::class,
+            foreignKey: 'user_id',
+            localKey: 'id'
+        );
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(
+            related: UserDevice::class,
             foreignKey: 'user_id',
             localKey: 'id'
         );
@@ -117,19 +130,8 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         );
     }
 
-    /**
-     * Override Passport's default password validation.
-     * This allows us to use a short-lived Cache token for Social Logins,
-     * while keeping standard email/password logins secure.
-     */
-    public function validateForPassportPasswordGrant(string $password): bool
+    public function hasEnabledTwoFactor(): bool
     {
-        $cacheKey = "social_login_secret_{$this->id}";
-
-        if (Cache::has($cacheKey) && Cache::pull($cacheKey) === $password) {
-            return true;
-        }
-
-        return Hash::check($password, $this->password);
+        return $this->two_factor_secret !== null;
     }
 }
