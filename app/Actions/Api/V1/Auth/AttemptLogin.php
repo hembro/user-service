@@ -32,7 +32,7 @@ final readonly class AttemptLogin
             ->where('email', $credentials->email)->first();
 
         if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($credentials->password, $user->password)) {
-            throw new InvalidCredentialsException();
+            throw new InvalidCredentialsException('Invalid credentials.');
         }
 
         if ($user->hasEnabledTwoFactor()) {

@@ -25,12 +25,15 @@ final class LogDeviceUsage implements ShouldQueue
         $metadata = $event->metadata;
         $occuredAt = CarbonImmutable::createFromTimestamp($metadata->timestamp);
 
-        Log::channel('auth')->info('device usage detected', [
-            'user_id' => $event->user->id,
-            'device_uuid' => $metadata->deviceId,
-            'ip' => $metadata->ip,
-            'timestamp' => $occuredAt->toIso8601String(),
-        ]);
+        Log::channel('auth')->info(
+            message: 'device usage detected',
+            context: [
+                'user_id' => $event->user->id,
+                'device_uuid' => $metadata->deviceId,
+                'ip' => $metadata->ip,
+                'timestamp' => $occuredAt->toIso8601String(),
+            ]
+        );
 
         if (! $metadata->deviceId) {
             return;
