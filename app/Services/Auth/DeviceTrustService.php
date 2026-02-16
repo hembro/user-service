@@ -15,7 +15,7 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
         private ChallengeService $challengeService
     ) {}
 
-    public function isTrusted(User $user, string $deviceId, string $fingerprint): bool
+    public function isTrusted(User $user, string $deviceId, RequestMetadata $metadata): bool
     {
         // Check strict existence in DB for this user.
         /** @var UserDevice|null */
@@ -31,7 +31,7 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
         // We use the fingerprint to ensure the device config hasn't drastically changed (e.g., session hijacking)
         return hash_equals(
             known_string: $device->fingerprint_hash,
-            user_string: $fingerprint
+            user_string: $this->challengeService->generateFingerprint($metadata)
         );
     }
 

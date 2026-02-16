@@ -9,7 +9,7 @@ use App\Models\User;
 
 interface DeviceTrustVerifier
 {
-    public function isTrusted(User $user, string $deviceId, string $fingerprint): bool;
+    public function isTrusted(User $user, string $deviceId, RequestMetadata $metadata): bool;
 
     public function trustDevice(User $user, string $deviceId, RequestMetadata $metadata): void;
 }

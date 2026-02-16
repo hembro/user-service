@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Users;
 use App\Http\Controllers\Api\V1\Users\EmailChangeController;
+use App\Http\Middleware\EnsureDeviceIsTrusted;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', Users\RegisterController::class)
     ->middleware(['guest', 'throttle:auth.register'])
     ->name('register');
 
-Route::middleware(['auth:api', 'throttle:auth.api'])->group(function () {
+Route::middleware([
+    'auth:api',
+    'throttle:auth.api',
+    EnsureDeviceIsTrusted::class,
+])->group(function () {
 
     Route::get('/profile', Users\ShowProfileController::class)
         ->name('profile');

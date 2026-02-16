@@ -52,6 +52,15 @@ final readonly class TwoFactorService
         return $this->engine->verifyKey($user->two_factor_secret, $code);
     }
 
+    public function disable(User $user): void
+    {
+        $user->forceFill([
+            'two_factor_secret' => null,
+            'two_factor_recovery_codes' => null,
+            'two_factor_confirmed_at' => null,
+        ])->save();
+    }
+
     private function validRecoveryCode(User $user, string $recoveryCode): bool
     {
         $recoveryCodes = $user->two_factor_recovery_codes;

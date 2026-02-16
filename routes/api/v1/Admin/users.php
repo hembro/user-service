@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 use App\Enums\Roles;
 use App\Http\Controllers\Api\V1\Admin\Users;
+use App\Http\Middleware\EnsureDeviceIsTrusted;
 use App\Models\User;
 use Laravel\Passport\Http\Middleware\CheckTokenForAnyScope;
 
 Route::middleware([
     'auth:api',
+    EnsureDeviceIsTrusted::class,
     CheckTokenForAnyScope::using(Roles::adminRoles(returnString: true)),
 ])->group(function () {
 

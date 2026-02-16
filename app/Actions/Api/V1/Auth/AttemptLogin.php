@@ -40,7 +40,7 @@ final readonly class AttemptLogin
             throw new InvalidCredentialsException('Invalid credentials.');
         }
 
-        if ($this->deviceService->isTrusted($user, $credentials->deviceId, $this->challengeService->generateFingerprint($metadata))) {
+        if ($this->deviceService->isTrusted($user, $credentials->deviceId, $metadata)) {
             UserLoggedIn::dispatch($user, $credentials->deviceId, $metadata);
 
             return AuthenticationOutcomeDTO::authenticated(
