@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\AuthChallengePayloadDTO;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
@@ -13,6 +12,7 @@ use App\Enums\Auth\ChallengeType;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Models\User;
 use App\Services\Auth\ChallengeService;
+use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use App\Services\Auth\TwoFactorService;
 
@@ -20,7 +20,7 @@ final readonly class VerifyAuthenticationChallenge
 {
     public function __construct(
         private TokenIssuer $tokenIssuer,
-        private DeviceTrustVerifier $deviceService,
+        private DeviceTrustService $deviceService,
         private TwoFactorService $twoFactorService,
         private ChallengeService $challengeService
     ) {}

@@ -11,9 +11,11 @@ use App\Enums\Auth\AuthResultStatus;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
+use App\Services\Auth\DeviceTrustService;
 use App\Services\AuthCookieService;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 
 final class LoginController
 {
@@ -22,12 +24,16 @@ final class LoginController
     public function __construct(
         private readonly AttemptLogin $action,
         private readonly AuthCookieService $cookie,
+        private readonly DeviceTrustService $deviceService
     ) {}
 
     public function __invoke(LoginRequest $request): JsonResponse
     {
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid();
+
         $outcome = $this->action->handle(
             credentials: LoginCredentials::fromRequest($request),
+            deviceId: $deviceId,
             metadata: RequestMetadata::fromRequest($request)
         );
 

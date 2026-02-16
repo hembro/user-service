@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Events\Auth\SuspiciousSessionDetected;
+use App\Services\Auth\DeviceTrustService;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class EnsureDeviceIsTrusted
 {
     public function __construct(
-        private DeviceTrustVerifier $trustVerifier
+        private DeviceTrustService $deviceService
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -24,15 +24,15 @@ final readonly class EnsureDeviceIsTrusted
             return $next($request);
         }
 
-        $metadata = RequestMetadata::fromRequest($request);
-
-        $deviceId = $request->header('X-Device-UUID') ?? $request->cookie(config('cookie.device_id.name'));
+        $deviceId = $this->deviceService->resolveDeviceId($request);
 
         if (! $deviceId) {
-            throw new AuthenticationException('Device identifier missing.');
+            throw new AuthenticationException('Device identifier is missing. Please login again.');
         }
 
-        if (! $this->trustVerifier->isTrusted($request->user(), $deviceId, $metadata)) {
+        $metadata = RequestMetadata::fromRequest($request);
+
+        if (! $this->deviceService->isTrusted($request->user(), $deviceId, $metadata)) {
             SuspiciousSessionDetected::dispatch($request->user(), $metadata);
             throw new AuthenticationException('Device context mismatch. Please login again.');
         }

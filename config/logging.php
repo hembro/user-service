@@ -143,6 +143,13 @@ return [
             'days' => 14,
         ],
 
+        'system' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/system.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
     ],
 
 ];

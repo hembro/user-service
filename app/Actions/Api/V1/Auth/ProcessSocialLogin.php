@@ -27,7 +27,7 @@ final readonly class ProcessSocialLogin
         private LoggerInterface $logger
     ) {}
 
-    public function handle(SocialLoginDTO $dto): AuthenticationOutcomeDTO
+    public function handle(SocialLoginDTO $dto, string $deviceId): AuthenticationOutcomeDTO
     {
         try {
             $socialiteUser = Socialite::driver($dto->provider->value)
@@ -59,7 +59,7 @@ final readonly class ProcessSocialLogin
 
         $this->deviceService->trustDevice(
             user: $user,
-            deviceId: $dto->deviceId,
+            deviceId: $deviceId,
             metadata: $dto->metadata
         );
 
@@ -67,11 +67,11 @@ final readonly class ProcessSocialLogin
             UserRegistered::dispatch($user);
         }
 
-        UserLoggedIn::dispatch($user, $dto->deviceId, $dto->metadata);
+        UserLoggedIn::dispatch($user, $deviceId, $dto->metadata);
 
         return AuthenticationOutcomeDTO::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $dto->system),
-            deviceId: $dto->deviceId
+            deviceId: $deviceId
         );
     }
 }

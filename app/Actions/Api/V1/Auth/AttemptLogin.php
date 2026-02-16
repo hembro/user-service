@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\AuthChallengeDTO;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\LoginCredentials;
@@ -17,6 +16,7 @@ use App\Exceptions\InvalidCredentialsException;
 use App\Models\User;
 use App\Notifications\VerifyDeviceLogin;
 use App\Services\Auth\ChallengeService;
+use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -24,12 +24,12 @@ use Illuminate\Support\Str;
 final readonly class AttemptLogin
 {
     public function __construct(
-        private DeviceTrustVerifier $deviceService,
+        private DeviceTrustService $deviceService,
         private ChallengeService $challengeService,
         private TokenIssuer $tokenIssuer,
     ) {}
 
-    public function handle(LoginCredentials $credentials, RequestMetadata $metadata): AuthenticationOutcomeDTO
+    public function handle(LoginCredentials $credentials, string $deviceId, RequestMetadata $metadata): AuthenticationOutcomeDTO
     {
         $user = User::query()
             ->with('roles')
@@ -40,12 +40,12 @@ final readonly class AttemptLogin
             throw new InvalidCredentialsException('Invalid credentials.');
         }
 
-        if ($this->deviceService->isTrusted($user, $credentials->deviceId, $metadata)) {
-            UserLoggedIn::dispatch($user, $credentials->deviceId, $metadata);
+        if ($this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+            UserLoggedIn::dispatch($user, $deviceId, $metadata);
 
             return AuthenticationOutcomeDTO::authenticated(
                 token: $this->tokenIssuer->issueFullToken($user, $credentials->system),
-                deviceId: $credentials->deviceId
+                deviceId: $deviceId
             );
         }
 
@@ -54,7 +54,7 @@ final readonly class AttemptLogin
             ? ChallengeType::TWO_FACTOR
             : ChallengeType::DEVICE_VERIFICATION;
 
-        return $this->initiateChallenge($user, $chgallengeType, $credentials->deviceId, $credentials->system, $metadata);
+        return $this->initiateChallenge($user, $chgallengeType, $deviceId, $credentials->system, $metadata);
     }
 
     private function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system, RequestMetadata $metadata): AuthenticationOutcomeDTO

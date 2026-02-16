@@ -24,6 +24,7 @@ final class LogoutController
     {
         $this->action->handle(
             user: $request->user(),
+            request: $request,
             metadata: RequestMetadata::fromRequest($request)
         );
 

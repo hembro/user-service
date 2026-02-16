@@ -47,23 +47,6 @@ final readonly class RegisterUserDTO
         );
     }
 
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            email: $data['email'],
-            password: $data['password'],
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
-            firstName: $data['first_name'],
-            middleName: $data['middle_name'] ?? null,
-            lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
-            mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? [],
-            system: Systems::from($data['system']),
-        );
-    }
-
     public function toProfileAttributes(): array
     {
         return [

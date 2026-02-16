@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\DisableTwoFactorDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Events\Auth\TwoFactorDisabled as TwoFactorDisabledEvent;
@@ -17,7 +16,6 @@ use Illuminate\Database\DatabaseManager;
 final readonly class DisableTwoFactor
 {
     public function __construct(
-        private DeviceTrustVerifier $deviceService,
         private TwoFactorService $twoFactorService,
         private DatabaseManager $db,
     ) {}
@@ -26,10 +24,6 @@ final readonly class DisableTwoFactor
     {
         if (! $user->isTwoFactorEnabled()) {
             throw new InvalidChallengeException('Two-factor authentication is not enabled.');
-        }
-
-        if (! $this->deviceService->isTrusted($user, $dto->deviceId, $metadata)) {
-            throw new InvalidChallengeException('Security mismatch. Please login again.');
         }
 
         $this->db->transaction(

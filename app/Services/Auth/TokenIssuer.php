@@ -8,6 +8,10 @@ use App\DTOs\Api\V1\Auth\TokenDTO;
 use App\Enums\Auth\GrantType;
 use App\Enums\Systems;
 use App\Models\User;
+use Defuse\Crypto\Crypto;
+use Exception;
+use Illuminate\Contracts\Encryption\Encrypter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -48,7 +52,7 @@ final readonly class TokenIssuer
             payload: [
                 'refresh_token' => $refreshToken,
             ],
-            scopes: ''
+            scopes: null
         );
     }
 
@@ -57,20 +61,62 @@ final readonly class TokenIssuer
         return Str::random(32);
     }
 
+    public function resolveUserFromRefreshToken(string $token): ?User
+    {
+        $tokenId = $this->decryptPassportToken($token);
+
+        if (! $tokenId) {
+            return null;
+        }
+
+        $userId = DB::table('oauth_refresh_tokens')
+            ->join('oauth_access_tokens', 'oauth_refresh_tokens.access_token_id', '=', 'oauth_access_tokens.id')
+            ->where('oauth_refresh_tokens.id', $tokenId)
+            ->where('oauth_refresh_tokens.revoked', false)
+            ->where('oauth_access_tokens.revoked', false)
+            ->value('oauth_access_tokens.user_id');
+
+        return $userId ? User::find($userId) : null;
+    }
+
+    private function decryptPassportToken(string $token): ?string
+    {
+        try {
+            $key = app('encrypter')->getKey();
+
+            $json = Crypto::decryptWithPassword($token, $key);
+
+            $payload = json_decode($json, true);
+
+            return $payload['refresh_token_id'] ?? null;
+        } catch (Exception) {
+        }
+
+        try {
+            $payload = app(Encrypter::class)->decrypt($token);
+
+            return $payload['refresh_token_id'] ?? null;
+        } catch (Exception) {
+            return null;
+        }
+    }
+
     /**
      * The core issuance logic.
      */
-    private function issue(GrantType $grantType, Systems $system, array $payload, string $scopes): TokenDTO
+    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): TokenDTO
     {
         // 1. Prepare Request Parameters
-        $requestParams = $this->mergeClientCredentials(
-            system: $system,
-            baseParams: [
-                ...$payload,
-                'grant_type' => $grantType->value,
-                'scope' => $scopes,
-            ]
-        );
+        $baseParams = [
+            ...$payload,
+            'grant_type' => $grantType->value,
+        ];
+
+        if ($scopes !== null) {
+            $baseParams['scope'] = $scopes;
+        }
+
+        $requestParams = $this->mergeClientCredentials($system, $baseParams);
 
         // 2. Construct PSR-7 Request (Internal Call)
         $request = (new Psr7Request('POST', 'oauth/token'))

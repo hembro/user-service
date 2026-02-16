@@ -13,7 +13,6 @@ final readonly class DisableTwoFactorDTO
     public function __construct(
         #[SensitiveParameter]
         public string $password,
-        public string $deviceId,
         public Systems $system
     ) {}
 
@@ -23,7 +22,6 @@ final readonly class DisableTwoFactorDTO
 
         return new self(
             password: $data['password'],
-            deviceId: $request->cookie(config('cookie.device_id.name')) ?? $data['device_id'],
             system: $request->attributes->get('system'),
         );
     }
