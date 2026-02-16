@@ -12,26 +12,36 @@ trait HasApiResponse
 {
     protected function success(mixed $data = null, string $message = 'Success', int $code = 200): JsonResponse
     {
+        $response = [
+            'success' => true,
+            'code' => $code,
+            'message' => $message,
+        ];
+
+        if ($data !== null) {
+            $response['data'] = $data;
+        }
+
         return new JsonResponse(
-            data: [
-                'success' => true,
-                'code' => $code,
-                'message' => $message,
-                'data' => $data,
-            ],
+            data: $response,
             status: $code
         );
     }
 
     protected function error(string $message = 'Error', int $code = 400, mixed $errors = null): JsonResponse
     {
+        $response = [
+            'success' => false,
+            'code' => $code,
+            'message' => $message,
+        ];
+
+        if ($errors !== null) {
+            $response['errors'] = $errors;
+        }
+
         return new JsonResponse(
-            data: [
-                'success' => false,
-                'code' => $code,
-                'message' => $message,
-                'errors' => $errors,
-            ],
+            data: $response,
             status: $code
         );
     }

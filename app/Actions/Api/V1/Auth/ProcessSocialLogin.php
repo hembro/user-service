@@ -8,15 +8,14 @@ use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\SocialLoginDTO;
 use App\DTOs\Api\V1\Auth\SocialUserDTO;
 use App\Enums\UserStatus;
-use App\Events\Auth\DeviceUsed;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
 use App\Exceptions\InvalidCredentialsException;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\SocialUserResolver;
 use App\Services\Auth\TokenIssuer;
-use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 final readonly class ProcessSocialLogin
@@ -25,15 +24,24 @@ final readonly class ProcessSocialLogin
         private SocialUserResolver $resolver,
         private DeviceTrustService $deviceService,
         private TokenIssuer $tokenIssuer,
+        private LoggerInterface $logger
     ) {}
 
     public function handle(SocialLoginDTO $dto): AuthenticationOutcomeDTO
     {
         try {
-            $socialiteUser = Socialite::driver(
-                driver: $dto->provider->value
-            )->stateless()->user();
+            $socialiteUser = Socialite::driver($dto->provider->value)
+                ->stateless()
+                ->user();
         } catch (Throwable $e) {
+            $this->logger->error(
+                message: 'Social Login Failed',
+                context: [
+                    'provider' => $dto->provider->value,
+                    'exception' => $e,
+                ]
+            );
+
             throw new InvalidCredentialsException("Failed to validate token with {$dto->provider->value}.");
         }
 
@@ -49,11 +57,9 @@ final readonly class ProcessSocialLogin
             throw new InvalidCredentialsException('Account is inactive.');
         }
 
-        $deviceUuid = $dto->metadata->deviceId ?? Str::uuid()->toString();
-
-        $this->deviceService->authorizeDevice(
+        $this->deviceService->trustDevice(
             user: $user,
-            deviceUuid: $deviceUuid,
+            deviceId: $dto->deviceId,
             metadata: $dto->metadata
         );
 
@@ -61,12 +67,11 @@ final readonly class ProcessSocialLogin
             UserRegistered::dispatch($user);
         }
 
-        DeviceUsed::dispatch($user, $dto->metadata);
-        UserLoggedIn::dispatch($user, $dto->metadata);
+        UserLoggedIn::dispatch($user, $dto->deviceId, $dto->metadata);
 
         return AuthenticationOutcomeDTO::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $dto->system),
-            deviceId: $deviceUuid
+            deviceId: $dto->deviceId
         );
     }
 }

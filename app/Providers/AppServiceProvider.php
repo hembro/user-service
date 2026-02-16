@@ -54,9 +54,6 @@ final class AppServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
 
-        // Enables logging-in with PATs for impersonation only.
-        Passport::personalAccessTokensExpireIn(CarbonInterval::minutes(30));
-
         Passport::tokensCan(Roles::getPassportScopes());
     }
 

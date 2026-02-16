@@ -39,6 +39,8 @@ final readonly class UpdateUserRole
 
                 $this->revokeSystemTokens->handle($user, $dto->system);
 
+                $user->touch();
+
                 $this->db->afterCommit(
                     fn () => UserRoleUpdated::dispatch($user, $admin, $changes['old'], $changes['new'])
                 );

@@ -13,7 +13,6 @@ final readonly class RequestMetadata
         public string $userAgent,
         public string $clientType,
         public int $timestamp,
-        public ?string $deviceId,
     ) {}
 
     public static function fromRequest(Request $request): self
@@ -23,8 +22,27 @@ final readonly class RequestMetadata
             userAgent: mb_substr($request->userAgent() ?? 'unknown', 0, 500),
             clientType: self::detectClientType($request->userAgent() ?? 'unknown'),
             timestamp: now()->timestamp,
-            deviceId: $request->header('X-Device-Id') ?? $request->cookie('device_id'),
         );
+    }
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            ip: $data['ip'],
+            userAgent: $data['user_agent'],
+            clientType: $data['client_type'],
+            timestamp: $data['timestamp'],
+        );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'ip' => $this->ip,
+            'user_agent' => $this->userAgent,
+            'client_type' => $this->clientType,
+            'timestamp' => $this->timestamp,
+        ];
     }
 
     private static function detectClientType(string $ua): string

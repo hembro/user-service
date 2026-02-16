@@ -4,51 +4,45 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
+use App\DTOs\Api\V1\Auth\AuthChallengeDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
-use App\Enums\Auth\ChallengeType;
-use App\Models\User;
-use App\Notifications\VerifyDeviceLogin;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 
 final readonly class ChallengeService
 {
-    private const CHALLENGE_TTL = 300; // 5 Minutes
+    private const CHALLENGE_TTL_SECONDS = 300;
 
     private const CACHE_PREFIX = 'auth:challenge:';
 
-    public function dispatch(User $user, ChallengeType $type, RequestMetadata $metadata): string
+    public function make(AuthChallengeDTO $dto): void
     {
-        $challengeId = (string) Str::uuid();
-        $otpCode = (string) random_int(100000, 999999);
+        $payload = [
+            'user_id' => $dto->userId,
+            'device_id' => $dto->deviceId,
+            'type' => $dto->type->value,
+            'system' => $dto->system->value,
+            'fingerprint' => $this->generateFingerprint($dto->metadata),
+            'metadata' => $dto->metadata->toArray(),
+            'otp_hash' => $dto->otpCode ? hash('sha256', $dto->otpCode) : null,
+
+        ];
 
         Cache::put(
-            key: self::CACHE_PREFIX . $challengeId,
-            value: [
-                'user_id' => $user->id,
-                'type' => $type->value,
-                'otp_hash' => hash('sha256', $otpCode),
-                'fingerprint' => $this->generateFingerprint($metadata),
-                'device_uuid' => $metadata->deviceId ?? (string) Str::uuid(),
-            ],
-            ttl: self::CHALLENGE_TTL
+            key: self::CACHE_PREFIX . $dto->challengeId,
+            value: $payload,
+            ttl: self::CHALLENGE_TTL_SECONDS
         );
-
-        match ($type) {
-            ChallengeType::DEVICE_VERIFICATION => $user->notify(
-                new VerifyDeviceLogin($otpCode, $metadata->userAgent)
-            ),
-        };
-
-        return $challengeId;
     }
 
-    /**
-     * Retrieve payload for verification.
-     */
     public function retrieve(string $challengeId): ?array
     {
-        return Cache::get(self::CACHE_PREFIX . $challengeId);
+        $data = Cache::get(self::CACHE_PREFIX . $challengeId);
+
+        if (! is_array($data)) {
+            return null;
+        }
+
+        return $data;
     }
 
     public function forget(string $challengeId): void
@@ -57,9 +51,8 @@ final readonly class ChallengeService
     }
 
     /**
-     * Helper to generate fingerprint for consistency check.
-     * (Duplicated logic from DeviceTrustService is acceptable here to keep services decoupled,
-     * OR extract to a shared helper/trait if strict DRY is preferred).
+     * Generates a fingerprint to bind the challenge to a specific browser.
+     * This prevents a hacker from intercepting the link and opening it on their machine.
      */
     public function generateFingerprint(RequestMetadata $metadata): string
     {
@@ -68,5 +61,10 @@ final readonly class ChallengeService
             $metadata->userAgent . '|' . $metadata->clientType,
             config('app.key')
         );
+    }
+
+    public function validFingerprint(string $fingerprint, RequestMetadata $metadata): bool
+    {
+        return hash_equals($fingerprint, $this->generateFingerprint($metadata));
     }
 }

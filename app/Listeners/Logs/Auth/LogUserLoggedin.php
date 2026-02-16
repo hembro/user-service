@@ -22,9 +22,10 @@ final class LogUserLoggedin implements ShouldQueue
         $event->user->update(['last_login_at' => $occurredAt]);
 
         Log::channel('auth')->info(
-            message: 'user logged-in',
+            message: 'Device usage heartbeat',
             context: [
                 'user_id' => $event->user->id,
+                'device_id' => $event->deviceId,
                 'ip' => $event->metadata->ip,
                 'user_agent' => $event->metadata->userAgent,
                 'timestamp' => $occurredAt->toIso8601String(),

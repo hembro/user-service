@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Api\V1\Auth\ProcessSocialLogin;
 use App\DTOs\Api\V1\Auth\SocialLoginDTO;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\SocialProviders;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
@@ -26,12 +25,7 @@ final class SocialAuthController
     public function __invoke(SocialLoginRequest $request, SocialProviders $provider): JsonResponse
     {
         $authentocationOutcome = $this->action->handle(
-            dto: new SocialLoginDTO(
-                provider: $provider,
-                code: $request->validated('code'),
-                system: $request->attributes->get('system'),
-                metadata: RequestMetadata::fromRequest($request)
-            )
+            dto: SocialLoginDTO::fromRequest($request),
         );
 
         $response = $this->success(

@@ -94,7 +94,6 @@ final readonly class TokenIssuer
     }
 
     /**
-     * @param  array<string, mixed>  $baseParams
      * @return array<string, mixed>
      */
     private function mergeClientCredentials(Systems $system, array $baseParams): array

@@ -27,8 +27,9 @@ final class LogoutController
             metadata: RequestMetadata::fromRequest($request)
         );
 
-        return $this->noContent()->withCookie(
-            $this->cookie->forgetRefreshToken()
-        );
+        return $this->noContent()
+            ->withCookie(
+                $this->cookie->forgetRefreshToken()
+            );
     }
 }

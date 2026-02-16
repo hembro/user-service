@@ -19,7 +19,7 @@ return new class extends Migration
                     column: 'id'
                 )->cascadeOnDelete();
 
-            $table->uuid('device_uuid')->index();
+            $table->uuid('device_id')->index();
             $table->string('fingerprint_hash');
             $table->string('name')->nullable();
             $table->ipAddress('last_ip')->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestamp('verified_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['user_id', 'device_uuid']);
+            $table->unique(['user_id', 'device_id']);
         });
     }
 };

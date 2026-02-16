@@ -9,7 +9,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | These settings apply to ALL cookies issued by the Auth Service.
-    | In microservices, this usually matches your top-level domain.
+    | In microservices, this usually matches the top-level domain.
     |
     */
     'domain' => env('AUTH_COOKIE_DOMAIN', null),
@@ -27,7 +27,7 @@ return [
     */
     'refresh_token' => [
         'name' => env('AUTH_REFRESH_COOKIE', 'refresh_token'),
-        'minutes' => env('AUTH_REFRESH_LIFETIME', 20160), // 14 Days
+        'minutes' => env('AUTH_REFRESH_LIFETIME', 43200), // 30 Days
     ],
 
     'device_id' => [

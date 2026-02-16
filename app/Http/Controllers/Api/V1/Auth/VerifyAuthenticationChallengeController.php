@@ -13,7 +13,7 @@ use App\Services\AuthCookieService;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
-final class VerifyChallengeController
+final class VerifyAuthenticationChallengeController
 {
     use HasApiResponse;
 
@@ -25,21 +25,17 @@ final class VerifyChallengeController
     public function __invoke(VerifyChallengeRequest $request): JsonResponse
     {
         $outcome = $this->action->handle(
-            dto: VerifyChallengeDTO::fromRequest($request),
+            verifyChallengedto: VerifyChallengeDTO::fromRequest($request),
             metadata: RequestMetadata::fromRequest($request)
         );
 
-        $response = $this->success(
+        return $this->success(
             data: new AuthResource($outcome),
             message: 'Authentication successful.'
+        )->withCookie(
+            $this->cookie->makeRefreshTokenCookie($outcome->token->refreshToken)
+        )->withCookie(
+            $this->cookie->makeDeviceIdCookie($outcome->deviceId)
         );
-
-        if ($outcome->deviceId) {
-            $response->withCookie(
-                $this->cookie->makeDeviceIdCookie($outcome->deviceId)
-            );
-        }
-
-        return $response;
     }
 }

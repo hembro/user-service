@@ -6,13 +6,12 @@ namespace App\Http\Requests\Api\V1\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class VerifyChallengeRequest extends FormRequest
+final class ConfirmTwoFactorRequest extends FormRequest
 {
     public function rules(): array
     {
         return [
-            'challenge_id' => ['required', 'string', 'uuid'],
-            'code' => ['required', 'string', 'min:6', 'max:8'],
+            'code' => ['required', 'string', 'digits:6'],
         ];
     }
 }

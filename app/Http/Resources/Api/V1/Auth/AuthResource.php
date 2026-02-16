@@ -16,20 +16,22 @@ final class AuthResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $base = [
+            'auth_state' => $this->resource->status->value,
+            'device_id' => $this->resource->deviceId,
+        ];
+
         return match ($this->resource->status) {
-            AuthResultStatus::AUTHENTICATED => [
-                'auth_state' => 'authenticated',
+            AuthResultStatus::AUTHENTICATED => array_merge($base, [
                 'access_token' => $this->resource->token->accessToken,
                 'token_type' => $this->resource->token->tokenType,
                 'expires_in' => $this->resource->token->expiresIn,
-                'device_id' => $this->resource->deviceId,
-            ],
+            ]),
 
-            AuthResultStatus::REQUIRES_CHALLENGE => [
-                'auth_state' => 'pending_challenge',
-                'challenge_token' => $this->resource->challengeId,
+            AuthResultStatus::REQUIRES_CHALLENGE => array_merge($base, [
+                'challenge_id' => $this->resource->challengeId,
                 'challenge_type' => $this->resource->challengeType->value,
-            ],
+            ]),
         };
     }
 }

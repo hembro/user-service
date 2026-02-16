@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Users;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Users\RegisterUserDTO;
 use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
@@ -15,6 +16,7 @@ final readonly class RegisterUser
 {
     public function __construct(
         private DatabaseManager $db,
+        private DeviceTrustVerifier $deviceTrustService,
         private LoggerInterface $logger
     ) {}
 
@@ -40,11 +42,15 @@ final readonly class RegisterUser
 
                 $user->assignRole($dto->system->defaultRole());
 
+                $user->load(['profile', 'roles.permissions', 'permissions']);
+
+                // $this->deviceTrustService->trustDevice($user);
+
                 $this->db->afterCommit(
                     fn () => UserRegistered::dispatch($user)
                 );
 
-                return $user->load(['profile', 'roles.permissions', 'permissions']);
+                return $user;
             }
         );
     }

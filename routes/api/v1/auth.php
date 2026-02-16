@@ -11,7 +11,7 @@ Route::post('/login', Auth\LoginController::class)
     ->middleware(['guest', 'throttle:auth.login'])
     ->name('login');
 
-Route::post('login/challenge', Auth\VerifyChallengeController::class)
+Route::post('login/challenge', Auth\VerifyAuthenticationChallengeController::class)
     ->middleware(['guest', 'throttle:auth.login'])
     ->name('login.challenge');
 
@@ -28,6 +28,14 @@ Route::middleware('throttle:auth.api')->group(function () {
     Route::post('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
         ->middleware(['signed'])
         ->name('verification.verify');
+
+    Route::post('/2fa/enable', Auth\EnableTwoFactorController::class)
+        ->middleware('auth:api')
+        ->name('2fa.enable');
+
+    Route::post('/2fa/confirm', Auth\ConfirmTwoFactorController::class)
+        ->middleware('auth:api')
+        ->name('2fa.confirm');
 });
 
 // Email Trigger Routes (Spam Protection)

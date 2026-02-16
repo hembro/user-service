@@ -78,7 +78,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                 ],
             ])
             ->assertJsonStructure([
-                'data' => ['challenge_token', 'challenge_type'],
+                'data' => ['challenge_id', 'challenge_type'],
             ]);
 
         // Strict: Ensure NO token cookies are set yet
@@ -122,7 +122,8 @@ describe('Authentication Feature: The Happy Path', function (): void {
             ]);
 
         // Strict: Check HttpOnly Cookie
-        $response->assertCookie(config('cookie.refresh_token.name'));
+        $response->assertCookie(config('cookie.refresh_token.name'))
+            ->assertCookie(config('cookie.device_id.name'));
     });
 
     it('refreshes token using a valid cookie', function (): void {

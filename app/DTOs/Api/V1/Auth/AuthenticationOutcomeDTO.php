@@ -12,10 +12,10 @@ final readonly class AuthenticationOutcomeDTO
 {
     public function __construct(
         public AuthResultStatus $status,
+        public string $deviceId,
         public ?TokenDTO $token = null,
         public ?string $challengeId = null,
         public ?ChallengeType $challengeType = null,
-        public ?string $deviceId = null
     ) {
         // Enforce Integrity: If Authenticated, Token is MANDATORY
         if ($this->status === AuthResultStatus::AUTHENTICATED && $this->token === null) {
@@ -30,7 +30,7 @@ final readonly class AuthenticationOutcomeDTO
         }
     }
 
-    public static function authenticated(TokenDTO $token, ?string $deviceId = null): self
+    public static function authenticated(TokenDTO $token, string $deviceId): self
     {
         return new self(
             status: AuthResultStatus::AUTHENTICATED,
@@ -39,10 +39,11 @@ final readonly class AuthenticationOutcomeDTO
         );
     }
 
-    public static function challenge(string $challengeId, ChallengeType $challengeType): self
+    public static function challenge(string $challengeId, ChallengeType $challengeType, string $deviceId): self
     {
         return new self(
             status: AuthResultStatus::REQUIRES_CHALLENGE,
+            deviceId: $deviceId,
             challengeId: $challengeId,
             challengeType: $challengeType
         );

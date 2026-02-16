@@ -4,55 +4,88 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
+use App\DTOs\Api\V1\Auth\AuthChallengePayloadDTO;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Models\User;
-use App\Services\Auth\DeviceTrustService;
+use App\Services\Auth\ChallengeService;
 use App\Services\Auth\TokenIssuer;
-use Illuminate\Support\Facades\Cache;
+use App\Services\Auth\TwoFactorService;
 
 final readonly class VerifyAuthenticationChallenge
 {
     public function __construct(
-        private DeviceTrustService $deviceService,
         private TokenIssuer $tokenIssuer,
+        private DeviceTrustVerifier $deviceService,
+        private TwoFactorService $twoFactorService,
+        private ChallengeService $challengeService
     ) {}
 
-    public function handle(VerifyChallengeDTO $dto, RequestMetadata $metadata): AuthenticationOutcomeDTO
+    public function handle(VerifyChallengeDTO $verifyChallengedto, RequestMetadata $metadata): AuthenticationOutcomeDTO
     {
-        $cacheKey = "auth:challenge:{$dto->challengeId}";
-        $payload = Cache::get($cacheKey);
+        $cachedData = $this->challengeService->retrieve($verifyChallengedto->challengeId);
 
-        if (! $payload) {
+        if ($cachedData === null) {
             throw new InvalidChallengeException('Challenge expired or invalid.');
         }
 
-        $inputHash = hash('sha256', $dto->code);
-        if (! hash_equals($payload['otp_hash'], $inputHash)) {
-            throw new InvalidChallengeException('Invalid verification code.');
+        $payloadDto = AuthChallengePayloadDTO::fromArray($cachedData);
+
+        // Make sure the fingerprint of the user device hasn't changed.
+        if (! $this->challengeService->validFingerprint($payloadDto->fingerprint, $metadata)) {
+            $this->challengeService->forget($verifyChallengedto->challengeId);
+            throw new InvalidChallengeException('Security mismatch. Please login again.');
         }
 
-        $currentFingerprint = $this->deviceService->generateFingerprint($metadata);
-        if (! hash_equals($payload['fingerprint'], $currentFingerprint)) {
-            Cache::forget($cacheKey);
-            throw new InvalidChallengeException('Device signature mismatch. Please try logging in again.');
-        }
+        $this->verifyCode($payloadDto, $verifyChallengedto->code);
 
-        $user = User::query()->findOrFail($payload['user_id']);
-        $type = ChallengeType::from($payload['type']);
+        $user = User::query()->findOrFail($payloadDto->userId);
 
-        if ($type === ChallengeType::DEVICE_VERIFICATION) {
-            $this->deviceService->authorizeDevice($user, $payload['device_uuid'], $metadata);
-        }
+        $this->deviceService->trustDevice(
+            user: $user,
+            deviceId: $payloadDto->deviceId,
+            metadata: $metadata
+        );
 
-        Cache::forget($cacheKey);
+        $this->challengeService->forget($verifyChallengedto->challengeId);
 
         return AuthenticationOutcomeDTO::authenticated(
-            token: $this->tokenIssuer->issueFullToken($user, $dto->system),
-            deviceId: $payload['device_uuid'],
+            token: $this->tokenIssuer->issueFullToken($user, $payloadDto->system),
+            deviceId: $payloadDto->deviceId,
         );
+    }
+
+    private function verifyCode(AuthChallengePayloadDTO $payload, string $inputCode): void
+    {
+        match ($payload->type) {
+            ChallengeType::TWO_FACTOR => $this->verifyTwoFactor($payload->userId, $inputCode),
+            ChallengeType::DEVICE_VERIFICATION => $this->verifyDeviceOtp($payload->otpHash, $inputCode),
+        };
+    }
+
+    private function verifyDeviceOtp(string $otpHash, string $inputCode): void
+    {
+        if ($otpHash === null) {
+            throw new InvalidChallengeException('Invalid challenge state.');
+        }
+
+        $inputHash = hash('sha256', $inputCode);
+
+        if (! hash_equals($otpHash, $inputHash)) {
+            throw new InvalidChallengeException('Invalid verification code.');
+        }
+    }
+
+    private function verifyTwoFactor(string $userId, string $inputCode): void
+    {
+        $user = User::query()->findOrFail($userId);
+
+        if (! $this->twoFactorService->verify($user, $inputCode)) {
+            throw new InvalidChallengeException('Invalid two-factor code.');
+        }
     }
 }
