@@ -14,6 +14,10 @@ final readonly class ChallengeService
 
     private const CACHE_PREFIX = 'auth:challenge:';
 
+    public function __construct(
+        private OtpService $otpService
+    ) {}
+
     public function make(AuthChallengeDTO $dto): void
     {
         $payload = [
@@ -23,7 +27,7 @@ final readonly class ChallengeService
             'system' => $dto->system->value,
             'fingerprint' => $this->generateFingerprint($dto->metadata),
             'metadata' => $dto->metadata->toArray(),
-            'otp_hash' => $dto->otpCode ? hash('sha256', $dto->otpCode) : null,
+            'otp_hash' => $dto->otpCode ? $this->otpService->hash($dto->otpCode) : null,
 
         ];
 
@@ -66,5 +70,14 @@ final readonly class ChallengeService
     public function validFingerprint(string $fingerprint, RequestMetadata $metadata): bool
     {
         return hash_equals($fingerprint, $this->generateFingerprint($metadata));
+    }
+
+    public function validOtp(?string $storedHash, string $inputCode): bool
+    {
+        if (! $storedHash || $storedHash === null) {
+            return false;
+        }
+
+        return $this->otpService->verify($storedHash, $inputCode);
     }
 }

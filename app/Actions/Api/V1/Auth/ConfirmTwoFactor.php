@@ -15,23 +15,18 @@ final readonly class ConfirmTwoFactor
         private TwoFactorService $service
     ) {}
 
-    /**
-     * @return Collection<int, string> The recovery codes
-     */
     public function handle(User $user, string $code): Collection
     {
-        // 1. Verify the OTP against the stored (but unconfirmed) secret
-        if (! $this->service->verify($user, $code)) {
+        if (! $this->service->validTotp($user, $code)) {
             throw new InvalidCredentialsException('Invalid two-factor code.');
         }
 
-        // 2. Generate Recovery Codes
         $recoveryCodes = $this->service->generateRecoveryCodes();
 
-        // 3. Activate 2FA
+        // Activate the 2FA
         $user->forceFill([
             'two_factor_confirmed_at' => now(),
-            'two_factor_recovery_codes' => $recoveryCodes, // Encrypted by Cast
+            'two_factor_recovery_codes' => $recoveryCodes,
         ])->save();
 
         return $recoveryCodes;

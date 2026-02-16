@@ -61,31 +61,16 @@ final readonly class VerifyAuthenticationChallenge
 
     private function verifyCode(AuthChallengePayloadDTO $payload, string $inputCode): void
     {
-        match ($payload->type) {
-            ChallengeType::TWO_FACTOR => $this->verifyTwoFactor($payload->userId, $inputCode),
-            ChallengeType::DEVICE_VERIFICATION => $this->verifyDeviceOtp($payload->otpHash, $inputCode),
+        $isValid = match ($payload->type) {
+            ChallengeType::TWO_FACTOR => $this->twoFactorService->valid(
+                user: User::query()->findOrFail($payload->userId),
+                code: $inputCode
+            ),
+            ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($payload->otpHash, $inputCode),
         };
-    }
 
-    private function verifyDeviceOtp(string $otpHash, string $inputCode): void
-    {
-        if ($otpHash === null) {
-            throw new InvalidChallengeException('Invalid challenge state.');
-        }
-
-        $inputHash = hash('sha256', $inputCode);
-
-        if (! hash_equals($otpHash, $inputHash)) {
+        if (! $isValid) {
             throw new InvalidChallengeException('Invalid verification code.');
-        }
-    }
-
-    private function verifyTwoFactor(string $userId, string $inputCode): void
-    {
-        $user = User::query()->findOrFail($userId);
-
-        if (! $this->twoFactorService->verify($user, $inputCode)) {
-            throw new InvalidChallengeException('Invalid two-factor code.');
         }
     }
 }

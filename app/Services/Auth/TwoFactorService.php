@@ -29,7 +29,21 @@ final readonly class TwoFactorService
         );
     }
 
-    public function verify(User $user, string $code): bool
+    public function generateRecoveryCodes(): Collection
+    {
+        return Collection::times(8, fn () => Str::random(10) . '-' . Str::random(10));
+    }
+
+    public function valid(User $user, string $code): bool
+    {
+        return match (mb_strlen($code)) {
+            6 => $this->validTotp($user, $code),
+            21 => $this->validRecoveryCode($user, $code),
+            default => false,
+        };
+    }
+
+    public function validTotp(User $user, string $code): bool
     {
         if (! $user->two_factor_secret) {
             return false;
@@ -38,8 +52,24 @@ final readonly class TwoFactorService
         return $this->engine->verifyKey($user->two_factor_secret, $code);
     }
 
-    public function generateRecoveryCodes(): Collection
+    private function validRecoveryCode(User $user, string $recoveryCode): bool
     {
-        return Collection::times(8, fn () => Str::random(10) . '-' . Str::random(10));
+        $recoveryCodes = $user->two_factor_recovery_codes;
+
+        if (! $recoveryCodes || $recoveryCodes->isEmpty()) {
+            return false;
+        }
+
+        $key = $recoveryCodes->search($recoveryCode, strict: true);
+
+        if ($key === false) {
+            return false;
+        }
+
+        $recoveryCodes->forget($key);
+
+        $user->forceFill(['two_factor_recovery_codes' => $recoveryCodes->values()])->save();
+
+        return true;
     }
 }

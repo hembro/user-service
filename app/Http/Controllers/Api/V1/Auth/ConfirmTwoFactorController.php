@@ -25,8 +25,6 @@ final class ConfirmTwoFactorController
             code: $request->validated('code')
         );
 
-        // 2. Return Response
-        // We wrap the collection in a Resource to strictly define the output.
         return $this->success(
             data: new RecoveryCodesResource($recoveryCodes),
             message: 'Two-factor authentication verified and enabled.'

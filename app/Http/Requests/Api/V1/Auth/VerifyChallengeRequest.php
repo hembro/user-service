@@ -12,7 +12,7 @@ final class VerifyChallengeRequest extends FormRequest
     {
         return [
             'challenge_id' => ['required', 'string', 'uuid'],
-            'code' => ['required', 'string', 'min:6', 'max:8'],
+            'code' => ['required', 'string', 'min:6', 'max:21'],
         ];
     }
 }
