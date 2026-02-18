@@ -17,6 +17,10 @@ final readonly class ConfirmTwoFactor
 
     public function handle(User $user, string $code): Collection
     {
+        if ($user->hasEnabledTwoFactor()) {
+            throw new InvalidCredentialsException('Two-factor authentication is already enabled.');
+        }
+
         if (! $this->service->validTotp($user, $code)) {
             throw new InvalidCredentialsException('Invalid two-factor code.');
         }

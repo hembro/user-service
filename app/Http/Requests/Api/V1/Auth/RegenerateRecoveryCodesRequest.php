@@ -6,7 +6,7 @@ namespace App\Http\Requests\Api\V1\Auth;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-final class DisableTwoFactorRequest extends FormRequest
+final class RegenerateRecoveryCodesRequest extends FormRequest
 {
     public function rules(): array
     {
