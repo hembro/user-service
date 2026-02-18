@@ -9,6 +9,7 @@ use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
+use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Models\User;
 use App\Services\Auth\ChallengeService;
@@ -52,6 +53,8 @@ final readonly class VerifyAuthenticationChallenge
         );
 
         $this->challengeService->forget($verifyChallengedto->challengeId);
+
+        UserLoggedIn::dispatch($user, $payloadDto->deviceId, $metadata);
 
         return AuthenticationOutcomeDTO::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $payloadDto->system),

@@ -7,13 +7,14 @@ use App\Http\Controllers\Api\V1\Auth\VerifyEmailController;
 use App\Http\Middleware\EnsureDeviceIsTrusted;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', Auth\LoginController::class)
-    ->middleware(['guest', 'throttle:auth.login'])
-    ->name('login');
+Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
 
-Route::post('login/challenge', Auth\VerifyAuthenticationChallengeController::class)
-    ->middleware(['guest', 'throttle:auth.login'])
-    ->name('login.challenge');
+    Route::post('/login', Auth\LoginController::class)
+        ->name('login');
+
+    Route::post('login/challenge', Auth\VerifyAuthenticationChallengeController::class)
+        ->name('login.challenge');
+});
 
 // Standard Auth Utilities
 Route::middleware('throttle:auth.api')->group(function () {

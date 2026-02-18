@@ -49,7 +49,7 @@ final readonly class TwoFactorService
             return false;
         }
 
-        return $this->engine->verifyKey($user->two_factor_secret, $code);
+        return $this->engine->verifyKey($user->two_factor_secret, $code, window: 1);
     }
 
     public function disable(User $user): void
