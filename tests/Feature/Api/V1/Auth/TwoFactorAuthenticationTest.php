@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Auth;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
@@ -100,14 +99,6 @@ describe('2FA Feature: The Happy Path', function (): void {
 
         // 2. Generate Valid Code
         $validCode = $this->google2fa->getCurrentOtp($this->userSecret);
-
-        $this->mock(DeviceTrustVerifier::class, function ($mock) {
-            $mock->shouldReceive('resolveDeviceId')
-                ->andReturn('trusted-device-uuid');
-
-            $mock->shouldReceive('isTrusted')
-                ->andReturnTrue();
-        });
 
         // Act: Verify
         $response = postJson(route('api.v1.auth.login.challenge'), [
