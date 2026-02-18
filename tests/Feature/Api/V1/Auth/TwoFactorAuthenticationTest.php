@@ -13,7 +13,6 @@ use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
@@ -219,7 +218,6 @@ describe('2FA Feature: The Unhappy Path', function (): void {
 
     it('prevents replay attacks (using same OTP twice)', function (): void {
         // Note: Standard TOTP allows the code to be valid for ~30 seconds.
-        // To prevent replay, your service must Cache the used code or timestamp.
 
         $user = User::factory()->create([
             'password' => 'password',
