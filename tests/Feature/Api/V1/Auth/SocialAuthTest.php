@@ -164,8 +164,9 @@ describe('Social Authentication: Happy Path', function (): void {
 describe('Social Authentication: Unhappy Path', function (): void {
 
     it('rejects unsupported social providers with a 404', function (): void {
-        getJson('/api/v1/auth/social/github/redirect')
-            ->assertBadRequest();
+        $response = getJson('/api/v1/auth/social/github/redirect');
+
+        $response->assertNotFound();
     });
 
     it('returns 401 Unauthorized if the social code is invalid or expired', function (): void {

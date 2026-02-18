@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Admin;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
@@ -52,6 +53,14 @@ beforeEach(function (): void {
         user: $admin,
         scopes: [Roles::PMS_ADMIN->value]
     );
+
+    $this->mock(DeviceTrustVerifier::class, function ($mock) {
+        $mock->shouldReceive('resolveDeviceId')
+            ->andReturn('test-admin-device-uuid');
+
+        $mock->shouldReceive('isTrusted')
+            ->andReturnTrue();
+    });
 });
 
 describe('Admin User Management: The Happy Path', function (): void {

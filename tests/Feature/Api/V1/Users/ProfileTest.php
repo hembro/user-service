@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api\V1\Users;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
@@ -56,6 +57,14 @@ beforeEach(function (): void {
 
     // Login
     Passport::actingAs(user: $user, scopes: [Roles::PMS_PROPONENT->value]);
+
+    $this->mock(DeviceTrustVerifier::class, function ($mock) {
+        $mock->shouldReceive('resolveDeviceId')
+            ->andReturn('test-admin-device-uuid');
+
+        $mock->shouldReceive('isTrusted')
+            ->andReturnTrue();
+    });
 });
 
 describe('User Profile (Self-Service): Happy Path', function (): void {
