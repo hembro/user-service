@@ -6,9 +6,11 @@ namespace Tests\Feature\Api\V1\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Systems;
+use App\Events\Auth\RecoveryCodesRegenerated;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\Client;
@@ -163,6 +165,7 @@ describe('2FA Management Feature: The Happy Path', function (): void {
     });
 
     it('can regenerate recovery codes', function (): void {
+        Event::fake();
         // Arrange
         $password = 'password';
         /** @var User */
@@ -202,6 +205,8 @@ describe('2FA Management Feature: The Happy Path', function (): void {
 
         expect($newCodes)->toBeArray()
             ->and($newCodes)->not->toContain('old-code-1');
+
+        Event::assertDispatched(RecoveryCodesRegenerated::class);
     });
 });
 
