@@ -15,4 +15,6 @@ interface DeviceTrustVerifier
     public function trustDevice(User $user, string $deviceId, RequestMetadata $metadata): void;
 
     public function resolveDeviceId(Request $request): ?string;
+
+    public function forgetDevice(User $user, string $deviceId): void;
 }

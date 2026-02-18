@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\AuthChallengeDTO;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\LoginCredentials;
@@ -16,7 +17,6 @@ use App\Exceptions\InvalidCredentialsException;
 use App\Models\User;
 use App\Notifications\VerifyDeviceLogin;
 use App\Services\Auth\ChallengeService;
-use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 final readonly class AttemptLogin
 {
     public function __construct(
-        private DeviceTrustService $deviceService,
+        private DeviceTrustVerifier $deviceService,
         private ChallengeService $challengeService,
         private TokenIssuer $tokenIssuer,
     ) {}

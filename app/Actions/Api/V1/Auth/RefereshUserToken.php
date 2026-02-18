@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Exceptions\InvalidRefreshTokenException;
-use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Log\LoggerInterface;
@@ -17,7 +17,7 @@ final class RefereshUserToken
 {
     public function __construct(
         private readonly TokenIssuer $tokenIssuer,
-        private readonly DeviceTrustService $deviceService,
+        private readonly DeviceTrustVerifier $deviceService,
         private readonly LoggerInterface $logger
     ) {}
 
@@ -37,7 +37,7 @@ final class RefereshUserToken
             throw new InvalidRefreshTokenException('Invalid token.');
         }
 
-        if (! $deviceId || ! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+        if (! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
 
             $this->logger->warning(
                 message: 'refresh token usage blocked by untrusted device',

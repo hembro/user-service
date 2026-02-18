@@ -8,11 +8,16 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
+use App\Events\Auth\UserLoggedIn;
+use App\Events\Auth\UserLoggedOut;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Laravel\Passport\Client;
+use Mockery\Mock;
 
 use function Pest\Laravel\call;
 use function Pest\Laravel\postJson;
@@ -44,7 +49,12 @@ beforeEach(function (): void {
     // 3. Ensure Cookie Config is consistent for tests
     Config::set('cookie.refresh_token', [
         'name' => 'refresh_token',
-        'minutes' => 60,
+        'minutes' => 43200,
+    ]);
+
+    Config::set('cookie.device_id', [
+        'name' => 'device_id',
+        'minutes' => 2628000,
     ]);
 });
 
@@ -126,7 +136,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
             ->assertCookie(config('cookie.device_id.name'));
     });
 
-    it('refreshes token using a valid cookie', function (): void {
+    it('refreshes token using a valid cookie and trusted device', function (): void {
         // Arrange: We need a valid Refresh Token Cookie first.
         // We simulate a Trusted Login to get it naturally.
         $password = 'password123';
@@ -135,9 +145,12 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'password' => $password,
         ]);
 
-        $this->mock(DeviceTrustVerifier::class)
-            ->shouldReceive('isTrusted')
-            ->andReturnTrue();
+        $deviceId = (string) Str::orderedUuid();
+
+        $this->mock(DeviceTrustVerifier::class, function ($mock) use ($deviceId) {
+            $mock->shouldReceive('resolveDeviceId')->andReturn($deviceId);
+            $mock->shouldReceive('isTrusted')->andReturnTrue();
+        });
 
         $loginResponse = postJson(
             uri: route('api.v1.auth.login'),
@@ -145,16 +158,22 @@ describe('Authentication Feature: The Happy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
-        $cookieName = config('cookie.refresh_token.name');
-        $cookieValue = $loginResponse->getCookie($cookieName, false)->getValue();
+        $refreshCookieName = config('cookie.refresh_token.name');
+        $refreshCookieValue = $loginResponse->getCookie($refreshCookieName, false)->getValue();
+
+        $deviceIdCookieName = config('cookie.device_id.name');
+        $deviceIdCookieValue = $loginResponse->getCookie($deviceIdCookieName, false)->getValue();
+
         $originalAccessToken = $loginResponse->json('data.access_token');
 
         // Act: Call Refresh Endpoint
-        // Note: We use call() because assertJson doesn't support sending cookies easily in some versions
         $response = call(
             method: 'POST',
             uri: route('api.v1.auth.refresh'),
-            cookies: [$cookieName => $cookieValue],
+            cookies: [
+                $refreshCookieName => $refreshCookieValue,
+                $deviceIdCookieName => $deviceIdCookieValue,
+            ],
             server: ['HTTP_X-Source-System' => Systems::PMS->value]
         );
 
@@ -165,6 +184,9 @@ describe('Authentication Feature: The Happy Path', function (): void {
     });
 
     it('logs out and invalidates cookie', function (): void {
+
+        Event::fake();
+
         // Arrange
         $password = 'password123';
         $user = User::factory()->create([
@@ -185,18 +207,40 @@ describe('Authentication Feature: The Happy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
+        $deviceId = $loginResponse->getCookie(config('cookie.device_id.name'), false)->getValue();
+
+        $loginResponse->assertOk()
+            ->assertJsonStructure([
+                'data' => ['access_token', 'expires_in'],
+            ]);
+
+        Event::assertDispatched(UserLoggedIn::class);
+
         $token = $loginResponse->json('data.access_token');
 
+        $this->mock(DeviceTrustVerifier::class, function ($mock) use ($deviceId) {
+
+            $mock->shouldReceive('resolveDeviceId')
+                ->andReturn($deviceId);
+
+            $mock->shouldReceive('isTrusted')
+                ->andReturnTrue();
+
+            $mock->shouldReceive('forgetDevice')
+                ->andReturn();
+        });
+
         // Act
-        $response = withHeader('Authorization', "Bearer {$token}")
-            ->postJson(
-                uri: route('api.v1.auth.logout'),
-                headers: ['X-Source-System' => Systems::PMS->value]
-            );
+        $response = withHeader('X-Source-System', Systems::PMS->value)
+            ->withHeader('Authorization', "Bearer {$token}")
+            ->withCookie(config('cookie.device_id.name'), $deviceId)
+            ->postJson(route('api.v1.auth.logout'));
 
         // Assert
         $response->assertNoContent()
             ->assertCookieExpired(config('cookie.refresh_token.name'));
+
+        Event::assertDispatched(UserLoggedOut::class);
     });
 });
 
@@ -217,8 +261,6 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         );
 
-        // The custom exception handler likely returns 401 or 400 depending on config
-        // Assuming InvalidCredentialsException renders 401
         $response->assertUnauthorized()
             ->assertJson(['success' => false]);
     });
@@ -241,17 +283,21 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
         $response->assertUnauthorized();
     });
 
-    it('rejects refresh with invalid cookie', function (): void {
-        $cookieName = config('cookie.refresh_token.name');
+    it('rejects refresh with invalid cookie and invalid device id', function (): void {
+        $refreshCookieName = config('cookie.refresh_token.name');
+        $deviceCookieName = config('cookie.device_id.name');
 
         $response = call(
             method: 'POST',
             uri: route('api.v1.auth.refresh'),
-            cookies: [$cookieName => 'this-is-a-fake-token'],
+            cookies: [
+                $refreshCookieName => 'this-is-a-fake-token',
+                $deviceCookieName => 'this-is-a-fake-device-id',
+            ],
             server: ['HTTP_X-Source-System' => Systems::PMS->value]
         );
 
         $response->assertUnauthorized()
-            ->assertCookieExpired($cookieName);
+            ->assertCookieExpired($refreshCookieName);
     });
 });

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Events\Auth\SuspiciousSessionDetected;
-use App\Services\Auth\DeviceTrustService;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 final readonly class EnsureDeviceIsTrusted
 {
     public function __construct(
-        private DeviceTrustService $deviceService
+        private DeviceTrustVerifier $deviceService
     ) {}
 
     public function handle(Request $request, Closure $next): Response

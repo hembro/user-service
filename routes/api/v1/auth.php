@@ -18,27 +18,16 @@ Route::post('login/challenge', Auth\VerifyAuthenticationChallengeController::cla
 // Standard Auth Utilities
 Route::middleware('throttle:auth.api')->group(function () {
 
-    /**
-     * ---------------------------------------------------------
-     * START API GATEWAY VALIDATION ENDPOINT
-     * ---------------------------------------------------------
-     */
-    Route::get('/validate', function () {
-        return response()->noContent()->withHeaders([
-            'X-User-Id' => auth('api')->id(),
-        ]);
-    })
-        ->middleware(['auth:api', EnsureDeviceIsTrusted::class])
-        ->name('validate');
-
-    /**
-     * ---------------------------------------------------------
-     * END API GATEWAY VALIDATION ENDPOINT
-     * ---------------------------------------------------------
-     */
     Route::post('/refresh', Auth\RefreshTokenController::class)->name('refresh');
 
     Route::middleware(['auth:api', EnsureDeviceIsTrusted::class])->group(function () {
+
+        // API GATEWAY VALIDATION ENDPOINT
+        Route::get('/validate', function () {
+            return response()->noContent()->withHeaders([
+                'X-User-Id' => auth('api')->id(),
+            ]);
+        })->name('validate');
 
         Route::post('/logout', Auth\LogoutController::class)
             ->name('logout');
