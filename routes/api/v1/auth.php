@@ -42,7 +42,7 @@ Route::middleware('throttle:auth.api')->group(function () {
         Route::post('/2fa/disable', Auth\DisableTwoFactorController::class)
             ->name('2fa.disable');
 
-        Route::post('auth/2fa/recovery-codes', Auth\RegenerateRecoveryCodeController::class)
+        Route::post('/2fa/recovery-codes', Auth\RegenerateRecoveryCodeController::class)
             ->name('2fa.recovery-codes');
     });
 
