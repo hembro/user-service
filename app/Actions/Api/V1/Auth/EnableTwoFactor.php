@@ -17,7 +17,7 @@ final readonly class EnableTwoFactor
 
     public function handle(User $user): TwoFactorSetupDTO
     {
-        if ($user->two_factor_confirmed_at) {
+        if ($user->hasEnabledTwoFactor()) {
             throw new InvalidTwoFactorRequest('Two-factor authentication is already enabled.');
         }
 
