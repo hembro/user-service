@@ -129,6 +129,27 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'auth' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/auth.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
+        'system' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/system.log'),
+            'level' => 'info',
+            'days' => 14,
+        ],
+
     ],
 
 ];

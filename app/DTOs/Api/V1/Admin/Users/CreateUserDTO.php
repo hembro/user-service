@@ -10,11 +10,13 @@ use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\StoreRequest;
+use SensitiveParameter;
 
 final readonly class CreateUserDTO
 {
     public function __construct(
         public string $email,
+        #[SensitiveParameter]
         public string $password,
         public ?Titles $title,
         public string $firstName,

@@ -11,11 +11,11 @@ use League\OAuth2\Server\Entities\UserEntityInterface;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class SocialGrant extends AbstractInternalGrant
+final class SystemVerifiedGrant extends AbstractInternalGrant
 {
     public function getIdentifier(): string
     {
-        return 'social';
+        return 'system_verified';
     }
 
     protected function validateUser(ServerRequestInterface $request, ClientEntityInterface $client): UserEntityInterface
@@ -23,6 +23,11 @@ final class SocialGrant extends AbstractInternalGrant
         $this->ensureInternalSignature($request);
 
         $userId = $this->getRequestParameter('user_id', $request);
+
+        if (! $userId) {
+            throw OAuthServerException::invalidRequest('user_id');
+        }
+
         $user = User::query()->find($userId);
 
         if (! $user) {

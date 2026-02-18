@@ -16,6 +16,7 @@ final class UserLoggedIn
 
     public function __construct(
         public readonly User $user,
+        public readonly string $deviceId,
         public readonly RequestMetadata $metadata
     ) {}
 }

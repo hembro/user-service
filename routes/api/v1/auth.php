@@ -4,32 +4,52 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Auth;
 use App\Http\Controllers\Api\V1\Auth\VerifyEmailController;
+use App\Http\Middleware\EnsureDeviceIsTrusted;
 use Illuminate\Support\Facades\Route;
 
-// High-Risk Login Routes (Brute Force Protection)
-Route::post('/login', Auth\LoginController::class)
-    ->middleware(['guest', 'throttle:auth.login'])
-    ->name('login');
+Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
+
+    Route::post('/login', Auth\LoginController::class)
+        ->name('login');
+
+    Route::post('login/challenge', Auth\VerifyAuthenticationChallengeController::class)
+        ->name('login.challenge');
+});
 
 // Standard Auth Utilities
 Route::middleware('throttle:auth.api')->group(function () {
 
     Route::post('/refresh', Auth\RefreshTokenController::class)->name('refresh');
 
-    Route::post('/logout', Auth\LogoutController::class)
-        ->middleware('auth:api')
-        ->name('logout');
+    Route::middleware(['auth:api', EnsureDeviceIsTrusted::class])->group(function () {
 
-    // Verification link clicking doesn't need strict limits (it's signed)
+        // API GATEWAY VALIDATION ENDPOINT
+        Route::get('/validate', function () {
+            return response()->noContent()->withHeaders([
+                'X-User-Id' => auth('api')->id(),
+            ]);
+        })->name('validate');
+
+        Route::post('/logout', Auth\LogoutController::class)
+            ->name('logout');
+
+        Route::post('/2fa/enable', Auth\EnableTwoFactorController::class)
+            ->name('2fa.enable');
+
+        Route::post('/2fa/confirm', Auth\ConfirmTwoFactorController::class)
+            ->name('2fa.confirm');
+
+        Route::post('/2fa/disable', Auth\DisableTwoFactorController::class)
+            ->name('2fa.disable');
+
+        Route::post('auth/2fa/recovery-codes', Auth\RegenerateRecoveryCodeController::class)
+            ->name('2fa.recovery-codes');
+    });
+
     Route::post('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
         ->middleware(['signed'])
         ->name('verification.verify');
 });
-
-// Email Trigger Routes (Spam Protection)
-Route::post('/email/resend', [VerifyEmailController::class, 'resend'])
-    ->middleware(['auth:api', 'throttle:auth.email'])
-    ->name('verification.resend');
 
 Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
 
@@ -40,10 +60,11 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
         ->name('password.update');
 });
 
-Route::prefix('social/{provider}')
-    ->middleware(['guest', 'throttle:auth.login'])
-    ->name('social.')
-    ->group(function () {
-        Route::get('/redirect', [Auth\SocialAuthController::class, 'redirect'])->name('redirect');
-        Route::post('/callback', [Auth\SocialAuthController::class, 'callback'])->name('callback');
-    });
+Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
+
+    Route::get('/social/{provider}/redirect', Auth\SocialRedirectController::class)
+        ->name('social.redirect');
+
+    Route::post('social/{provider}/callback', Auth\SocialAuthController::class)
+        ->name('social.callback');
+});

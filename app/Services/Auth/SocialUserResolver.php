@@ -2,30 +2,33 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Api\V1\Auth;
+namespace App\Services\Auth;
 
 use App\DTOs\Api\V1\Auth\SocialUserDTO;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
 
-final readonly class CreateSocialUser
+final readonly class SocialUserResolver
 {
     public function __construct(
         private DatabaseManager $db,
         private LoggerInterface $logger
     ) {}
 
-    public function handle(SocialUserDTO $dto, Systems $system): User
+    public function resolve(SocialUserDTO $dto, Systems $system): User
     {
         return $this->db->transaction(
             callback: function () use ($dto, $system) {
 
+                $this->logger->debug(
+                    message: 'social user registration initiated',
+                    context: ['email' => $dto->email]
+                );
+
                 $user = User::query()
-                    ->withTrashed()
                     ->firstOrCreate(
                         attributes: ['email' => $dto->email],
                         values: [
@@ -37,10 +40,7 @@ final readonly class CreateSocialUser
 
                 if ($user->wasRecentlyCreated) {
 
-                    $this->logger->debug(
-                        message: 'social user registration initiated',
-                        context: ['email' => $dto->email]
-                    );
+                    $this->logger->info('user registered via social', ['user_id' => $user->id]);
 
                     $user->profile()->create([
                         'first_name' => $dto->firstName,
@@ -50,15 +50,13 @@ final readonly class CreateSocialUser
                     ]);
 
                     $user->assignRole($system->defaultRole());
-
-                    $this->db->afterCommit(
-                        fn () => UserRegistered::dispatch($user)
-                    );
                 }
 
                 $user->socialAccounts()->firstOrCreate(
-                    attributes: ['provider_name' => $dto->provider->value],
-                    values: ['provider_id' => $dto->providerId]
+                    attributes: [
+                        'provider_name' => $dto->provider->value,
+                        'provider_id' => $dto->providerId,
+                    ]
                 );
 
                 return $user;

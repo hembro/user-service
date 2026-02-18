@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Admin;
 
 use App\Events\Admin\UserDeleted;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserDeleted implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserDeleted implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserDeleted $event): void
     {
-        $this->logger->info(
-            message: 'audit: admin deleted user',
+        Log::channel('audit')->info(
+            message: 'admin deleted user',
             context: [
                 'user_id' => $event->userId,
                 'admin_id' => $event->admin->id,

@@ -4,35 +4,39 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\DTOs\Api\V1\Auth\RefreshTokenDTO;
+use App\Actions\Api\V1\Auth\RefereshUserToken;
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
+use App\Services\Auth\DeviceTrustService;
 use App\Services\AuthCookieService;
-use App\Services\AuthService;
 use App\Traits\HasApiResponse;
-use Illuminate\Http\JsonResponse;
 
 final class RefreshTokenController
 {
     use HasApiResponse;
 
     public function __construct(
-        private readonly AuthService $service,
-        private readonly AuthCookieService $cookieFactory,
+        private readonly RefereshUserToken $action,
+        private readonly DeviceTrustService $deviceService,
+        private readonly AuthCookieService $cookie,
     ) {}
 
-    public function __invoke(RefreshTokenRequest $request): JsonResponse
+    public function __invoke(RefreshTokenRequest $request)
     {
-        $token = $this->service->refresh(
-            dto: RefreshTokenDTO::fromRequest($request)
+        $deviceId = $this->deviceService->resolveDeviceId($request);
+
+        $token = $this->action->handle(
+            refreshToken: $request->cookie(config('cookie.refresh_token.name')) ?? $request->validated('refresh_token'),
+            deviceId: $deviceId,
+            system: $request->attributes->get('system'),
+            metadata: RequestMetadata::fromRequest($request),
         );
 
         return $this->success(
             data: new TokenResource($token)
         )->withCookie(
-            cookie: $this->cookieFactory->make(
-                refreshToken: $token->refreshToken
-            )
+            $this->cookie->makeRefreshTokenCookie($token->refreshToken)
         );
     }
 }

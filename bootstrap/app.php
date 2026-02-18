@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Middleware\CaptureRequestContext;
+use App\Http\Middleware\EnsureDeviceIsTrusted;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,7 +21,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->append(CaptureRequestContext::class);
+        $middleware->api(
+            append: [
+                CaptureRequestContext::class,
+                EnsureDeviceIsTrusted::class,
+            ]
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (AuthenticationException $e, Request $request) {
@@ -28,7 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return new JsonResponse(
                     data: [
                         'success' => false,
-                        'message' => 'Invalid credentials.',
+                        'message' => 'Invalid credentials',
                         'code' => Response::HTTP_UNAUTHORIZED,
                     ],
                     status: Response::HTTP_UNAUTHORIZED

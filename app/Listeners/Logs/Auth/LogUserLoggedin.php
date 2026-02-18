@@ -7,7 +7,7 @@ namespace App\Listeners\Logs\Auth;
 use App\Events\Auth\UserLoggedIn;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserLoggedin implements ShouldQueue
 {
@@ -15,20 +15,17 @@ final class LogUserLoggedin implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserLoggedIn $event): void
     {
         $occurredAt = CarbonImmutable::createFromTimestamp($event->metadata->timestamp);
 
         $event->user->update(['last_login_at' => $occurredAt]);
 
-        $this->logger->info(
-            message: 'audit: user logged-in',
+        Log::channel('auth')->info(
+            message: 'Device usage heartbeat',
             context: [
                 'user_id' => $event->user->id,
+                'device_id' => $event->deviceId,
                 'ip' => $event->metadata->ip,
                 'user_agent' => $event->metadata->userAgent,
                 'timestamp' => $occurredAt->toIso8601String(),

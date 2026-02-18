@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Admin;
 
 use App\Events\Admin\UserRestored;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserRestored implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserRestored implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserRestored $event): void
     {
-        $this->logger->info(
-            message: 'audit: admin restored user',
+        Log::channel('audit')->info(
+            message: 'admin restored user',
             context: [
                 'user_id' => $event->user->id,
                 'admin_id' => $event->admin->id,

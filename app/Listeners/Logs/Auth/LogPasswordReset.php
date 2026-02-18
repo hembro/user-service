@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Auth;
 
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogPasswordReset implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogPasswordReset implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(PasswordReset $event): void
     {
-        $this->logger->info(
-            message: 'audit: user reset password (recovery)',
+        Log::channel('auth')->info(
+            message: 'user reset password (recovery)',
             context: [
                 'user_id' => $event->user->id,
                 'email' => $event->user->email,

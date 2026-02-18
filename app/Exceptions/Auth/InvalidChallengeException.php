@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Exceptions;
+namespace App\Exceptions\Auth;
 
 use App\Traits\HasApiResponse;
 use Exception;
@@ -10,7 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-final class UpstreamServiceException extends Exception
+final class InvalidChallengeException extends Exception
 {
     use HasApiResponse;
 
@@ -18,7 +18,7 @@ final class UpstreamServiceException extends Exception
     {
         return $this->error(
             message: $this->getMessage(),
-            code: Response::HTTP_BAD_GATEWAY
+            code: Response::HTTP_FORBIDDEN
         );
     }
 }

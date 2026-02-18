@@ -27,13 +27,4 @@ final readonly class LoginCredentials
             system: $request->attributes->get('system'),
         );
     }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            email: $data['email'],
-            password: $data['password'],
-            system: Systems::from($data['system']),
-        );
-    }
 }

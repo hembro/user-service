@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Users;
 
 use App\Events\Users\UserAvatarUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserAvatarUpdated implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserAvatarUpdated implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserAvatarUpdated $event): void
     {
-        $this->logger->info(
-            message: 'audit: user updated avatar',
+        Log::channel('audit')->info(
+            message: 'user updated avatar',
             context: [
                 'user_id' => $event->user->id,
                 'avatar_path' => $event->user->profile->avatar_path,

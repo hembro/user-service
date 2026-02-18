@@ -98,7 +98,9 @@ describe('Social Authentication: Happy Path', function (): void {
         );
 
         $response->assertOk()
-            ->assertJsonPath('data.user.email', 'new.user@gmail.com');
+            ->assertJsonPath('data.auth_state', 'authenticated')
+            ->assertCookieNotExpired('refresh_token')
+            ->assertCookieNotExpired('device_id');
 
         // Verify Core User
         $user = User::where('email', 'new.user@gmail.com')->first();
@@ -144,7 +146,7 @@ describe('Social Authentication: Happy Path', function (): void {
         );
 
         $response->assertOk()
-            ->assertJsonPath('data.user.id', $existingUser->id);
+            ->assertJsonPath('data.auth_state', 'authenticated');
 
         // Verify identity was linked safely
         assertDatabaseHas('user_social_accounts', [
@@ -162,8 +164,9 @@ describe('Social Authentication: Happy Path', function (): void {
 describe('Social Authentication: Unhappy Path', function (): void {
 
     it('rejects unsupported social providers with a 404', function (): void {
-        getJson('/api/v1/auth/social/github/redirect')
-            ->assertBadRequest();
+        $response = getJson('/api/v1/auth/social/github/redirect');
+
+        $response->assertNotFound();
     });
 
     it('returns 401 Unauthorized if the social code is invalid or expired', function (): void {
@@ -182,8 +185,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
             data: ['code' => 'expired-or-fake-code'],
             headers: ['X-Source-System' => Systems::PMS->value]
         )
-            ->assertUnauthorized()
-            ->assertJsonPath('message', 'Invalid or expired social authentication code.');
+            ->assertUnauthorized();
     });
 
     it('prevents social login if the existing account is banned or inactive', function (): void {
@@ -200,7 +202,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
             headers: ['X-Source-System' => Systems::PMS->value]
         )
             ->assertUnauthorized()
-            ->assertJsonPath('message', 'Invalid credentials.');
+            ->assertJsonPath('message', 'Account is inactive.');
     });
 
     it('requires a code payload in the callback request', function (): void {

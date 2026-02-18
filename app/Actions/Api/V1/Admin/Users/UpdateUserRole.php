@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Api\V1\Admin\Users;
 
 use App\Actions\Api\V1\Auth\RevokeSystemTokens;
-use App\Actions\Api\V1\Auth\SyncSystemRoles;
 use App\DTOs\Api\V1\Admin\Users\UpdateRoleDTO;
 use App\Enums\Roles;
 use App\Events\Admin\UserRoleUpdated;
 use App\Models\User;
+use App\Services\Users\SyncSystemRoles;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class UpdateUserRole
@@ -38,6 +38,8 @@ final readonly class UpdateUserRole
                 }
 
                 $this->revokeSystemTokens->handle($user, $dto->system);
+
+                $user->touch();
 
                 $this->db->afterCommit(
                     fn () => UserRoleUpdated::dispatch($user, $admin, $changes['old'], $changes['new'])

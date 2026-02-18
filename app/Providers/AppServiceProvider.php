@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
-use App\OAuth\Grants\ImpersonateGrant;
-use App\OAuth\Grants\SocialGrant;
+use App\OAuth\Grants\SystemVerifiedGrant;
+use App\Services\Auth\DeviceTrustService;
+use App\Services\Auth\TokenIssuer;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
-use DateInterval;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +31,7 @@ final class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         Passport::ignoreRoutes();
+        $this->bindContracts();
     }
 
     public function boot(): void
@@ -42,6 +44,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureEmailVerification();
         $this->configureRateLimiting($isProduction);
         $this->registerCustomGrants();
+        $this->bindServices();
     }
 
     private function configurePassport(): void
@@ -50,9 +53,6 @@ final class AppServiceProvider extends ServiceProvider
         Passport::enablePasswordGrant();
         Passport::tokensExpireIn(CarbonInterval::minutes(15));
         Passport::refreshTokensExpireIn(CarbonInterval::days(30));
-
-        // Enables logging-in with PATs for impersonation only.
-        Passport::personalAccessTokensExpireIn(CarbonInterval::minutes(30));
 
         Passport::tokensCan(Roles::getPassportScopes());
     }
@@ -136,22 +136,29 @@ final class AppServiceProvider extends ServiceProvider
         /** @var RefreshTokenRepository $refreshTokenRepository */
         $refreshTokenRepository = $this->app->make(RefreshTokenRepository::class);
 
-        // --- 1. Social Grant ---
-        $socialGrant = new SocialGrant($refreshTokenRepository);
-        $socialGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+        $verifiedGrant = new SystemVerifiedGrant($refreshTokenRepository);
+        $verifiedGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
 
         $server->enableGrantType(
-            grantType: $socialGrant,
+            grantType: $verifiedGrant,
             accessTokenTTL: Passport::tokensExpireIn()
         );
+    }
 
-        // --- 2. Impersonate Grant ---
-        $impersonateGrant = new ImpersonateGrant($refreshTokenRepository);
-        $impersonateGrant->setRefreshTokenTTL(Passport::refreshTokensExpireIn());
+    private function bindServices(): void
+    {
+        $this->app->bind(TokenIssuer::class, function ($app) {
+            return new TokenIssuer(
+                server: $app->make(AuthorizationServer::class),
+                systemClients: config('services.passport.frontend_clients'),
+                internalSignature: config('app.key')
+            );
+        });
+    }
 
-        $server->enableGrantType(
-            grantType: $impersonateGrant,
-            accessTokenTTL: new DateInterval('PT1H')
-        );
+    private function bindContracts(): void
+    {
+        // For testing purposes
+        $this->app->bind(DeviceTrustVerifier::class, DeviceTrustService::class);
     }
 }

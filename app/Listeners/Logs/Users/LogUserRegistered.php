@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Users;
 
 use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserRegistered implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserRegistered implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserRegistered $event): void
     {
-        $this->logger->info(
-            message: 'audit: user registered',
+        Log::channel('audit')->info(
+            message: 'user registered',
             context: [
                 'user_id' => $event->user->id,
             ]

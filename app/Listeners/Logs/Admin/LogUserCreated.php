@@ -6,7 +6,7 @@ namespace App\Listeners\Logs\Admin;
 
 use App\Events\Admin\UserInvited;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Psr\Log\LoggerInterface;
+use Illuminate\Support\Facades\Log;
 
 final class LogUserCreated implements ShouldQueue
 {
@@ -14,14 +14,10 @@ final class LogUserCreated implements ShouldQueue
 
     public int $tries = 3;
 
-    public function __construct(
-        private readonly LoggerInterface $logger
-    ) {}
-
     public function handle(UserInvited $event): void
     {
-        $this->logger->info(
-            message: 'audit: admin created user',
+        Log::channel('audit')->info(
+            message: 'admin created user',
             context: [
                 'target_user_id' => $event->user->id,
                 'admin_id' => $event->admin->id,
