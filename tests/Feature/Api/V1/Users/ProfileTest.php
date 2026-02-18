@@ -43,7 +43,6 @@ beforeEach(function (): void {
         'password' => 'OldPassword123!',
     ]);
 
-    // Create Profile manually since Factory might not do it
     $user->profile()->create([
         'first_name' => 'Original',
         'last_name' => 'Name',
@@ -143,7 +142,6 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         $response->assertOk();
 
         // Check if file was stored in correct folder structure
-
         $path = "avatars/{$this->user->id}/" . $file->hashName();
         Storage::disk('public')->assertExists($path);
 
@@ -227,7 +225,6 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
             'password_confirmation' => 'NewSecurePass1!',
         ];
 
-        // FIX: Use patchJson instead of postJson with a 'method' parameter
         patchJson(
             uri: route('api.v1.users.profile.password.update'),
             data: $payload,
@@ -275,6 +272,6 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
             uri: route('api.v1.users.email.change.verify'),
             data: ['token' => 'fake-token'],
             headers: ['X-Source-System' => Systems::PMS->value]
-        )->assertForbidden(); // Or 403/400 depending on your Exception handling
+        )->assertForbidden();
     });
 });
