@@ -28,22 +28,22 @@ final readonly class UserRegisteredIntegrationEvent implements Arrayable
 
     public static function fromDomainEvent(UserRegistered $event): self
     {
-        $user = $event->user->loadMissing('profile');
+        $event->user->loadMissing('profile');
 
         return new self(
-            id: (string) $user->id,
-            email: $user->email,
-            status: $user->status->value,
-            fullName: $user->profile?->full_name,
-            title: $user->profile?->title?->value,
-            firstName: $user->profile?->first_name,
-            middleName: $user->profile?->middle_name,
-            lastName: $user->profile?->last_name,
-            suffix: $user->profile?->suffix?->value,
-            sex: $user->profile?->sex->value,
-            mobileNumber: $user->profile?->mobile_number,
-            emailVerifiedAt: $user->email_verified_at?->toIso8601String(),
-            createdAt: $user->created_at->toIso8601String(),
+            id: (string) $event->user->id,
+            email: $event->user->email,
+            status: $event->user->status->value,
+            fullName: $event->user->profile?->full_name,
+            title: $event->user->profile?->title?->value,
+            firstName: $event->user->profile?->first_name,
+            middleName: $event->user->profile?->middle_name,
+            lastName: $event->user->profile?->last_name,
+            suffix: $event->user->profile?->suffix?->value,
+            sex: $event->user->profile?->sex->value,
+            mobileNumber: $event->user->profile?->mobile_number,
+            emailVerifiedAt: $event->user->email_verified_at?->toIso8601String(),
+            createdAt: $event->user->created_at->toIso8601String(),
         );
     }
 
