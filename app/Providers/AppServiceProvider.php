@@ -12,6 +12,7 @@ use App\Services\Auth\TokenIssuer;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
@@ -42,6 +43,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureDefaults($isProduction);
         $this->configureModels($isProduction);
         $this->configureEmailVerification();
+        $this->configurePasswordReset();
         $this->configureRateLimiting($isProduction);
         $this->registerCustomGrants();
         $this->bindServices();
@@ -102,6 +104,16 @@ final class AppServiceProvider extends ServiceProvider
                 ->withQuery($queryParams)
                 ->toStringable()
                 ->toString();
+        });
+    }
+
+    private function configurePasswordReset(): void
+    {
+        ResetPassword::createUrlUsing(function (object $notifiable, string $token): string {
+            $frontendUrl = config('app.frontend.url');
+            $email = urlencode($notifiable->getEmailForPasswordReset());
+
+            return "{$frontendUrl}/reset-password?token={$token}&email={$email}";
         });
     }
 

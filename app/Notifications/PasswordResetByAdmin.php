@@ -14,8 +14,6 @@ final class PasswordResetByAdmin extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public string $queue = 'high';
-
     public int $tries = 3;
 
     public array $backoff = [10, 60];
@@ -23,7 +21,9 @@ final class PasswordResetByAdmin extends Notification implements ShouldQueue
     public function __construct(
         public readonly string $adminName,
         public readonly Systems $system
-    ) {}
+    ) {
+        $this->queue = 'high';
+    }
 
     public function via(object $notifiable): array
     {

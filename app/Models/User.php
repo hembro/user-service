@@ -122,4 +122,32 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
             'last_login_at' => now(),
         ]);
     }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        // 1. Build the Frontend URL
+        $frontendUrl = config('app.frontend.url');
+        $emailParam = urlencode($this->email);
+        $resetLink = "{$frontendUrl}/reset-password?token={$token}&email={$emailParam}";
+
+        // 2. Build the Command DTO
+        // $command = new SendEmailCommand(
+        //     id: (string) Str::ulid(),
+        //     recipientEmail: $this->email,
+        //     templateName: 'auth.password_reset', // The Email Service must have a template named this
+        //     variables: [
+        //         'reset_link' => $resetLink,
+        //         'user_id' => (string) $this->id,
+        //     ],
+        //     originSystem: request()->header('X-Source-System') ?? 'auth-service',
+        //     occurredAt: now()->toIso8601String(),
+        // );
+
+        // // 3. Save to Outbox (This guarantees the email command is sent!)
+        // OutboxEvent::create([
+        //     'event_type' => RoutingKey::COMMAND_SEND_EMAIL->value,
+        //     'payload' => $command->toArray(),
+        //     'status' => OutboxStatus::PENDING,
+        // ]);
+    }
 }

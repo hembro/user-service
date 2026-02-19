@@ -29,6 +29,8 @@ enum RoutingKey: string
     case USER_AVATAR_UPDATED = 'user.profile.avatar.updated';
     case USER_EMAIL_CHANGED = 'user.email.changed';
     case USER_PROFILE_UPDATED = 'user.profile.updated';
+    case USER_PASSWORD_RESET = 'user.password.reset';
+    case USER_PASSWORD_UPDATED = 'user.password.updated';
 
     public function matches(string $key): bool
     {
