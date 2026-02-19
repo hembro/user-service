@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\DTOs\Api\V1\Auth\SocialUserDTO;
+use App\Enums\Sex;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Models\User;
@@ -46,7 +47,7 @@ final readonly class SocialUserResolver
                         'first_name' => $dto->firstName,
                         'last_name' => $dto->lastName,
                         'avatar_path' => $dto->avatarPath,
-                        'sex' => 'unknown',
+                        'sex' => Sex::UNKNOWN,
                     ]);
 
                     $user->assignRole($system->defaultRole());

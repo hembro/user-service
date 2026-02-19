@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums;
+use App\Enums\Sex;
+use App\Enums\Suffix;
+use App\Enums\Titles;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
@@ -20,12 +22,12 @@ use Illuminate\Support\Str;
  * @property-read string $id
  * @property-read string $user_id
  * @property-read string $avatarUrl
- * @property-read Enums\Titles $title
+ * @property-read Titles $title
  * @property-read string $first_name
  * @property-read string $middle_name
  * @property-read string $last_name
- * @property-read Enums\Suffix $suffix
- * @property-read Enums\Sex $sex
+ * @property-read Suffix $suffix
+ * @property-read Sex $sex
  * @property-read string $mobile_number
  * @property-read ArrayObject $preferences
  * @property-read CarbonInterface $created_at
@@ -50,8 +52,9 @@ final class UserProfile extends Model
     ];
 
     protected $casts = [
-        'title' => Enums\Titles::class,
-        'suffix' => Enums\Suffix::class,
+        'title' => Titles::class,
+        'suffix' => Suffix::class,
+        'sex' => Sex::class,
         'preferences' => AsArrayObject::class,
     ];
 

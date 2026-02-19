@@ -47,8 +47,8 @@ final readonly class RegisterUser
 
                 $this->db->afterCommit(
                     function () use ($user, $deviceId, $metadata) {
-                        UserRegistered::dispatch($user);
                         $this->deviceService->trustDevice($user, $deviceId, $metadata);
+                        UserRegistered::dispatch($user->load('profile'), $metadata);
                     }
                 );
 

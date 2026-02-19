@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Roles;
-use App\Enums\SocialProviders;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Notifications\ResetPasswordLink;
 use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -20,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Context;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -103,13 +100,6 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         );
     }
 
-    public function hasSocialAccount(SocialProviders $provider): bool
-    {
-        return $this->socialAccounts()
-            ->where('provider_name', $provider->value)
-            ->exists();
-    }
-
     public function belongsToSystem(Systems $system): bool
     {
         foreach ($this->getRoleNames() as $name) {
@@ -119,15 +109,6 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         }
 
         return false;
-    }
-
-    public function sendPasswordResetNotification($token): void
-    {
-        $system = Systems::from(Context::get('source_system'));
-
-        $this->notify(
-            instance: new ResetPasswordLink($token, $system)
-        );
     }
 
     public function hasEnabledTwoFactor(): bool
