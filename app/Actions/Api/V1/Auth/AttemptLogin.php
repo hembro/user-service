@@ -41,6 +41,9 @@ final readonly class AttemptLogin
         }
 
         if ($this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+
+            $user->touchLastLoginAt();
+
             UserLoggedIn::dispatch($user, $deviceId, $metadata);
 
             return AuthenticationOutcomeDTO::authenticated(

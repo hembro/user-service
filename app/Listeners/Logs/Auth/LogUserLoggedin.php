@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Listeners\Logs\Auth;
 
 use App\Events\Auth\UserLoggedIn;
-use Carbon\CarbonImmutable;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 
@@ -17,10 +17,6 @@ final class LogUserLoggedin implements ShouldQueue
 
     public function handle(UserLoggedIn $event): void
     {
-        $occurredAt = CarbonImmutable::createFromTimestamp($event->metadata->timestamp);
-
-        $event->user->update(['last_login_at' => $occurredAt]);
-
         Log::channel('auth')->info(
             message: 'device usage heartbeat',
             context: [
@@ -28,7 +24,7 @@ final class LogUserLoggedin implements ShouldQueue
                 'device_id' => $event->deviceId,
                 'ip' => $event->metadata->ip,
                 'user_agent' => $event->metadata->userAgent,
-                'timestamp' => $occurredAt->toIso8601String(),
+                'timestamp' => Carbon::createFromTimestamp($event->metadata->timestamp)->toIso8601String(),
             ]
         );
     }

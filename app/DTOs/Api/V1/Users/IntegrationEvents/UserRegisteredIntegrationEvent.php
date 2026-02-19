@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\IntegrationEvents;
+namespace App\DTOs\Api\V1\Users\IntegrationEvents;
 
 use App\Enums\Infrastructure\RoutingKey;
-use App\Models\User;
+use App\Events\Users\UserRegistered;
 use Illuminate\Contracts\Support\Arrayable;
 
 final readonly class UserRegisteredIntegrationEvent implements Arrayable
@@ -26,8 +26,10 @@ final readonly class UserRegisteredIntegrationEvent implements Arrayable
         public string $createdAt,
     ) {}
 
-    public static function fromModel(User $user): self
+    public static function fromDomainEvent(UserRegistered $event): self
     {
+        $user = $event->user->loadMissing('profile');
+
         return new self(
             id: (string) $user->id,
             email: $user->email,
