@@ -11,7 +11,7 @@ use Illuminate\Contracts\Support\Arrayable;
 final readonly class UserRegisteredIntegrationEvent implements Arrayable
 {
     public function __construct(
-        public string $id,
+        public string $userId,
         public string $email,
         public string $status,
         public ?string $fullName,
@@ -31,7 +31,7 @@ final readonly class UserRegisteredIntegrationEvent implements Arrayable
         $event->user->loadMissing('profile');
 
         return new self(
-            id: (string) $event->user->id,
+            userId: (string) $event->user->id,
             email: $event->user->email,
             status: $event->user->status->value,
             fullName: $event->user->profile?->full_name,
@@ -52,7 +52,7 @@ final readonly class UserRegisteredIntegrationEvent implements Arrayable
         return [
             'event' => RoutingKey::USER_REGISTERED->value,
             'data' => [
-                'id' => $this->id,
+                'id' => $this->userId,
                 'email' => $this->email,
                 'status' => $this->status,
                 'full_name' => $this->fullName,

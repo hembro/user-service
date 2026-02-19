@@ -11,8 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
 final readonly class UserAvatarUpdatedIntegrationEvent implements Arrayable
 {
     public function __construct(
-        public string $id,
-        public string $email,
+        public string $userId,
+        public string $userEmail,
         public ?string $avatarPath,
         public string $occurredAt,
     ) {}
@@ -22,8 +22,8 @@ final readonly class UserAvatarUpdatedIntegrationEvent implements Arrayable
         $event->user->loadMissing('profile');
 
         return new self(
-            id: (string) $event->user->id,
-            email: $event->user->email,
+            userId: (string) $event->user->id,
+            userEmail: $event->user->email,
             avatarPath: $event->user->profile?->avatar_path,
             occurredAt: now()->toIso8601String(),
         );
@@ -35,8 +35,8 @@ final readonly class UserAvatarUpdatedIntegrationEvent implements Arrayable
             'event' => RoutingKey::USER_AVATAR_UPDATED->value,
             'data' => [
                 'user' => [
-                    'id' => $this->id,
-                    'email' => $this->email,
+                    'id' => $this->userId,
+                    'email' => $this->userEmail,
                 ],
                 'profile' => [
                     'avatar_path' => $this->avatarPath,

@@ -32,6 +32,13 @@ enum RoutingKey: string
     case USER_PASSWORD_RESET = 'user.password.reset';
     case USER_PASSWORD_UPDATED = 'user.password.updated';
 
+    /**
+     * ----------------------------------------------------------------
+     *                              AUTH
+     * ----------------------------------------------------------------
+     */
+    case USER_LOGGED_OUT = 'user.logged_out';
+
     public function matches(string $key): bool
     {
         return $this->value === $key;

@@ -2,46 +2,46 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Users\IntegrationEvents;
+namespace App\DTOs\Api\V1\Auth\IntegrationEvents;
 
 use App\Enums\Infrastructure\RoutingKey;
-use App\Events\Users\UserPasswordUpdated;
+use App\Events\Auth\UserLoggedOut;
+use Carbon\Carbon;
 use Illuminate\Contracts\Support\Arrayable;
 
-final readonly class UserPasswordUpdatedIntegrationEvent implements Arrayable
+final readonly class UserLoggedOutIntegrationEvent implements Arrayable
 {
     public function __construct(
         public string $userId,
-        public string $userEmail,
+        public string $ipAddress,
+        public string $userAgent,
         public string $originSystem,
         public string $occurredAt,
     ) {}
 
-    public static function fromDomainEvent(UserPasswordUpdated $event): self
+    public static function fromDomainEvent(UserLoggedOut $event): self
     {
         return new self(
             userId: (string) $event->user->id,
-            userEmail: $event->user->email,
+            ipAddress: $event->metadata->ip ?? 'unknown',
+            userAgent: $event->metadata->userAgent ?? 'unknown',
             originSystem: request()->attributes->get('system')->value,
-            occurredAt: now()->toIso8601String(),
+            occurredAt: Carbon::createFromTimestamp($event->metadata->timestamp)->toIso8601String(),
         );
     }
 
     public function toArray(): array
     {
         return [
-            'event' => RoutingKey::USER_PASSWORD_UPDATED->value,
+            'event' => RoutingKey::USER_LOGGED_OUT->value,
             'data' => [
                 'user' => [
                     'id' => $this->userId,
-                    'email' => $this->userEmail,
                 ],
-                'actor' => [
-                    'id' => $this->userId,
-                    'type' => 'user',
-                    'name' => null,
+                'session' => [
+                    'ip_address' => $this->ipAddress,
+                    'user_agent' => $this->userAgent,
                 ],
-                'origin_system' => $this->originSystem,
             ],
             'meta' => [
                 'timestamp' => $this->occurredAt,

@@ -11,8 +11,8 @@ use Illuminate\Contracts\Support\Arrayable;
 final readonly class UserProfileUpdatedIntegrationEvent implements Arrayable
 {
     public function __construct(
-        public string $id,
-        public string $email,
+        public string $userId,
+        public string $userEmail,
         public array $changes,
         public string $occurredAt,
     ) {}
@@ -20,8 +20,8 @@ final readonly class UserProfileUpdatedIntegrationEvent implements Arrayable
     public static function fromDomainEvent(UserProfileUpdated $event): self
     {
         return new self(
-            id: (string) $event->user->id,
-            email: $event->user->email,
+            userId: (string) $event->user->id,
+            userEmail: $event->user->email,
             changes: $event->changes,
             occurredAt: now()->toIso8601String(),
         );
@@ -33,8 +33,8 @@ final readonly class UserProfileUpdatedIntegrationEvent implements Arrayable
             'event' => RoutingKey::USER_PROFILE_UPDATED->value,
             'data' => [
                 'user' => [
-                    'id' => $this->id,
-                    'email' => $this->email,
+                    'id' => $this->userId,
+                    'email' => $this->userEmail,
                 ],
                 'profile' => [
                     'changes' => $this->changes,
