@@ -17,18 +17,18 @@ final readonly class RestoreUser
 
     public function handle(RestoreUserDTO $dto, User $user, User $admin): void
     {
-        $this->db->transaction(function () use ($user, $admin) {
+        $this->db->transaction(
+            callback: function () use ($dto, $user, $admin) {
 
-            // Idempotency: If already active, do nothing.
-            if (! $user->trashed()) {
-                return;
-            }
+                if (! $user->trashed()) {
+                    return;
+                }
 
-            $user->restore();
+                $user->restore();
 
-            $this->db->afterCommit(
-                fn () => UserRestored::dispatch($user, $admin)
-            );
-        });
+                $this->db->afterCommit(
+                    fn () => UserRestored::dispatch($user, $admin, $dto->system)
+                );
+            });
     }
 }
