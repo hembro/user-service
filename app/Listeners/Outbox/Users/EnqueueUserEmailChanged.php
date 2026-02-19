@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Listeners\Outbox;
+namespace App\Listeners\Outbox\Users;
 
 use App\DTOs\Api\V1\Users\IntegrationEvents\UserEmailChangedIntegrationEvent;
 use App\Enums\Infrastructure\RoutingKey;
