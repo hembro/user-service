@@ -15,18 +15,19 @@ enum RoutingKey: string
 
     /**
      * ----------------------------------------------------------------
-     *                              USERS
+     *                              ADMIN
      * ----------------------------------------------------------------
      */
     case USER_INVITED = 'user.invited';
 
     /**
      * ----------------------------------------------------------------
-     *                              ADMIN
+     *                              USERS
      * ----------------------------------------------------------------
      */
     case USER_REGISTERED = 'user.registered';
     case USER_AVATAR_UPDATED = 'user.profile.avatar.updated';
+    case USER_EMAIL_CHANGED = 'user.email.changed';
 
     public function matches(string $key): bool
     {
