@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Admin;
 
+use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -16,5 +17,6 @@ final class UserDeleted
     public function __construct(
         public readonly string $userId,
         public readonly User $admin,
+        public readonly Systems $system
     ) {}
 }

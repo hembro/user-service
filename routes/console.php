@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('passport:purge')->monthly();
 
+// Fallback command
 Schedule::command('events:publish')
     ->everyMinute()
     ->withoutOverlapping(); // Prevent race conditions

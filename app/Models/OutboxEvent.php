@@ -15,6 +15,7 @@ final class OutboxEvent extends Model
     use Prunable;
 
     protected $fillable = [
+        'id',
         'event_type',
         'payload',
         'status',
