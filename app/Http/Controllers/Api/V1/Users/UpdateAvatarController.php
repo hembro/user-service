@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Users;
 
 use App\Actions\Api\V1\Users\UpdateAvatar;
-use App\DTOs\Api\V1\Users\UpdateAvatarDTO;
+use App\DTOs\Api\V1\Users\UpdateAvatarData;
 use App\Http\Requests\Api\V1\Users\UpdateAvatarRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Traits\HasApiResponse;
@@ -25,8 +25,7 @@ final class UpdateAvatarController
         $user = $request->user();
 
         $this->action->handle(
-            dto: UpdateAvatarDTO::fromRequest($request),
-            user: $user
+            dto: UpdateAvatarData::fromRequest($request, $user)
         );
 
         return $this->success(
