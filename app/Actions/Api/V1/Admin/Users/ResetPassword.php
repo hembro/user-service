@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Admin\Users;
 
-use App\DTOs\Api\V1\Admin\Users\ResetPasswordDTO;
+use App\DTOs\Api\V1\Admin\Users\ResetPasswordData;
 use App\Events\Admin\UserPasswordReset;
-use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class ResetPassword
@@ -15,18 +14,16 @@ final readonly class ResetPassword
         private DatabaseManager $db,
     ) {}
 
-    public function handle(ResetPasswordDTO $dto, User $user, User $admin): void
+    public function handle(ResetPasswordData $dto): void
     {
         $this->db->transaction(
-            callback: function () use ($dto, $user, $admin): void {
+            callback: function () use ($dto): void {
 
-                $user->update(['password' => $dto->password]);
+                $dto->targetUser->update(['password' => $dto->password]);
 
-                $user->tokens()->delete();
+                $dto->targetUser->tokens()->delete();
 
-                $this->db->afterCommit(
-                    fn () => UserPasswordReset::dispatch($user, $admin, $dto->system)
-                );
+                UserPasswordReset::dispatch($dto->targetUser, $dto->actor, $dto->system);
             }
         );
     }

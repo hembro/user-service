@@ -6,29 +6,26 @@ namespace App\DTOs\Api\V1\Admin\Users;
 
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\ResetPasswordRequest;
+use App\Models\User;
 use SensitiveParameter;
 
-final readonly class ResetPasswordDTO
+final readonly class ResetPasswordData
 {
     public function __construct(
         #[SensitiveParameter]
         public string $password,
+        public User $targetUser,
+        public User $actor,
         public Systems $system
     ) {}
 
-    public static function fromRequest(ResetPasswordRequest $request): self
+    public static function fromRequest(ResetPasswordRequest $request, User $targetUser): self
     {
         return new self(
             password: $request->validated('password'),
+            targetUser: $targetUser,
+            actor: $request->user(),
             system: $request->attributes->get('system'),
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            password: $data['password'],
-            system: Systems::from($data['system']),
         );
     }
 }
