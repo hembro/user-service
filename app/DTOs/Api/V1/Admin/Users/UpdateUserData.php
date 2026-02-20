@@ -9,8 +9,9 @@ use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest;
+use App\Models\User;
 
-final readonly class UpdateUserDTO
+final readonly class UpdateUserData
 {
     public function __construct(
         public string $email,
@@ -22,10 +23,12 @@ final readonly class UpdateUserDTO
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
+        public User $targetuser,
+        public User $actor,
         public Systems $system
     ) {}
 
-    public static function fromRequest(UpdateRequest $request): self
+    public static function fromRequest(UpdateRequest $request, User $targetUser): self
     {
         $data = $request->validated();
 
@@ -39,23 +42,9 @@ final readonly class UpdateUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
+            targetuser: $targetUser,
+            actor: $request->user(),
             system: $request->attributes->get('system'),
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            email: $data['email'],
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
-            firstName: $data['first_name'],
-            middleName: $data['middle_name'] ?? null,
-            lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
-            mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? [],
-            system: Systems::from($data['system'])
         );
     }
 

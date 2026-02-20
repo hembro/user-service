@@ -26,7 +26,7 @@ final readonly class OutboxPublisher
     public function publish(RoutingKey $routingKey, IntegrationMessageInterface $message): void
     {
         $outbox = OutboxEvent::create([
-            'id' => $message->getEventId(),
+            'id' => $message->getMessageId(),
             'event_type' => $routingKey->value,
             'payload' => $message->toPayload(),
             'status' => OutboxStatus::PENDING,

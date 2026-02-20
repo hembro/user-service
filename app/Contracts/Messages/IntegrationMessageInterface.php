@@ -6,7 +6,7 @@ namespace App\Contracts\Messages;
 
 interface IntegrationMessageInterface
 {
-    public function getEventId(): string;
+    public function getMessageId(): string;
 
     public function toPayload(): array;
 }

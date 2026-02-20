@@ -53,7 +53,7 @@ final readonly class UserDeletedMessage implements IntegrationMessageInterface
         );
     }
 
-    public function getEventId(): string
+    public function getMessageId(): string
     {
         return $this->messageId;
     }

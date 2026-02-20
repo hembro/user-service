@@ -22,6 +22,7 @@ enum RoutingKey: string
     case USER_DELETED = 'user.deleted';
     case USER_RESTORED = 'user.restored';
     case USER_STATUS_UPDATED = 'user.status.updated';
+    case USER_UPDATED = 'user.updated';
 
     /**
      * ----------------------------------------------------------------
