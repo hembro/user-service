@@ -4,31 +4,40 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\DTOs\Api\V1\Auth\ResetPasswordDTO;
+use App\DTOs\Api\V1\Auth\ResetPasswordData;
+use App\Events\Auth\PasswordReset as AuthPasswordReset;
 use App\Models\User;
-use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 final readonly class ResetUserPassword
 {
-    public function handle(ResetPasswordDTO $dto): void
+    public function __construct(
+        private DatabaseManager $db
+    ) {}
+
+    public function handle(ResetPasswordData $dto): void
     {
-        $status = Password::broker()->reset(
-            credentials: [
-                'email' => $dto->email,
-                'password' => $dto->password,
-                'password_confirmation' => $dto->password,
-                'token' => $dto->token,
-            ],
-            callback: function (User $user, string $password) {
-                $user->forceFill([
-                    'password' => $password,
-                ])->save();
+        $status = $this->db->transaction(
+            callback: function () use ($dto): string {
+                return Password::broker()->reset(
+                    credentials: [
+                        'email' => $dto->email,
+                        'token' => $dto->token,
+                        'password' => $dto->password,
+                        'password_confirmation' => $dto->password,
+                    ],
+                    callback: function (User $user, string $password) use ($dto): void {
+                        $user->forceFill([
+                            'password' => $password,
+                        ])->save();
 
-                $user->tokens()->delete();
+                        $user->tokens()->delete();
 
-                event(new PasswordReset($user));
+                        AuthPasswordReset::dispatch($user, $dto->system);
+                    }
+                );
             }
         );
 

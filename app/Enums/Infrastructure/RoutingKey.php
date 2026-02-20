@@ -41,7 +41,9 @@ enum RoutingKey: string
      *                              AUTH
      * ----------------------------------------------------------------
      */
-    case USER_LOGGED_OUT = 'user.logged_out';
+    case AUTH_LOGGED_OUT = 'auth.logged_out';
+    case AUTH_PASSWORD_RESET = 'auth.password.reset';
+    case AUTH_PASSWORD_RESET_REQUESTED = 'auth.password.reset.requested';
 
     public function matches(string $key): bool
     {
