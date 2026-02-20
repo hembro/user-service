@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Actions\Api\V1\Admin\Users;
 
 use App\Actions\Api\V1\Auth\RevokeSystemTokens;
-use App\DTOs\Api\V1\Admin\Users\UpdateUserStatusDTO;
+use App\DTOs\Api\V1\Admin\Users\UpdateUserStatusData;
 use App\Enums\UserStatus;
 use App\Events\Admin\UserStatusUpdated;
-use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class UpdateUserStatus
@@ -18,26 +17,24 @@ final readonly class UpdateUserStatus
         private RevokeSystemTokens $revokeSystemTokens
     ) {}
 
-    public function handle(UpdateUserStatusDTO $dto, User $user, User $admin): void
+    public function handle(UpdateUserStatusData $dto): void
     {
-        if ($user->status === $dto->status) {
+        if ($dto->targetUser->status === $dto->status) {
             return;
         }
 
         $this->db->transaction(
-            callback: function () use ($dto, $user, $admin): void {
+            callback: function () use ($dto): void {
 
-                $oldStatus = $user->status;
+                $oldStatus = $dto->targetUser->status;
 
-                $user->update(['status' => $dto->status]);
+                $dto->targetUser->update(['status' => $dto->status]);
 
                 if ($dto->status !== UserStatus::ACTIVE) {
-                    $this->revokeSystemTokens->handle($user, $dto->system);
+                    $this->revokeSystemTokens->handle($dto->targetUser, $dto->system);
                 }
 
-                $this->db->afterCommit(
-                    fn () => UserStatusUpdated::dispatch($user, $admin, $oldStatus, $dto->status)
-                );
+                UserStatusUpdated::dispatch($dto->targetUser, $dto->actor, $oldStatus, $dto->status, $dto->system);
             }
         );
     }

@@ -31,7 +31,9 @@ final class PublishOutboxEventJob implements ShouldQueue
 
     public function __construct(
         public readonly string $outboxEventId
-    ) {}
+    ) {
+        $this->queue = 'outbox';
+    }
 
     public function handle(EventPublisher $publisher, DatabaseManager $db): void
     {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Admin;
 
+use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -19,5 +20,6 @@ final class UserStatusUpdated
         public readonly User $admin,
         public readonly UserStatus $oldStatus,
         public readonly UserStatus $newStatus,
+        public readonly Systems $system
     ) {}
 }

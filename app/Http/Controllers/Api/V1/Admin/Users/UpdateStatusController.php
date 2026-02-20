@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
 use App\Actions\Api\V1\Admin\Users\UpdateUserStatus;
-use App\DTOs\Api\V1\Admin\Users\UpdateUserStatusDTO;
+use App\DTOs\Api\V1\Admin\Users\UpdateUserStatusData;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateStatusRequest as AdminUpdateStatusRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Models\User;
 use App\Traits\HasApiResponse;
+use Illuminate\Http\JsonResponse;
 
 final class UpdateStatusController
 {
@@ -19,12 +20,10 @@ final class UpdateStatusController
         private readonly UpdateUserStatus $action
     ) {}
 
-    public function __invoke(AdminUpdateStatusRequest $request, User $user)
+    public function __invoke(AdminUpdateStatusRequest $request, User $user): JsonResponse
     {
         $this->action->handle(
-            dto: UpdateUserStatusDTO::fromRequest($request),
-            user: $user,
-            admin: $request->user()
+            dto: UpdateUserStatusData::fromRequest($request, $user)
         );
 
         return $this->success(

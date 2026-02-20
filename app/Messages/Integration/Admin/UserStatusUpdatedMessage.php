@@ -7,18 +7,19 @@ namespace App\Messages\Integration\Admin;
 use App\Contracts\Messages\IntegrationMessageInterface;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
+use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class UserDeletedMessage implements IntegrationMessageInterface
+final readonly class UserStatusUpdatedMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
         private array $payload
     ) {}
 
-    public static function make(string $userId, User $actor, Systems $originSystem): self
+    public static function make(User $user, User $actor, UserStatus $oldStatus, UserStatus $newStatus, Systems $originSystem): self
     {
         if (! $actor->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
@@ -28,10 +29,12 @@ final readonly class UserDeletedMessage implements IntegrationMessageInterface
 
         $payload = [
             'message_id' => $messageId,
-            'event' => RoutingKey::USER_DELETED->value,
+            'event' => RoutingKey::USER_STATUS_UPDATED->value,
             'data' => [
                 'target_user' => [
-                    'id' => $userId,
+                    'id' => (string) $user->id,
+                    'old_status' => $oldStatus->value,
+                    'new_status' => $newStatus->value,
                 ],
                 'actor' => [
                     'id' => (string) $actor->id,
@@ -47,10 +50,7 @@ final readonly class UserDeletedMessage implements IntegrationMessageInterface
             ],
         ];
 
-        return new self(
-            messageId: $messageId,
-            payload: $payload
-        );
+        return new self($messageId, $payload);
     }
 
     public function getEventId(): string
