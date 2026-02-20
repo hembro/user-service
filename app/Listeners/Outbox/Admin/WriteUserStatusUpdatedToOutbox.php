@@ -17,11 +17,11 @@ final readonly class WriteUserStatusUpdatedToOutbox
 
     public function handle(UserStatusUpdated $event): void
     {
-        $event->admin->loadMissing('profile');
+        $event->actor->loadMissing('profile');
 
         $this->outbox->publish(
             routingKey: RoutingKey::USER_STATUS_UPDATED,
-            message: UserStatusUpdatedMessage::make($event->user, $event->admin, $event->oldStatus, $event->newStatus, $event->system)
+            message: UserStatusUpdatedMessage::make($event->targetUser, $event->actor, $event->oldStatus, $event->newStatus, $event->system)
         );
     }
 }

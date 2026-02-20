@@ -17,11 +17,11 @@ final readonly class WriteUserDeletedToOutbox
 
     public function handle(UserDeleted $event): void
     {
-        $event->admin->loadMissing('profile');
+        $event->actor->loadMissing('profile');
 
         $this->outbox->publish(
             routingKey: RoutingKey::USER_DELETED,
-            message: UserDeletedMessage::make($event->userId, $event->admin, $event->system)
+            message: UserDeletedMessage::make($event->userId, $event->actor, $event->system)
         );
     }
 }
