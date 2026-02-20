@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Admin\Users;
 
-use App\DTOs\Api\V1\Admin\Users\RestoreUserDTO;
+use App\DTOs\Api\V1\Admin\Users\RestoreUserData;
 use App\Events\Admin\UserRestored;
-use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class RestoreUser
@@ -15,20 +14,19 @@ final readonly class RestoreUser
         private DatabaseManager $db
     ) {}
 
-    public function handle(RestoreUserDTO $dto, User $user, User $admin): void
+    public function handle(RestoreUserData $dto): void
     {
         $this->db->transaction(
-            callback: function () use ($dto, $user, $admin) {
+            callback: function () use ($dto) {
 
-                if (! $user->trashed()) {
+                if (! $dto->targetUser->trashed()) {
                     return;
                 }
 
-                $user->restore();
+                $dto->targetUser->restore();
 
-                $this->db->afterCommit(
-                    fn () => UserRestored::dispatch($user, $admin, $dto->system)
-                );
-            });
+                UserRestored::dispatch($dto->targetUser, $dto->actor, $dto->system);
+            }
+        );
     }
 }

@@ -15,8 +15,8 @@ final class UserRestored
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public readonly User $user,
-        public readonly User $admin,
+        public readonly User $targetUser,
+        public readonly User $actor,
         public readonly Systems $system
     ) {}
 }
