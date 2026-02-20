@@ -4,34 +4,33 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Auth;
 
-use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Api\V1\Auth\LogoutData;
 use App\Events\Auth\UserLoggedOut;
-use App\Models\User;
+use Illuminate\Database\DatabaseManager;
 
 final readonly class LogoutUser
 {
     public function __construct(
-        private readonly DeviceTrustVerifier $deviceService
+        private DatabaseManager $db,
     ) {}
 
-    public function handle(User $user, string $deviceId, RequestMetadata $metadata): void
+    public function handle(LogoutData $dto): void
     {
-        /** @var \Laravel\Passport\Token|null $accessToken */
-        $accessToken = $user->token();
+        $this->db->transaction(
+            callback: function () use ($dto): void {
 
-        if (! $accessToken) {
-            return;
-        }
+                /** @var \Laravel\Passport\Token|null $accessToken */
+                $accessToken = $dto->user->token();
 
-        $accessToken->revoke();
-        $accessToken->refreshToken?->revoke();
+                if (! $accessToken) {
+                    return;
+                }
 
-        $this->deviceService->forgetDevice(
-            user: $user,
-            deviceId: $deviceId
+                $accessToken->revoke();
+                $accessToken->refreshToken?->revoke();
+
+                UserLoggedOut::dispatch($dto->user, $dto->metadata, $dto->system);
+            }
         );
-
-        UserLoggedOut::dispatch($user, $metadata);
     }
 }

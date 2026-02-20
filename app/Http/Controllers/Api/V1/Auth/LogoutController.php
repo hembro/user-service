@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Api\V1\Auth\LogoutUser;
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Api\V1\Auth\LogoutData;
 use App\Services\AuthCookieService;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -27,9 +27,7 @@ final class LogoutController
         $deviceId = $this->deviceService->resolveDeviceId($request);
 
         $this->action->handle(
-            user: $request->user(),
-            deviceId: $deviceId,
-            metadata: RequestMetadata::fromRequest($request)
+            dto: LogoutData::fromRequest($request, $deviceId)
         );
 
         return $this->noContent()
