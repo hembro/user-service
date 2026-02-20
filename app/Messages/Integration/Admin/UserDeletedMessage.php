@@ -47,10 +47,7 @@ final readonly class UserDeletedMessage implements IntegrationMessageInterface
             ],
         ];
 
-        return new self(
-            messageId: $messageId,
-            payload: $payload
-        );
+        return new self($messageId, $payload);
     }
 
     public function getMessageId(): string

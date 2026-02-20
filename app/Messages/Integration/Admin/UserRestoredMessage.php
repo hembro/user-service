@@ -49,10 +49,7 @@ final readonly class UserRestoredMessage implements IntegrationMessageInterface
             ],
         ];
 
-        return new self(
-            messageId: $messageId,
-            payload: $payload
-        );
+        return new self($messageId, $payload);
     }
 
     public function getMessageId(): string

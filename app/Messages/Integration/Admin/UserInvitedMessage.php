@@ -11,7 +11,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class UserPasswordResetMessage implements IntegrationMessageInterface
+final readonly class UserInvitedMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
@@ -28,18 +28,18 @@ final readonly class UserPasswordResetMessage implements IntegrationMessageInter
 
         $payload = [
             'message_id' => $messageId,
-            'event' => RoutingKey::USER_PASSWORD_RESET->value,
+            'event' => RoutingKey::USER_INVITED->value,
             'data' => [
                 'user' => [
                     'id' => (string) $targetUser->id,
                     'email' => $targetUser->email,
+                    'status' => $targetUser->status->value,
                 ],
                 'actor' => [
                     'id' => (string) $actor->id,
                     'type' => 'admin',
                     'name' => $actor->profile?->full_name,
                 ],
-                'origin_system' => $originSystem->value,
             ],
             'meta' => [
                 'timestamp' => now()->toIso8601String(),

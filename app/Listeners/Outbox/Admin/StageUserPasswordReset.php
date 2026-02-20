@@ -9,7 +9,7 @@ use App\Events\Admin\UserPasswordReset;
 use App\Messages\Integration\Admin\UserPasswordResetMessage;
 use App\Services\Outbox\OutboxPublisher;
 
-final readonly class WriteUserPasswordResetToOutbox
+final readonly class StageUserPasswordReset
 {
     public function __construct(
         private OutboxPublisher $outbox

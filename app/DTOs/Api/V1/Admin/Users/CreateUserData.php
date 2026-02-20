@@ -10,9 +10,10 @@ use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\StoreRequest;
+use App\Models\User;
 use SensitiveParameter;
 
-final readonly class CreateUserDTO
+final readonly class CreateUserData
 {
     public function __construct(
         public string $email,
@@ -27,6 +28,7 @@ final readonly class CreateUserDTO
         public ?string $mobileNumber,
         public array $preferences,
         public array $roles,
+        public User $actor,
         public Systems $system
     ) {}
 
@@ -49,28 +51,8 @@ final readonly class CreateUserDTO
                 fn (string $role) => Roles::from($role),
                 $data['roles']
             ),
+            actor: $request->user(),
             system: $request->attributes->get('system'),
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            email: $data['email'],
-            password: $data['password'],
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
-            firstName: $data['first_name'],
-            middleName: $data['middle_name'] ?? null,
-            lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
-            mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? [],
-            roles: array_map(
-                fn (string $role) => Roles::from($role),
-                $data['roles']
-            ),
-            system: Systems::from($data['system'])
         );
     }
 

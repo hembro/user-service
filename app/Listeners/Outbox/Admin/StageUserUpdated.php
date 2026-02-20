@@ -9,7 +9,7 @@ use App\Events\Admin\UserUpdated;
 use App\Messages\Integration\Admin\UserUpdatedMessage;
 use App\Services\Outbox\OutboxPublisher;
 
-final readonly class WriteUserUpdatedToOutbox
+final readonly class StageUserUpdated
 {
     public function __construct(
         private OutboxPublisher $outbox
