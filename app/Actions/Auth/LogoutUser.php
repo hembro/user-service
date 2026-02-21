@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\LogoutData;
+use App\Commands\Auth\LogoutCommand;
 use App\Events\Auth\UserLoggedOut;
 use Illuminate\Database\DatabaseManager;
 
@@ -14,13 +14,13 @@ final readonly class LogoutUser
         private DatabaseManager $db,
     ) {}
 
-    public function handle(LogoutData $dto): void
+    public function handle(LogoutCommand $command): void
     {
         $this->db->transaction(
-            callback: function () use ($dto): void {
+            callback: function () use ($command): void {
 
                 /** @var \Laravel\Passport\Token|null $accessToken */
-                $accessToken = $dto->user->token();
+                $accessToken = $command->user->token();
 
                 if (! $accessToken) {
                     return;
@@ -29,7 +29,7 @@ final readonly class LogoutUser
                 $accessToken->revoke();
                 $accessToken->refreshToken?->revoke();
 
-                UserLoggedOut::dispatch($dto->user, $dto->metadata, $dto->system);
+                UserLoggedOut::dispatch($command->user, $command->system, $command->metadata);
             }
         );
     }

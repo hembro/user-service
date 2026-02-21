@@ -21,7 +21,7 @@ final readonly class StagePasswordResetRequested
 
         $this->outbox->publish(
             RoutingKey::AUTH_PASSWORD_RESET_REQUESTED,
-            PasswordResetRequestedMessage::make($event->user, $event->token, $event->system)
+            PasswordResetRequestedMessage::make($event->user, $event->token, $event->system, $event->metadata)
         );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\ForgotPasswordData;
+use App\Commands\Auth\ForgotPasswordCommand;
 use App\Events\Auth\PasswordResetRequested;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
@@ -16,14 +16,14 @@ final readonly class SendResetLink
         private DatabaseManager $db
     ) {}
 
-    public function handle(ForgotPasswordData $dto): void
+    public function handle(ForgotPasswordCommand $command): void
     {
-        $user = User::query()->where('email', $dto->email)->first();
+        $user = User::query()->where('email', $command->email)->first();
 
         $this->db->transaction(
-            callback: function () use ($user, $dto): void {
+            callback: function () use ($user, $command): void {
                 $token = Password::createToken($user);
-                PasswordResetRequested::dispatch($user, $token, $dto->system);
+                PasswordResetRequested::dispatch($user, $token, $command->system, $command->metadata);
             }
         );
     }

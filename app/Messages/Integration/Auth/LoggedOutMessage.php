@@ -19,7 +19,7 @@ final readonly class LoggedOutMessage implements IntegrationMessageInterface
         private array $payload
     ) {}
 
-    public static function make(User $user, RequestMetadata $metadata, Systems $originSystem): self
+    public static function make(User $user, Systems $originSystem, RequestMetadata $metadata): self
     {
         $messageId = (string) Str::ulid();
 

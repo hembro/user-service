@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -19,7 +20,7 @@ final readonly class PasswordResetRequestedMessage implements IntegrationMessage
         private array $payload
     ) {}
 
-    public static function make(User $user, string $token, Systems $originSystem): self
+    public static function make(User $user, string $token, Systems $originSystem, RequestMetadata $metadata): self
     {
         if (! $user->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
@@ -37,6 +38,10 @@ final readonly class PasswordResetRequestedMessage implements IntegrationMessage
                     'name' => $user->profile?->first_name ?? 'User',
                 ],
                 'reset_token' => $token,
+                'session' => [
+                    'ip_address' => $metadata->ip,
+                    'user_agent' => $metadata->userAgent,
+                ],
             ],
             'meta' => MessageMeta::generate($originSystem),
         ];

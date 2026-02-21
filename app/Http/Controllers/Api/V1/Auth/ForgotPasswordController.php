@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\SendResetLink;
-use App\DTOs\Api\V1\Auth\ForgotPasswordData;
+use App\Commands\Auth\ForgotPasswordCommand;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +21,7 @@ final class ForgotPasswordController
     public function __invoke(ForgotPasswordRequest $request): JsonResponse
     {
         $this->action->handle(
-            dto: ForgotPasswordData::fromRequest($request)
+            ForgotPasswordCommand::fromRequest($request)
         );
 
         return $this->success(

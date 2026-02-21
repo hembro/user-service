@@ -12,16 +12,12 @@ use App\Services\Auth\TokenIssuer;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Passport\Bridge\RefreshTokenRepository;
 use Laravel\Passport\Passport;
@@ -42,8 +38,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->configurePassport();
         $this->configureDefaults($isProduction);
         $this->configureModels($isProduction);
-        $this->configureEmailVerification();
-        $this->configurePasswordReset();
         $this->configureRateLimiting($isProduction);
         $this->registerCustomGrants();
         $this->bindServices();
@@ -82,39 +76,6 @@ final class AppServiceProvider extends ServiceProvider
     private function configureModels(bool $isProduction): void
     {
         Model::shouldBeStrict(! $isProduction);
-    }
-
-    private function configureEmailVerification(): void
-    {
-        VerifyEmail::createUrlUsing(function (object $notifiable): string {
-            $apiUrl = URL::temporarySignedRoute(
-                name: 'api.v1.auth.verification.verify',
-                expiration: now()->addMinutes((int) config('auth.verification.expire', 60)),
-                parameters: [
-                    'id' => $notifiable->getKey(),
-                    'hash' => sha1($notifiable->getEmailForVerification()),
-                ]
-            );
-
-            $components = parse_url($apiUrl);
-            parse_str($components['query'] ?? '', $queryParams);
-
-            return Uri::of(config('app.frontend.url'))
-                ->withPath("/auth/email/verify/{$notifiable->getKey()}/" . sha1($notifiable->getEmailForVerification()))
-                ->withQuery($queryParams)
-                ->toStringable()
-                ->toString();
-        });
-    }
-
-    private function configurePasswordReset(): void
-    {
-        ResetPassword::createUrlUsing(function (object $notifiable, string $token): string {
-            $frontendUrl = config('app.frontend.url');
-            $email = urlencode($notifiable->getEmailForPasswordReset());
-
-            return "{$frontendUrl}/reset-password?token={$token}&email={$email}";
-        });
     }
 
     private function configureRateLimiting(bool $isProduction): void

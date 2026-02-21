@@ -19,7 +19,7 @@ final readonly class StageUserLoggedOut
     {
         $this->outbox->publish(
             routingKey: RoutingKey::AUTH_LOGGED_OUT,
-            message: LoggedOutMessage::make($event->user, $event->metadata, $event->system)
+            message: LoggedOutMessage::make($event->user, $event->system, $event->metadata)
         );
     }
 }
