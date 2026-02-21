@@ -12,7 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class PasswordResetMessage implements IntegrationMessageInterface
+final readonly class TwoFactorEnabledMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
@@ -28,8 +28,8 @@ final readonly class PasswordResetMessage implements IntegrationMessageInterface
         $messageId = (string) Str::ulid();
 
         $payload = [
-            'messageId' => $messageId,
-            'event' => RoutingKey::AUTH_PASSWORD_RESET->value,
+            'message_id' => $messageId,
+            'event' => RoutingKey::AUTH_TWO_FACTOR_ENABLED->value,
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,

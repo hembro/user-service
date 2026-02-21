@@ -4,34 +4,42 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Commands\Auth\ConfirmTwoFactorCommand;
+use App\Events\Auth\TwoFactorEnabled;
 use App\Exceptions\InvalidCredentialsException;
-use App\Models\User;
 use App\Services\Auth\TwoFactorService;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
 
 final readonly class ConfirmTwoFactor
 {
     public function __construct(
-        private TwoFactorService $service
+        private TwoFactorService $service,
+        private DatabaseManager $db
     ) {}
 
-    public function handle(User $user, string $code): Collection
+    public function handle(ConfirmTwoFactorCommand $command): Collection
     {
-        if ($user->hasEnabledTwoFactor()) {
+        if ($command->user->hasEnabledTwoFactor()) {
             throw new InvalidCredentialsException('Two-factor authentication is already enabled.');
         }
 
-        if (! $this->service->validTotp($user, $code)) {
+        if (! $this->service->validTotp($command->user, $command->code)) {
             throw new InvalidCredentialsException('Invalid two-factor code.');
         }
 
         $recoveryCodes = $this->service->generateRecoveryCodes();
 
-        // Activate the 2FA
-        $user->forceFill([
-            'two_factor_confirmed_at' => now(),
-            'two_factor_recovery_codes' => $recoveryCodes,
-        ])->save();
+        $this->db->transaction(
+            callback: function () use ($command, $recoveryCodes) {
+
+                $command->user->forceFill([
+                    'two_factor_confirmed_at' => now(),
+                    'two_factor_recovery_codes' => $recoveryCodes,
+                ])->save();
+
+                TwoFactorEnabled::dispatch($command->user, $command->system);
+            });
 
         return $recoveryCodes;
     }
