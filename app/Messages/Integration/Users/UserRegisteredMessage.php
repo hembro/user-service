@@ -44,7 +44,7 @@ final readonly class UserRegisteredMessage implements IntegrationMessageInterfac
                     'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                 ],
             ],
-            'meta' => MessageMeta::generate($originSystem),
+            'meta' => MessageMeta::generate($originSystem, $user->created_at->toIso8601String()),
         ];
 
         return new self($messageId, $payload);

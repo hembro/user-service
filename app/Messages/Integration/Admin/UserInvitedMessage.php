@@ -42,7 +42,7 @@ final readonly class UserInvitedMessage implements IntegrationMessageInterface
                     'name' => $actor->profile?->full_name,
                 ],
             ],
-            'meta' => MessageMeta::generate($originSystem),
+            'meta' => MessageMeta::generate($originSystem, $targetUser->created_at->toIso8601String()),
         ];
 
         return new self($messageId, $payload);
