@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\DTOs\Api\V1\Auth\AuthChallengeData;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use Illuminate\Support\Facades\Cache;
 
 final readonly class ChallengeService

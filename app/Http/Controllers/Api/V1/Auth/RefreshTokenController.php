@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\RefereshUserToken;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\Auth\DeviceTrustService;

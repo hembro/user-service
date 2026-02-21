@@ -4,32 +4,42 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Commands\Auth\EnableTwoFactorCommand;
 use App\DTOs\Api\V1\Auth\TwoFactorSetupDTO;
+use App\Events\Auth\EnableTwoFactorRequested;
 use App\Exceptions\Auth\InvalidTwoFactorRequest;
-use App\Models\User;
 use App\Services\Auth\TwoFactorService;
+use Illuminate\Database\DatabaseManager;
 
 final readonly class EnableTwoFactor
 {
     public function __construct(
+        private DatabaseManager $db,
         private TwoFactorService $service
     ) {}
 
-    public function handle(User $user): TwoFactorSetupDTO
+    public function handle(EnableTwoFactorCommand $command): TwoFactorSetupDTO
     {
-        if ($user->hasEnabledTwoFactor()) {
+        if ($command->user->hasEnabledTwoFactor()) {
             throw new InvalidTwoFactorRequest('Two-factor authentication is already enabled.');
         }
 
         $secret = $this->service->generateSecretKey();
 
-        $user->forceFill([
-            'two_factor_secret' => $secret,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $this->db->transaction(
+            callback: function () use ($command, $secret) {
 
-        $qrUrl = $this->service->generateQrCodeUrl($user, $secret);
+                $command->user->forceFill([
+                    'two_factor_secret' => $secret,
+                    'two_factor_recovery_codes' => null,
+                    'two_factor_confirmed_at' => null,
+                ])->save();
+
+                EnableTwoFactorRequested::dispatch($command->user, $command->system, $command->metadata);
+            }
+        );
+
+        $qrUrl = $this->service->generateQrCodeUrl($command->user, $secret);
 
         return new TwoFactorSetupDTO(
             secret: $secret,

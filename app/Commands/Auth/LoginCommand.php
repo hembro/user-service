@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use SensitiveParameter;
 
-final readonly class LoginData
+final readonly class LoginCommand
 {
     public function __construct(
         public string $deviceId,

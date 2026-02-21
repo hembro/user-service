@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Shared;
+namespace App\DTOs\Shared;
 
 use Illuminate\Http\Request;
 

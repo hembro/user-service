@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Events\Auth\RecoveryCodesRegenerated;
 use App\Exceptions\Auth\InvalidTwoFactorRequest;
 use App\Models\User;

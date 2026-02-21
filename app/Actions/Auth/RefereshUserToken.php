@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Exceptions\InvalidRefreshTokenException;

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\DisableTwoFactor;
-use App\DTOs\Api\V1\Auth\DisableTwoFactorDTO;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\Commands\Auth\DisableTwoFactorCommand;
 use App\Http\Requests\Api\V1\Auth\DisableTwoFactorRequest;
 use App\Http\Resources\Api\V1\Auth\AuthUserResource;
 use App\Traits\HasApiResponse;
@@ -23,9 +22,7 @@ final class DisableTwoFactorController
     public function __invoke(DisableTwoFactorRequest $request): JsonResponse
     {
         $this->action->handle(
-            user: $request->user(),
-            dto: DisableTwoFactorDTO::fromRequest($request),
-            metadata: RequestMetadata::fromRequest($request)
+            DisableTwoFactorCommand::fromRequest($request),
         );
 
         return $this->success(

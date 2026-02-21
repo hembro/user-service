@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Api\V1\Auth;
 
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 

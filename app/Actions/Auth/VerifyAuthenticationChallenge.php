@@ -7,7 +7,7 @@ namespace App\Actions\Auth;
 use App\DTOs\Api\V1\Auth\AuthChallengePayloadDTO;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\Auth\InvalidChallengeException;

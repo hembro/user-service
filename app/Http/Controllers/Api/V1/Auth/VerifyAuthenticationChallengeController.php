@@ -6,7 +6,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\VerifyAuthenticationChallenge;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\VerifyChallengeRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
 use App\Services\AuthCookieService;

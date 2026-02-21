@@ -2,29 +2,27 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
 use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-final readonly class LogoutData
+final readonly class EnableTwoFactorCommand
 {
     public function __construct(
         public User $user,
-        public string $deviceId,
-        public RequestMetadata $metadata,
-        public Systems $system
+        public Systems $system,
+        public RequestMetadata $metadata
     ) {}
 
-    public static function fromRequest(Request $request, string $deviceId): self
+    public static function fromRequest(Request $request): self
     {
         return new self(
             user: $request->user(),
-            deviceId: $deviceId,
-            metadata: RequestMetadata::fromRequest($request),
             system: $request->attributes->get('system'),
+            metadata: RequestMetadata::fromRequest($request),
         );
     }
 }

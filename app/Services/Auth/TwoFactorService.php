@@ -23,7 +23,7 @@ final readonly class TwoFactorService
     public function generateQrCodeUrl(User $user, string $secret): string
     {
         return $this->engine->getQRCodeUrl(
-            company: 'One Windonw Project',
+            company: 'One Window Project',
             holder: $user->email,
             secret: $secret
         );

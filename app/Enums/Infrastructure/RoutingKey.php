@@ -51,6 +51,9 @@ enum RoutingKey: string
     case AUTH_USER_VERIFIED = 'auth.user.verified';
     case AUTH_VERIFICATION_REQUESTED = 'auth.verification.requested';
     case AUTH_DEVICE_VERIFICATION_REQUESTED = 'auth.device.verification.requested';
+    case AUTH_TWO_FACTOR_REQUESTED = 'auth.two_factor.requested';
+    case AUTH_TWO_FACTOR_ENABLED = 'auth.two_factor.enabled';
+    case AUTH_TWO_FACTOR_DISABLED = 'auth.two_factor.disabled';
 
     public function matches(string $key): bool
     {

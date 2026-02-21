@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
+use App\Commands\Auth\LoginCommand;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\AuthChallengeData;
 use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
-use App\DTOs\Api\V1\Auth\LoginData;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
@@ -31,29 +31,29 @@ final readonly class AttemptLogin
         private DatabaseManager $db
     ) {}
 
-    public function handle(LoginData $dto): AuthenticationOutcomeDTO
+    public function handle(LoginCommand $command): AuthenticationOutcomeDTO
     {
         $user = User::query()
             ->with('roles')
-            ->where('email', $dto->email)
+            ->where('email', $command->email)
             ->first();
 
-        if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($dto->password, $user->password)) {
+        if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($command->password, $user->password)) {
             throw new InvalidCredentialsException('Invalid credentials.');
         }
 
         return $this->db->transaction(
-            callback: function () use ($user, $dto): AuthenticationOutcomeDTO {
+            callback: function () use ($user, $command): AuthenticationOutcomeDTO {
 
-                if ($this->deviceService->isTrusted($user, $dto->deviceId, $dto->metadata)) {
+                if ($this->deviceService->isTrusted($user, $command->deviceId, $command->metadata)) {
 
                     $user->touchLastLoginAt();
 
-                    UserLoggedIn::dispatch($user, $dto->deviceId, $dto->metadata);
+                    UserLoggedIn::dispatch($user, $command->deviceId, $command->metadata);
 
                     return AuthenticationOutcomeDTO::authenticated(
-                        token: $this->tokenIssuer->issueFullToken($user, $dto->system),
-                        deviceId: $dto->deviceId
+                        token: $this->tokenIssuer->issueFullToken($user, $command->system),
+                        deviceId: $command->deviceId
                     );
                 }
 
@@ -62,7 +62,7 @@ final readonly class AttemptLogin
                     ? ChallengeType::TWO_FACTOR
                     : ChallengeType::DEVICE_VERIFICATION;
 
-                return $this->initiateChallenge($user, $challengeType, $dto->deviceId, $dto->system, $dto->metadata);
+                return $this->initiateChallenge($user, $challengeType, $command->deviceId, $command->system, $command->metadata);
             }
         );
     }

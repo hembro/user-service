@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -37,8 +37,8 @@ final readonly class DeviceVerificationRequestedMessage implements IntegrationMe
                     'email' => $user->email,
                     'first_name' => $user->profile?->first_name,
                 ],
-                'verification' => [
-                    'otp_code' => $otpCode,
+                'otp_code' => $otpCode,
+                'session' => [
                     'ip_address' => $metadata->ip,
                     'user_agent' => $metadata->userAgent,
                 ],

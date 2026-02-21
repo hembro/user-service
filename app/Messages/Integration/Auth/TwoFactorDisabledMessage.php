@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -12,14 +13,14 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class PasswordResetMessage implements IntegrationMessageInterface
+final readonly class TwoFactorDisabledMessage implements IntegrationMessageInterface
 {
-    public function __construct(
+    private function __construct(
         private string $messageId,
         private array $payload
     ) {}
 
-    public static function make(User $user, Systems $originSystem): self
+    public static function make(User $user, Systems $originSystem, RequestMetadata $metadata): self
     {
         if (! $user->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
@@ -28,13 +29,17 @@ final readonly class PasswordResetMessage implements IntegrationMessageInterface
         $messageId = (string) Str::ulid();
 
         $payload = [
-            'messageId' => $messageId,
-            'event' => RoutingKey::AUTH_PASSWORD_RESET->value,
+            'message_id' => $messageId,
+            'event' => RoutingKey::AUTH_TWO_FACTOR_DISABLED->value,
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                     'name' => $user->profile?->first_name,
+                ],
+                'session' => [
+                    'ip_address' => $metadata->ip,
+                    'user_agent' => $metadata->userAgent,
                 ],
             ],
             'meta' => MessageMeta::generate($originSystem),

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
