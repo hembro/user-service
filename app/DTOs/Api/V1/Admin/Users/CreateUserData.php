@@ -39,12 +39,12 @@ final readonly class CreateUserData
         return new self(
             email: $data['email'],
             password: $data['password'],
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
+            title: $request->enum('title', Titles::class),
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
             lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
+            suffix: $request->enum('suffix', Suffix::class),
+            sex: $request->enum('sex', Sex::class),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
             roles: array_map(

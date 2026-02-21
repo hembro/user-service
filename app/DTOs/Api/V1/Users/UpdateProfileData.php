@@ -6,12 +6,15 @@ namespace App\DTOs\Api\V1\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
+use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Users\UpdateProfileRequest;
+use App\Models\User;
 
-final readonly class UpdateProfileDTO
+final readonly class UpdateProfileData
 {
     public function __construct(
+        public User $user,
         public ?Titles $title,
         public string $firstName,
         public ?string $middleName,
@@ -19,36 +22,25 @@ final readonly class UpdateProfileDTO
         public ?Suffix $suffix,
         public Sex $sex,
         public ?string $mobileNumber,
-        public array $preferences
+        public array $preferences,
+        public Systems $system
     ) {}
 
-    public static function fromRequest(UpdateProfileRequest $request): self
+    public static function fromRequest(UpdateProfileRequest $request, User $user): self
     {
         $data = $request->validated();
 
         return new self(
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
+            user: $user,
+            title: $request->enum('title', Titles::class),
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
             lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
+            suffix: $request->enum('suffix', Suffix::class),
+            sex: $request->enum('sex', Sex::class),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            title: isset($data['title']) ? Titles::from($data['title']) : null,
-            firstName: $data['first_name'],
-            middleName: $data['middle_name'] ?? null,
-            lastName: $data['last_name'],
-            suffix: isset($data['suffix']) ? Suffix::from($data['suffix']) : null,
-            sex: Sex::from($data['sex']),
-            mobileNumber: $data['mobile_number'] ?? null,
-            preferences: $data['preferences'] ?? [],
+            system: $request->attributes->get('system'),
         );
     }
 
