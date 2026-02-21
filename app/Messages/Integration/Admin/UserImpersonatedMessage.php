@@ -12,16 +12,16 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class UserUpdatedMessage implements IntegrationMessageInterface
+final readonly class UserImpersonatedMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
         private array $payload
     ) {}
 
-    public static function make(User $targetUser, User $actor, array $changes, Systems $originSystem): self
+    public static function make(User $user, User $impersonator, Systems $originSystem): self
     {
-        if (! $actor->relationLoaded('profile')) {
+        if (! $impersonator->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
         }
 
@@ -29,16 +29,16 @@ final readonly class UserUpdatedMessage implements IntegrationMessageInterface
 
         $payload = [
             'message_id' => $messageId,
-            'event' => RoutingKey::USER_UPDATED->value,
+            'event' => RoutingKey::USER_IMPERSONATED->value,
             'data' => [
-                'target_user' => [
-                    'id' => (string) $targetUser->id,
-                    'changes' => $changes,
+                'user' => [
+                    'id' => (string) $user->id,
+                    'email' => $user->email,
                 ],
                 'actor' => [
-                    'id' => (string) $actor->id,
+                    'id' => (string) $impersonator->id,
                     'type' => 'admin',
-                    'name' => $actor->profile?->full_name,
+                    'name' => $impersonator->profile?->full_name,
                 ],
             ],
             'meta' => MessageMeta::generate($originSystem),

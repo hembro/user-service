@@ -8,6 +8,7 @@ use App\Contracts\Messages\IntegrationMessageInterface;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
+use App\Messages\Integration\Shared\MessageMeta;
 use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -42,12 +43,7 @@ final readonly class UserStatusUpdatedMessage implements IntegrationMessageInter
                     'name' => $actor->profile?->full_name,
                 ],
             ],
-            'meta' => [
-                'timestamp' => now()->toIso8601String(),
-                'source' => config('app.name'),
-                'origin_system' => $originSystem->value,
-                'version' => '1.0',
-            ],
+            'meta' => MessageMeta::generate($originSystem),
         ];
 
         return new self($messageId, $payload);

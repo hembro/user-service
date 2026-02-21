@@ -7,6 +7,7 @@ namespace App\Messages\Integration\Admin;
 use App\Contracts\Messages\IntegrationMessageInterface;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
+use App\Messages\Integration\Shared\MessageMeta;
 use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
@@ -41,12 +42,7 @@ final readonly class UserPasswordResetMessage implements IntegrationMessageInter
                 ],
                 'origin_system' => $originSystem->value,
             ],
-            'meta' => [
-                'timestamp' => now()->toIso8601String(),
-                'source' => config('app.name'),
-                'origin_system' => $originSystem->value,
-                'version' => '1.0',
-            ],
+            'meta' => MessageMeta::generate($originSystem),
         ];
 
         return new self($messageId, $payload);
