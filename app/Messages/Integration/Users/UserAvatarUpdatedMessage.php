@@ -31,7 +31,7 @@ final readonly class UserAvatarUpdatedMessage implements IntegrationMessageInter
             'message_id' => $messageId,
             'event' => RoutingKey::USER_AVATAR_UPDATED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                     'profile' => [

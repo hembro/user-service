@@ -31,7 +31,7 @@ final readonly class UserEmailChangeRequestedMessage implements IntegrationMessa
             'message_id' => $messageId,
             'event' => RoutingKey::USER_EMAIL_CHANGE_REQUESTED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'new_email' => $newEmail,
                     'name' => $user->profile?->first_name ?? 'User',

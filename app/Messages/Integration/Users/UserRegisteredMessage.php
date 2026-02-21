@@ -31,7 +31,7 @@ final readonly class UserRegisteredMessage implements IntegrationMessageInterfac
             'message_id' => $messageId,
             'event' => RoutingKey::USER_REGISTERED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                     'status' => $user->status->value,

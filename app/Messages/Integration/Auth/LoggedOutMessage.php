@@ -26,7 +26,7 @@ final readonly class LoggedOutMessage implements IntegrationMessageInterface
         $payload = [
             'event' => RoutingKey::AUTH_LOGGED_OUT->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                 ],
                 'session' => [

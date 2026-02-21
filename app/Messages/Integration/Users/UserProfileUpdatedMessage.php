@@ -31,7 +31,7 @@ final readonly class UserProfileUpdatedMessage implements IntegrationMessageInte
             'message_id' => $messageId,
             'event' => RoutingKey::USER_PROFILE_UPDATED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'name' => $user->profile?->first_name ?? 'User',
                     'email' => $user->email,

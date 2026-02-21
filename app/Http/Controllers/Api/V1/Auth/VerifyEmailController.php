@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ResendVerifyEmail;
-use App\Actions\Api\V1\Auth\VerifyEmail;
+use App\Actions\Auth\ResendVerifyEmail;
+use App\Actions\Auth\VerifyEmail;
 use App\DTOs\Api\V1\Auth\ResendVerifyEmailData;
 use App\DTOs\Api\V1\Auth\VerifyEmailData;
 use App\Http\Requests\Api\V1\Auth\ResendVerifyEmailRequest;

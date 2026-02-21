@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Auth;
 
-use App\Actions\Api\V1\Admin\Auth\ImpersonateUser;
-use App\DTOs\Api\V1\Admin\Users\ImpersonateUserData;
+use App\Actions\Admin\Auth\ImpersonateUser;
+use App\Commands\Admin\Auth\ImpersonateUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\ImpersonateUserRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Models\User;
@@ -22,7 +22,7 @@ final class ImpersonateController
     public function __invoke(ImpersonateUserRequest $request, User $user)
     {
         $token = $this->action->handle(
-            dto: ImpersonateUserData::fromRequest($request, $user)
+            ImpersonateUserCommand::fromRequest($request, $user)
         );
 
         return $this->success(

@@ -31,7 +31,7 @@ final readonly class EmailVerificationRequestedMessage implements IntegrationMes
             'message_id' => $messageId,
             'event' => RoutingKey::AUTH_VERIFICATION_REQUESTED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                     'first_name' => $user->profile?->first_name,

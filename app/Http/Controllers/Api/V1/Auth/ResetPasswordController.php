@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ResetUserPassword;
+use App\Actions\Auth\ResetUserPassword;
 use App\DTOs\Api\V1\Auth\ResetPasswordData;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Traits\HasApiResponse;

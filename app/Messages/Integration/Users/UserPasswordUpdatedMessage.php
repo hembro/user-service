@@ -31,7 +31,7 @@ final readonly class UserPasswordUpdatedMessage implements IntegrationMessageInt
             'message_id' => $messageId,
             'event' => RoutingKey::USER_PASSWORD_UPDATED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'name' => $user->profile?->first_name ?? 'User',
                     'email' => $user->email,

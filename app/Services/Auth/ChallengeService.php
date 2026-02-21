@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use App\DTOs\Api\V1\Auth\AuthChallengeDTO;
+use App\DTOs\Api\V1\Auth\AuthChallengeData;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use Illuminate\Support\Facades\Cache;
 
@@ -18,7 +18,7 @@ final readonly class ChallengeService
         private OtpService $otpService
     ) {}
 
-    public function make(AuthChallengeDTO $dto): void
+    public function make(AuthChallengeData $dto): void
     {
         $payload = [
             'user_id' => $dto->userId,

@@ -17,7 +17,7 @@ final class SuspiciousSessionDetected
 
     public function __construct(
         public readonly User $user,
-        public readonly RequestMetadata $metadata,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly RequestMetadata $metadata
     ) {}
 }

@@ -31,7 +31,7 @@ final readonly class PasswordResetMessage implements IntegrationMessageInterface
             'messageId' => $messageId,
             'event' => RoutingKey::AUTH_PASSWORD_RESET->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                 ],

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\EnableTwoFactor;
+use App\Actions\Auth\EnableTwoFactor;
 use App\Http\Resources\Api\V1\Auth\TwoFactorSetupResource;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;

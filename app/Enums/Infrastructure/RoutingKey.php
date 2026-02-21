@@ -11,7 +11,7 @@ enum RoutingKey: string
      *                              SYSTEM
      * ----------------------------------------------------------------
      */
-    case AUDIT_LOG_CREATED = 'audit.log.created';
+    case SYSTEM_SUSPICIOUS_SESSION = 'system.session.suspicious';
 
     /**
      * ----------------------------------------------------------------
@@ -24,6 +24,7 @@ enum RoutingKey: string
     case USER_STATUS_UPDATED = 'user.status.updated';
     case USER_UPDATED = 'user.updated';
     case USER_IMPERSONATED = 'user.impersonated';
+    case USER_ROLE_UPDATED = 'user.role.updated';
 
     /**
      * ----------------------------------------------------------------
@@ -48,6 +49,7 @@ enum RoutingKey: string
     case AUTH_PASSWORD_RESET_REQUESTED = 'auth.password.reset.requested';
     case AUTH_USER_VERIFIED = 'auth.user.verified';
     case AUTH_VERIFICATION_REQUESTED = 'auth.verification.requested';
+    case AUTH_DEVICE_VERIFICATION_REQUESTED = 'auth.device.verification.requested';
 
     public function matches(string $key): bool
     {

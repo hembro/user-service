@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\VerifyAuthenticationChallenge;
+use App\Actions\Auth\VerifyAuthenticationChallenge;
 use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
 use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\VerifyChallengeRequest;

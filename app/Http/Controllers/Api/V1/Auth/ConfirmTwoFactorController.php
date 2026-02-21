@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ConfirmTwoFactor;
+use App\Actions\Auth\ConfirmTwoFactor;
 use App\Http\Requests\Api\V1\Auth\ConfirmTwoFactorRequest;
 use App\Http\Resources\Api\V1\Auth\RecoveryCodesResource;
 use App\Traits\HasApiResponse;

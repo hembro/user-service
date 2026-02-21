@@ -18,6 +18,7 @@ final readonly class StageUserPasswordReset
     public function handle(UserPasswordReset $event): void
     {
         $event->actor->loadMissing('profile');
+        $event->targetUser->loadMissing('profile');
 
         $this->outbox->publish(
             routingKey: RoutingKey::USER_PASSWORD_RESET,

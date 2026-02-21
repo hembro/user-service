@@ -31,7 +31,7 @@ final readonly class PasswordResetRequestedMessage implements IntegrationMessage
             'message_id' => $messageId,
             'event' => RoutingKey::AUTH_PASSWORD_RESET_REQUESTED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                     'name' => $user->profile?->first_name ?? 'User',

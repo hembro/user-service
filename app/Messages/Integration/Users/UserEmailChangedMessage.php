@@ -31,7 +31,7 @@ final readonly class UserEmailChangedMessage implements IntegrationMessageInterf
             'message_id' => $messageId,
             'event' => RoutingKey::USER_EMAIL_CHANGED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'name' => $user->profile?->first_name ?? 'User',
                     'changes' => [

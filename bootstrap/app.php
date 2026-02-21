@@ -29,12 +29,13 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+
         $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->is('api/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return new JsonResponse(
                     data: [
                         'success' => false,
-                        'message' => 'Invalid credentials',
+                        'message' => $e->getMessage(),
                         'code' => Response::HTTP_UNAUTHORIZED,
                     ],
                     status: Response::HTTP_UNAUTHORIZED
@@ -45,7 +46,7 @@ return Application::configure(basePath: dirname(__DIR__))
         });
 
         $exceptions->render(function (ValidationException $e, Request $request) {
-            if ($request->is('api/*')) {
+            if ($request->expectsJson() || $request->is('api/*')) {
                 return new JsonResponse(
                     data: [
                         'success' => false,

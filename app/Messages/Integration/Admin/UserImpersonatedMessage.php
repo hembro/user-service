@@ -31,7 +31,7 @@ final readonly class UserImpersonatedMessage implements IntegrationMessageInterf
             'message_id' => $messageId,
             'event' => RoutingKey::USER_IMPERSONATED->value,
             'data' => [
-                'user' => [
+                'target_user' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
                 ],

@@ -31,7 +31,7 @@ final readonly class UserRestoredMessage implements IntegrationMessageInterface
             'message_id' => $messageId,
             'event' => RoutingKey::USER_RESTORED->value,
             'data' => [
-                'user' => [
+                'target_user' => [
                     'id' => (string) $targetUser->id,
                     'email' => $targetUser->email,
                     'status' => $targetUser->status->value,

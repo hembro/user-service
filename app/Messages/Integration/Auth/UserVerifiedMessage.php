@@ -31,7 +31,7 @@ final readonly class UserVerifiedMessage implements IntegrationMessageInterface
             'message_id' => $messageId,
             'event' => RoutingKey::AUTH_USER_VERIFIED->value,
             'data' => [
-                'user' => [
+                'actor' => [
                     'id' => (string) $user->id,
                     'name' => $user->profile?->first_name ?? 'User',
                     'email' => $user->email,

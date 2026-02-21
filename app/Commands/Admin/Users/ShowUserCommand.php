@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Commands\Admin\Users;
+
+use App\Enums\Systems;
+use App\Http\Requests\Api\V1\Admin\Users\ShowRequest;
+use App\Models\User;
+
+final readonly class ShowUserCommand
+{
+    public function __construct(
+        public User $user,
+        public Systems $system
+    ) {}
+
+    public static function fromRequest(ShowRequest $request, User $user): self
+    {
+        return new self(
+            user: $user,
+            system: $request->attributes->get('system')
+        );
+    }
+}

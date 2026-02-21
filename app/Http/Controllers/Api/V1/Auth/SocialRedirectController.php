@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\GetSocialRedirectUrl;
+use App\Actions\Auth\GetSocialRedirectUrl;
 use App\DTOs\Api\V1\Auth\SocialRedirectDTO;
 use App\Enums\SocialProviders;
 use App\Traits\HasApiResponse;

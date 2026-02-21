@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\UpdateUser;
+use App\Actions\Admin\Users\UpdateUser;
 use App\DTOs\Api\V1\Admin\Users\UpdateUserData;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest as AdminUpdateRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;

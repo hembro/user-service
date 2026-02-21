@@ -21,7 +21,7 @@ final readonly class UserPasswordResetMessage implements IntegrationMessageInter
 
     public static function make(User $targetUser, User $actor, Systems $originSystem): self
     {
-        if (! $actor->relationLoaded('profile')) {
+        if (! $actor->relationLoaded('profile') || ! $targetUser->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
         }
 
@@ -31,8 +31,9 @@ final readonly class UserPasswordResetMessage implements IntegrationMessageInter
             'message_id' => $messageId,
             'event' => RoutingKey::USER_PASSWORD_RESET->value,
             'data' => [
-                'user' => [
+                'target_user' => [
                     'id' => (string) $targetUser->id,
+                    'name' => $targetUser->profile?->first_name ?? 'User',
                     'email' => $targetUser->email,
                 ],
                 'actor' => [

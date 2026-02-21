@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\LogoutUser;
+use App\Actions\Auth\LogoutUser;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Api\V1\Auth\LogoutData;
 use App\Services\AuthCookieService;

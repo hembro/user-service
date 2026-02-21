@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\FetchUsersForSystem;
-use App\DTOs\Api\V1\Admin\Users\IndexUserDTO;
+use App\Actions\Admin\Users\FetchUsersForSystem;
+use App\Commands\Admin\Users\IndexUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\IndexRequest as AdminIndexRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Traits\HasApiResponse;
@@ -22,7 +22,7 @@ final class IndexController
     public function __invoke(AdminIndexRequest $request): JsonResponse
     {
         $users = $this->action->handle(
-            dto: IndexUserDTO::fromRequest($request)
+            IndexUserCommand::fromRequest($request)
         );
 
         return $this->paginated(
