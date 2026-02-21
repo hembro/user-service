@@ -11,14 +11,14 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class UserEmailChangeRequestedMessage implements IntegrationMessageInterface
+final readonly class UserRegisteredMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
         private array $payload
     ) {}
 
-    public static function make(User $user, string $token, string $newEmail, Systems $originSystem): self
+    public static function make(User $user, Systems $originSystem): self
     {
         if (! $user->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
@@ -28,17 +28,23 @@ final readonly class UserEmailChangeRequestedMessage implements IntegrationMessa
 
         $payload = [
             'message_id' => $messageId,
-            'event' => RoutingKey::USER_EMAIL_CHANGE_REQUESTED->value,
+            'event' => RoutingKey::USER_REGISTERED->value,
             'data' => [
                 'user' => [
                     'id' => (string) $user->id,
-                    'new_email' => $newEmail,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'email' => $user->email,
+                    'status' => $user->status->value,
+                    'full_name' => $user->profile?->full_name,
+                    'title' => $user->profile?->title?->value,
+                    'first_name' => $user->profile?->first_name,
+                    'last_name' => $user->profile?->last_name,
+                    'suffix' => $user->profile?->suffix?->value,
+                    'mobile_number' => $user->profile?->mobile_number,
+                    'email_verified_at' => $user->email_verified_at?->toIso8601String(),
                 ],
-                'email_change_token' => $token,
             ],
             'meta' => [
-                'timestamp' => now()->toIso8601String(),
+                'timestamp' => $user->created_at->toIso8601String(),
                 'source' => config('app.name'),
                 'origin_system' => $originSystem->value,
                 'version' => '1.0',

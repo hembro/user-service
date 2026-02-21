@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Users;
 
 use App\Actions\Api\V1\Users\RegisterUser;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
-use App\DTOs\Api\V1\Users\RegisterUserDTO;
+use App\DTOs\Api\V1\Users\RegisterUserData;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Services\AuthCookieService;
@@ -29,9 +28,7 @@ final class RegisterController
         $deviceId = (string) Str::orderedUuid();
 
         $user = $this->action->handle(
-            dto: RegisterUserDTO::fromRequest($request),
-            deviceId: $deviceId,
-            metadata: RequestMetadata::fromRequest($request)
+            dto: RegisterUserData::fromRequest($request, $deviceId)
         );
 
         return $this->success(

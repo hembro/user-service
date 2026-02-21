@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Auth;
-use App\Http\Controllers\Api\V1\Auth\VerifyEmailController;
 use App\Http\Middleware\EnsureDeviceIsTrusted;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +19,10 @@ Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
 Route::middleware('throttle:auth.api')->group(function () {
 
     Route::post('/refresh', Auth\RefreshTokenController::class)->name('refresh');
+
+    Route::post('/verify/{id}/{hash}', [Auth\VerifyEmailController::class, 'verify'])
+        ->middleware(['guest', 'signed'])
+        ->name('verification.verify');
 
     Route::middleware(['auth:api', EnsureDeviceIsTrusted::class])->group(function () {
 
@@ -45,10 +48,6 @@ Route::middleware('throttle:auth.api')->group(function () {
         Route::post('/2fa/recovery-codes', Auth\RegenerateRecoveryCodeController::class)
             ->name('2fa.recovery-codes');
     });
-
-    Route::post('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
-        ->middleware(['signed'])
-        ->name('verification.verify');
 });
 
 Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
@@ -58,6 +57,9 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
 
     Route::post('/reset-password', Auth\ResetPasswordController::class)
         ->name('password.update');
+
+    Route::post('/verify/resend', [Auth\VerifyEmailController::class, 'resend'])
+        ->name('verification.resend');
 });
 
 Route::middleware(['guest', 'throttle:auth.login'])->group(function () {

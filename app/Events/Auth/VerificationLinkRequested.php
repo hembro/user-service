@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Events\Users;
+namespace App\Events\Auth;
 
 use App\Enums\Systems;
 use App\Models\User;
@@ -10,7 +10,7 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-final class UserRegistered
+final class VerificationLinkRequested
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 

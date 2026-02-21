@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\DTOs\Api\V1\Users;
 
+use App\DTOs\Api\V1\Shared\RequestMetadata;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
@@ -11,7 +12,7 @@ use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use SensitiveParameter;
 
-final readonly class RegisterUserDTO
+final readonly class RegisterUserData
 {
     public function __construct(
         public string $email,
@@ -25,10 +26,12 @@ final readonly class RegisterUserDTO
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
+        public string $deviceId,
+        public RequestMetadata $metadata,
         public Systems $system
     ) {}
 
-    public static function fromRequest(RegisterRequest $request): self
+    public static function fromRequest(RegisterRequest $request, string $deviceId): self
     {
         $data = $request->validated();
 
@@ -43,6 +46,8 @@ final readonly class RegisterUserDTO
             sex: Sex::from($data['sex']),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
+            deviceId: $deviceId,
+            metadata: RequestMetadata::fromRequest($request),
             system: $request->attributes->get('system'),
         );
     }

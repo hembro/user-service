@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\V1\Users;
 
-use App\DTOs\Api\V1\Shared\RequestMetadata;
-use App\DTOs\Api\V1\Users\RegisterUserDTO;
+use App\Contracts\Auth\DeviceTrustVerifier;
+use App\DTOs\Api\V1\Users\RegisterUserData;
 use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
-use App\Services\Auth\DeviceTrustService;
+use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
 
@@ -17,14 +17,15 @@ final readonly class RegisterUser
 {
     public function __construct(
         private DatabaseManager $db,
-        private DeviceTrustService $deviceService,
+        private DeviceTrustVerifier $deviceService,
+        private VerificationLinkGenerator $linkGenerator,
         private LoggerInterface $logger
     ) {}
 
-    public function handle(RegisterUserDTO $dto, string $deviceId, RequestMetadata $metadata): User
+    public function handle(RegisterUserData $dto): User
     {
         return $this->db->transaction(
-            callback: function () use ($dto, $deviceId, $metadata): User {
+            callback: function () use ($dto): User {
 
                 $this->logger->debug(
                     message: 'user registration initiated',
@@ -43,14 +44,13 @@ final readonly class RegisterUser
 
                 $user->assignRole($dto->system->defaultRole());
 
+                $this->deviceService->trustDevice($user, $dto->deviceId, $dto->metadata);
+
+                $verificationUrl = $this->linkGenerator->generate($user);
+
                 $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                $this->db->afterCommit(
-                    function () use ($user, $deviceId, $metadata) {
-                        $this->deviceService->trustDevice($user, $deviceId, $metadata);
-                        UserRegistered::dispatch($user->load('profile'), $metadata);
-                    }
-                );
+                UserRegistered::dispatch($user, $verificationUrl, $dto->system);
 
                 return $user;
             }

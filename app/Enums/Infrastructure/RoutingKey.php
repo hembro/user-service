@@ -45,6 +45,8 @@ enum RoutingKey: string
     case AUTH_LOGGED_OUT = 'auth.logged_out';
     case AUTH_PASSWORD_RESET = 'auth.password.reset';
     case AUTH_PASSWORD_RESET_REQUESTED = 'auth.password.reset.requested';
+    case AUTH_USER_VERIFIED = 'auth.user.verified';
+    case AUTH_VERIFICATION_REQUESTED = 'auth.verification.requested';
 
     public function matches(string $key): bool
     {

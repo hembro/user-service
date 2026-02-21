@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Messages\Integration\Users;
+namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
 use App\Enums\Infrastructure\RoutingKey;
@@ -11,14 +11,14 @@ use App\Models\User;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
-final readonly class UserEmailChangeRequestedMessage implements IntegrationMessageInterface
+final readonly class UserVerifiedMessage implements IntegrationMessageInterface
 {
     private function __construct(
         private string $messageId,
         private array $payload
     ) {}
 
-    public static function make(User $user, string $token, string $newEmail, Systems $originSystem): self
+    public static function make(User $user, Systems $originSystem): self
     {
         if (! $user->relationLoaded('profile')) {
             throw new InvalidArgumentException('User profile must be eagerly loaded.');
@@ -28,14 +28,13 @@ final readonly class UserEmailChangeRequestedMessage implements IntegrationMessa
 
         $payload = [
             'message_id' => $messageId,
-            'event' => RoutingKey::USER_EMAIL_CHANGE_REQUESTED->value,
+            'event' => RoutingKey::AUTH_USER_VERIFIED->value,
             'data' => [
                 'user' => [
                     'id' => (string) $user->id,
-                    'new_email' => $newEmail,
                     'name' => $user->profile?->first_name ?? 'User',
+                    'email' => $user->email,
                 ],
-                'email_change_token' => $token,
             ],
             'meta' => [
                 'timestamp' => now()->toIso8601String(),
