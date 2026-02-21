@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Users;
 
-use App\DTOs\Api\V1\Admin\Users\UpdateUserStatusData;
+use App\Commands\Admin\Users\UpdateUserStatusCommand;
 use App\Enums\UserStatus;
 use App\Events\Admin\UserStatusUpdated;
 use App\Services\Auth\SystemTokenRevoker;
@@ -17,24 +17,24 @@ final readonly class UpdateUserStatus
         private SystemTokenRevoker $tokenRevoker
     ) {}
 
-    public function handle(UpdateUserStatusData $dto): void
+    public function handle(UpdateUserStatusCommand $command): void
     {
-        if ($dto->targetUser->status === $dto->status) {
+        if ($command->targetUser->status === $command->status) {
             return;
         }
 
         $this->db->transaction(
-            callback: function () use ($dto): void {
+            callback: function () use ($command): void {
 
-                $oldStatus = $dto->targetUser->status;
+                $oldStatus = $command->targetUser->status;
 
-                $dto->targetUser->update(['status' => $dto->status]);
+                $command->targetUser->update(['status' => $command->status]);
 
-                if ($dto->status !== UserStatus::ACTIVE) {
-                    $this->tokenRevoker->revoke($dto->targetUser, $dto->system);
+                if ($command->status !== UserStatus::ACTIVE) {
+                    $this->tokenRevoker->revoke($command->targetUser, $command->system);
                 }
 
-                UserStatusUpdated::dispatch($dto->targetUser, $dto->actor, $oldStatus, $dto->status, $dto->system);
+                UserStatusUpdated::dispatch($command->targetUser, $command->actor, $oldStatus, $command->status, $command->system);
             }
         );
     }

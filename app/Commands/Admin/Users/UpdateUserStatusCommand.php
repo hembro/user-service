@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Admin\Users;
+namespace App\Commands\Admin\Users;
 
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateStatusRequest;
 use App\Models\User;
 
-final readonly class UpdateUserStatusData
+final readonly class UpdateUserStatusCommand
 {
     public function __construct(
         public UserStatus $status,
