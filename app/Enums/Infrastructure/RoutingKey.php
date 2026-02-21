@@ -25,6 +25,7 @@ enum RoutingKey: string
     case USER_UPDATED = 'user.updated';
     case USER_IMPERSONATED = 'user.impersonated';
     case USER_ROLE_UPDATED = 'user.role.updated';
+    case ADMIN_USER_EMAIL_CHANGED = 'admin.user.email.changed';
 
     /**
      * ----------------------------------------------------------------

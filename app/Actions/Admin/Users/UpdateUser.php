@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Admin\Users;
 
-use App\DTOs\Api\V1\Admin\Users\UpdateUserData;
+use App\Commands\Admin\Users\UpdateUserCommand;
+use App\Events\Admin\UserEmailChanged;
 use App\Events\Admin\UserUpdated;
-use App\Notifications\VerifyEmailChangedByAdmin;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
 
@@ -17,32 +17,32 @@ final readonly class UpdateUser
         private LoggerInterface $logger,
     ) {}
 
-    public function handle(UpdateUserData $dto): void
+    public function handle(UpdateUserCommand $command): void
     {
         $this->db->transaction(
-            callback: function () use ($dto): void {
+            callback: function () use ($command): void {
 
                 $changes = [];
 
-                $dto->targetuser->fill([
-                    'email' => $dto->email,
+                $command->targetuser->fill([
+                    'email' => $command->email,
                 ]);
 
-                if ($dto->targetuser->isDirty('email')) {
-                    $dto->targetuser->email_verified_at = null;
+                if ($command->targetuser->isDirty('email')) {
+                    $command->targetuser->email_verified_at = null;
 
                     $changes['email'] = [
-                        'old' => $dto->targetuser->getOriginal('email'),
-                        'new' => $dto->email,
+                        'old' => $command->targetuser->getOriginal('email'),
+                        'new' => $command->email,
                     ];
 
-                    $dto->targetuser->save();
+                    $command->targetuser->save();
                 }
 
-                $profile = $dto->targetuser->profile;
+                $profile = $command->targetuser->profile;
 
                 $profile->fill(
-                    attributes: $dto->toProfileAttributes()
+                    attributes: $command->toProfileAttributes()
                 );
 
                 if ($profile->isDirty()) {
@@ -56,26 +56,19 @@ final readonly class UpdateUser
                     $profile->save();
                 }
 
-                if ($dto->targetuser->wasChanged('email')) {
-                    $this->db->afterCommit(
-                        fn () => $dto->targetuser->notify(
-                            instance: new VerifyEmailChangedByAdmin(
-                                adminName: $admin->profile?->full_name ?? 'Administrator',
-                                system: $dto->system
-                            )
-                        )
-                    );
+                if ($command->targetuser->wasChanged('email')) {
+                    UserEmailChanged::dispatch($command->targetuser, $command->actor, $command->system);
                 }
 
                 if (! empty($changes)) {
 
                     $this->logger->debug('admin user update initiated', [
-                        'admin_id' => (string) $dto->actor->id,
-                        'target_user_id' => (string) $dto->targetuser->id,
+                        'admin_id' => (string) $command->actor->id,
+                        'target_user_id' => (string) $command->targetuser->id,
                         'changes_count' => count($changes),
                     ]);
 
-                    UserUpdated::dispatch($dto->actor, $dto->targetuser, $changes, $dto->system);
+                    UserUpdated::dispatch($command->actor, $command->targetuser, $changes, $command->system);
                 }
             }
         );

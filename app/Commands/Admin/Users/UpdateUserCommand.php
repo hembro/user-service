@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Admin\Users;
+namespace App\Commands\Admin\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
@@ -11,7 +11,7 @@ use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest;
 use App\Models\User;
 
-final readonly class UpdateUserData
+final readonly class UpdateUserCommand
 {
     public function __construct(
         public string $email,
