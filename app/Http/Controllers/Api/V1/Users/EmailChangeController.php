@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api\V1\Users;
 
 use App\Actions\Users\ConfirmEmailChange;
 use App\Actions\Users\InitiateEmailChange;
-use App\DTOs\Api\V1\Users\InitiateEmailChangeData;
-use App\DTOs\Api\V1\Users\VerifyEmailChangeData;
+use App\Commands\Users\InitiateEmailChangeCommand;
+use App\Commands\Users\VerifyEmailChangeCommand;
 use App\Http\Requests\Api\V1\Users\RequestEmailChangeRequest;
 use App\Http\Requests\Api\V1\Users\VerifyEmailChangeRequest;
 use App\Traits\HasApiResponse;
@@ -20,7 +20,7 @@ final class EmailChangeController
     public function request(RequestEmailChangeRequest $request, InitiateEmailChange $action): JsonResponse
     {
         $action->handle(
-            dto: InitiateEmailChangeData::fromRequest($request)
+            InitiateEmailChangeCommand::fromRequest($request)
         );
 
         return $this->success(
@@ -31,7 +31,7 @@ final class EmailChangeController
     public function verify(VerifyEmailChangeRequest $request, ConfirmEmailChange $action): JsonResponse
     {
         $action->handle(
-            dto: VerifyEmailChangeData::fromRequest($request),
+            VerifyEmailChangeCommand::fromRequest($request),
         );
 
         return $this->success(

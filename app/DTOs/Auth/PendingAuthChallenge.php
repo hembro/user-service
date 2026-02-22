@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\DTOs\Auth;
 
 use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 
-final readonly class AuthChallengeData
+final readonly class PendingAuthChallenge
 {
     public function __construct(
         public string $userId,

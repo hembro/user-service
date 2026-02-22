@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\ResendVerifyEmail;
 use App\Actions\Auth\VerifyEmail;
-use App\DTOs\Api\V1\Auth\ResendVerifyEmailData;
-use App\DTOs\Api\V1\Auth\VerifyEmailData;
+use App\Commands\Auth\ResendVerifyEmailCommand;
+use App\Commands\Auth\VerifyEmailCommand;
 use App\Http\Requests\Api\V1\Auth\ResendVerifyEmailRequest;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +26,7 @@ final class VerifyEmailController
     public function verify(Request $request, string $id, string $hash): JsonResponse
     {
         $this->verify->handle(
-            dto: VerifyEmailData::fromRequest($request, $id, $hash)
+            VerifyEmailCommand::fromRequest($request, $id, $hash)
         );
 
         return $this->success(
@@ -37,7 +37,7 @@ final class VerifyEmailController
     public function resend(ResendVerifyEmailRequest $request): JsonResponse
     {
         $this->resend->handle(
-            dto: ResendVerifyEmailData::fromRequest($request)
+            ResendVerifyEmailCommand::fromRequest($request)
         );
 
         return $this->success(

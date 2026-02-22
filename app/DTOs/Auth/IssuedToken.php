@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\DTOs\Auth;
 
-final readonly class TokenDTO
+final readonly class IssuedToken
 {
     public function __construct(
         public string $tokenType,

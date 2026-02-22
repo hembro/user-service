@@ -24,7 +24,7 @@ final readonly class StagePasswordReset
 
         $this->outbox->publish(
             routingKey: RoutingKey::AUTH_PASSWORD_RESET,
-            message: PasswordResetMessage::make($event->user, request()->attributes->get('system'))
+            message: PasswordResetMessage::make($event->user, $event->system)
         );
     }
 }

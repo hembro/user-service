@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Users;
 
-use App\DTOs\Api\V1\Users\VerifyEmailChangeData;
+use App\Commands\Users\VerifyEmailChangeCommand;
 use App\Events\Users\UserEmailChanged;
 use App\Exceptions\InvalidVerificationRequest;
 use Illuminate\Database\DatabaseManager;
@@ -15,30 +15,30 @@ final readonly class ConfirmEmailChange
         private DatabaseManager $db
     ) {}
 
-    public function handle(VerifyEmailChangeData $dto): void
+    public function handle(VerifyEmailChangeCommand $command): void
     {
-        if (! $dto->user->pending_email || ! $dto->user->pending_email_token) {
+        if (! $command->user->pending_email || ! $command->user->pending_email_token) {
             throw new InvalidVerificationRequest('No pending email change request found.');
         }
 
         // Constant time comparison to prevent timing attacks
-        if (! hash_equals($dto->user->pending_email_token, $dto->token)) {
+        if (! hash_equals($command->user->pending_email_token, $command->token)) {
             throw new InvalidVerificationRequest('Invalid or expired verification token.');
         }
 
         $this->db->transaction(
-            callback: function () use ($dto) {
+            callback: function () use ($command) {
 
-                $oldEmail = $dto->user->email;
+                $oldEmail = $command->user->email;
 
-                $dto->user->update([
-                    'email' => $dto->user->pending_email,
+                $command->user->update([
+                    'email' => $command->user->pending_email,
                     'email_verified_at' => now(),
                     'pending_email' => null,
                     'pending_email_token' => null,
                 ]);
 
-                UserEmailChanged::dispatch($dto->user, $oldEmail, $dto->system);
+                UserEmailChanged::dispatch($command->user, $oldEmail, $command->system);
             }
         );
     }

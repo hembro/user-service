@@ -21,7 +21,7 @@ final readonly class StageUserEmailChangeRequested
 
         $this->outbox->publish(
             routingKey: RoutingKey::USER_EMAIL_CHANGE_REQUESTED,
-            message: UserEmailChangeRequestedMessage::make($event->user, $event->token, $event->newEmail, $event->system)
+            message: UserEmailChangeRequestedMessage::make($event->user, $event->token, $event->newEmail, $event->system, $event->metadata)
         );
     }
 }

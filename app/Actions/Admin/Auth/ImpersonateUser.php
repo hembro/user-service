@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Auth;
 
 use App\Commands\Admin\Auth\ImpersonateUserCommand;
-use App\DTOs\Api\V1\Auth\TokenDTO;
+use App\DTOs\Auth\IssuedToken;
 use App\Events\Admin\UserImpersonated;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Database\DatabaseManager;
@@ -17,7 +17,7 @@ final readonly class ImpersonateUser
         private DatabaseManager $db
     ) {}
 
-    public function handle(ImpersonateUserCommand $command): TokenDTO
+    public function handle(ImpersonateUserCommand $command): IssuedToken
     {
         $token = $this->tokenIssuer->issueFullToken($command->targetUser, $command->system);
 

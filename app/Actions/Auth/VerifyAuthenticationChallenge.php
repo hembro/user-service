@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\AuthChallengePayloadDTO;
-use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
-use App\DTOs\Api\V1\Auth\VerifyChallengeDTO;
-use App\DTOs\Shared\RequestMetadata;
+use App\Commands\Auth\VerifyChallengeCommand;
+use App\DTOs\Auth\AuthenticationOutcome;
+use App\DTOs\Auth\CachedAuthChallenge;
 use App\Enums\Auth\ChallengeType;
 use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\Auth\InvalidChallengeException;
@@ -26,50 +25,43 @@ final readonly class VerifyAuthenticationChallenge
         private ChallengeService $challengeService
     ) {}
 
-    public function handle(VerifyChallengeDTO $verifyChallengedto, RequestMetadata $metadata): AuthenticationOutcomeDTO
+    public function handle(VerifyChallengeCommand $command): AuthenticationOutcome
     {
-        $cachedData = $this->challengeService->retrieve($verifyChallengedto->challengeId);
+        $cachedData = $this->challengeService->retrieve($command->challengeId);
 
         if ($cachedData === null) {
             throw new InvalidChallengeException('Challenge expired or invalid.');
         }
 
-        $payloadDto = AuthChallengePayloadDTO::fromArray($cachedData);
+        $challenge = CachedAuthChallenge::fromCache($cachedData);
 
-        // Make sure the fingerprint of the user device hasn't changed.
-        if (! $this->challengeService->validFingerprint($payloadDto->fingerprint, $metadata)) {
-            $this->challengeService->forget($verifyChallengedto->challengeId);
+        // Anti-Hijacking: Ensure the fingerprint hasn't changed.
+        if (! $this->challengeService->validFingerprint($challenge->fingerprint, $command->metadata)) {
+            $this->challengeService->forget($command->challengeId);
             throw new InvalidChallengeException('Security mismatch. Please login again.');
         }
 
-        $this->verifyCode($payloadDto, $verifyChallengedto->code);
+        $user = User::query()->findOrFail($challenge->userId);
 
-        $user = User::query()->findOrFail($payloadDto->userId);
+        $this->verifyCode($challenge, $user, $command->code);
 
-        $this->deviceService->trustDevice(
-            user: $user,
-            deviceId: $payloadDto->deviceId,
-            metadata: $metadata
-        );
+        $this->deviceService->trustDevice($user, $challenge->deviceId, $command->metadata);
 
-        $this->challengeService->forget($verifyChallengedto->challengeId);
+        $this->challengeService->forget($command->challengeId);
 
-        UserLoggedIn::dispatch($user, $payloadDto->deviceId, $metadata);
+        UserLoggedIn::dispatch($user, $challenge->deviceId, $command->metadata);
 
-        return AuthenticationOutcomeDTO::authenticated(
-            token: $this->tokenIssuer->issueFullToken($user, $payloadDto->system),
-            deviceId: $payloadDto->deviceId,
+        return AuthenticationOutcome::authenticated(
+            token: $this->tokenIssuer->issueFullToken($user, $challenge->system),
+            deviceId: $challenge->deviceId,
         );
     }
 
-    private function verifyCode(AuthChallengePayloadDTO $payload, string $inputCode): void
+    private function verifyCode(CachedAuthChallenge $challenge, User $user, string $inputCode): void
     {
-        $isValid = match ($payload->type) {
-            ChallengeType::TWO_FACTOR => $this->twoFactorService->valid(
-                user: User::query()->findOrFail($payload->userId),
-                code: $inputCode
-            ),
-            ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($payload->otpHash, $inputCode),
+        $isValid = match ($challenge->type) {
+            ChallengeType::TWO_FACTOR => $this->twoFactorService->valid($user, $inputCode),
+            ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($challenge->otpHash, $inputCode),
         };
 
         if (! $isValid) {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\VerifyEmailData;
+use App\Commands\Auth\VerifyEmailCommand;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserVerified;
 use App\Exceptions\InvalidVerificationRequest;
@@ -17,11 +17,11 @@ final readonly class VerifyEmail
         private DatabaseManager $db
     ) {}
 
-    public function handle(VerifyEmailData $dto): void
+    public function handle(VerifyEmailCommand $command): void
     {
-        $user = User::query()->findOrFail($dto->id);
+        $user = User::query()->findOrFail($command->id);
 
-        if (! hash_equals($dto->hash, sha1($user->getEmailForVerification()))) {
+        if (! hash_equals($command->hash, sha1($user->getEmailForVerification()))) {
             throw new InvalidVerificationRequest('The verification link is invalid or has been tampered with.');
         }
 
@@ -30,7 +30,7 @@ final readonly class VerifyEmail
         }
 
         $this->db->transaction(
-            callback: function () use ($user, $dto): void {
+            callback: function () use ($user, $command): void {
 
                 if (! $user->markEmailAsVerified()) {
                     throw new InvalidVerificationRequest('Email could not be verified due to a system error.');
@@ -38,7 +38,7 @@ final readonly class VerifyEmail
 
                 $user->update(['status' => UserStatus::ACTIVE]);
 
-                UserVerified::dispatch($user, $dto->system);
+                UserVerified::dispatch($user, $command->system);
             }
         );
     }

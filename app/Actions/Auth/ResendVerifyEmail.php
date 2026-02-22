@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\ResendVerifyEmailData;
+use App\Commands\Auth\ResendVerifyEmailCommand;
 use App\Events\Auth\VerificationLinkRequested;
 use App\Exceptions\InvalidVerificationRequest;
 use App\Models\User;
@@ -18,9 +18,9 @@ final readonly class ResendVerifyEmail
         private VerificationLinkGenerator $linkGenerator,
     ) {}
 
-    public function handle(ResendVerifyEmailData $dto): void
+    public function handle(ResendVerifyEmailCommand $command): void
     {
-        $user = User::query()->where('email', $dto->email)->first();
+        $user = User::query()->where('email', $command->email)->first();
 
         if (! $user) {
             return;
@@ -33,8 +33,8 @@ final readonly class ResendVerifyEmail
         $verificationUrl = $this->linkGenerator->generate($user);
 
         $this->db->transaction(
-            callback: function () use ($user, $verificationUrl, $dto): void {
-                VerificationLinkRequested::dispatch($user, $verificationUrl, $dto->system);
+            callback: function () use ($user, $verificationUrl, $command): void {
+                VerificationLinkRequested::dispatch($user, $verificationUrl, $command->system);
             }
         );
     }

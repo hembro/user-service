@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use SensitiveParameter;
 
-final readonly class ResetPasswordData
+final readonly class ResetPasswordCommand
 {
     public function __construct(
         public string $email,

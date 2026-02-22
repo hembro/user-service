@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use App\DTOs\Api\V1\Auth\TokenDTO;
+use App\DTOs\Auth\IssuedToken;
 use App\Enums\Auth\GrantType;
 use App\Enums\Systems;
 use App\Models\User;
@@ -31,7 +31,7 @@ final readonly class TokenIssuer
     /**
      * Issues a full access token for a fully authenticated user.
      */
-    public function issueFullToken(User $user, Systems $system): TokenDTO
+    public function issueFullToken(User $user, Systems $system): IssuedToken
     {
         return $this->issue(
             grantType: GrantType::SYSTEM_VERIFIED,
@@ -44,7 +44,7 @@ final readonly class TokenIssuer
         );
     }
 
-    public function issueRefreshToken(string $refreshToken, Systems $system): TokenDTO
+    public function issueRefreshToken(string $refreshToken, Systems $system): IssuedToken
     {
         return $this->issue(
             grantType: GrantType::REFRESH_TOKEN,
@@ -104,7 +104,7 @@ final readonly class TokenIssuer
     /**
      * The core issuance logic.
      */
-    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): TokenDTO
+    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): IssuedToken
     {
         // 1. Prepare Request Parameters
         $baseParams = [
@@ -129,7 +129,7 @@ final readonly class TokenIssuer
                 response: new Psr7Response()
             );
 
-            return TokenDTO::fromArray(
+            return IssuedToken::fromArray(
                 json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR)
             );
         } catch (OAuthServerException $e) {

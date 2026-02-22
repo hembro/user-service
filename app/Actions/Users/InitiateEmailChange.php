@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Users;
 
-use App\DTOs\Api\V1\Users\InitiateEmailChangeData;
+use App\Commands\Users\InitiateEmailChangeCommand;
 use App\Events\Users\UserEmailChangeRequested;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Str;
@@ -15,19 +15,19 @@ final readonly class InitiateEmailChange
         private DatabaseManager $db
     ) {}
 
-    public function handle(InitiateEmailChangeData $dto): void
+    public function handle(InitiateEmailChangeCommand $command): void
     {
         $this->db->transaction(
-            callback: function () use ($dto) {
+            callback: function () use ($command) {
 
                 $token = Str::random(64);
 
-                $dto->user->update([
-                    'pending_email' => $dto->email,
+                $command->user->update([
+                    'pending_email' => $command->email,
                     'pending_email_token' => $token,
                 ]);
 
-                UserEmailChangeRequested::dispatch($dto->user, $token, $dto->email, $dto->system);
+                UserEmailChangeRequested::dispatch($command->user, $token, $command->email, $command->system, $command->metadata);
             }
         );
     }

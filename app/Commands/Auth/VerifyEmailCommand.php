@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
 use App\Enums\Systems;
 use Illuminate\Http\Request;
 
-final readonly class VerifyEmailData
+final readonly class VerifyEmailCommand
 {
     public function __construct(
         public string $id,

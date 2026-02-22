@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\ResendVerifyEmailRequest;
 
-final readonly class ResendVerifyEmailData
+final readonly class ResendVerifyEmailCommand
 {
     public function __construct(
         public string $email,
