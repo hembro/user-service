@@ -6,8 +6,8 @@ namespace App\Actions\Auth;
 
 use App\Commands\Auth\LoginCommand;
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Api\V1\Auth\AuthChallengeData;
-use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
+use App\DTOs\Auth\AuthenticationOutcome;
+use App\DTOs\Auth\PendingAuthChallenge;
 use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
@@ -31,7 +31,7 @@ final readonly class AttemptLogin
         private DatabaseManager $db
     ) {}
 
-    public function handle(LoginCommand $command): AuthenticationOutcomeDTO
+    public function handle(LoginCommand $command): AuthenticationOutcome
     {
         $user = User::query()
             ->with('roles')
@@ -43,7 +43,7 @@ final readonly class AttemptLogin
         }
 
         return $this->db->transaction(
-            callback: function () use ($user, $command): AuthenticationOutcomeDTO {
+            callback: function () use ($user, $command): AuthenticationOutcome {
 
                 if ($this->deviceService->isTrusted($user, $command->deviceId, $command->metadata)) {
 
@@ -51,7 +51,7 @@ final readonly class AttemptLogin
 
                     UserLoggedIn::dispatch($user, $command->deviceId, $command->metadata);
 
-                    return AuthenticationOutcomeDTO::authenticated(
+                    return AuthenticationOutcome::authenticated(
                         token: $this->tokenIssuer->issueFullToken($user, $command->system),
                         deviceId: $command->deviceId
                     );
@@ -67,7 +67,7 @@ final readonly class AttemptLogin
         );
     }
 
-    private function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system, RequestMetadata $metadata): AuthenticationOutcomeDTO
+    private function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system, RequestMetadata $metadata): AuthenticationOutcome
     {
         $challengeId = Str::uuid()->toString();
 
@@ -76,7 +76,7 @@ final readonly class AttemptLogin
             ChallengeType::DEVICE_VERIFICATION => (string) random_int(100000, 999999)
         };
 
-        $challengeDto = new AuthChallengeData(
+        $challenge = new PendingAuthChallenge(
             userId: $user->id,
             challengeId: $challengeId,
             deviceId: $deviceId,
@@ -86,14 +86,13 @@ final readonly class AttemptLogin
             otpCode: $otpCode
         );
 
-        // Make the challenge
-        $this->challengeService->make($challengeDto);
+        $this->challengeService->make($challenge);
 
         if ($type === ChallengeType::DEVICE_VERIFICATION) {
             DeviceVerificationRequested::dispatch($user, $otpCode, $system, $metadata);
         }
 
-        return AuthenticationOutcomeDTO::challenge(
+        return AuthenticationOutcome::challenge(
             challengeId: $challengeId,
             challengeType: $type,
             deviceId: $deviceId

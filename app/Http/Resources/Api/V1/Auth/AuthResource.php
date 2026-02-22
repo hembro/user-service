@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1\Auth;
 
-use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
 use App\Enums\Auth\AuthResultStatus;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @property-read AuthenticationOutcomeDTO $resource
+ * @property-read \App\DTOs\Auth\AuthenticationOutcome $resource
  */
 final class AuthResource extends JsonResource
 {
