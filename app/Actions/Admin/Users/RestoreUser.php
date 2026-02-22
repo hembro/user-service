@@ -6,6 +6,8 @@ namespace App\Actions\Admin\Users;
 
 use App\Commands\Admin\Users\RestoreUserCommand;
 use App\Events\Admin\UserRestored;
+use App\Exceptions\Admin\UserRestoreCollisionException;
+use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 
 final readonly class RestoreUser
@@ -22,6 +24,19 @@ final readonly class RestoreUser
                 if (! $command->targetUser->trashed()) {
                     return;
                 }
+
+                $originalEmail = preg_replace('/::deleted_\d+$/', '', $command->targetUser->email);
+
+                $emailAlreadyTaken = User::query()
+                    ->where('email', $originalEmail)
+                    ->whereNull('deleted_at')
+                    ->exists();
+
+                if ($emailAlreadyTaken) {
+                    throw new UserRestoreCollisionException('Cannot restore user. The email address is currently registered to another active account.');
+                }
+
+                $command->targetUser->updateQuietly(['email' => $originalEmail]);
 
                 $command->targetUser->restore();
 

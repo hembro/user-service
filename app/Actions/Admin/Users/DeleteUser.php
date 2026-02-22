@@ -21,6 +21,10 @@ final readonly class DeleteUser
 
                 $command->targetUser->tokens()->delete();
 
+                $deletedEmail = sprintf('%s::deleted_%s', $command->targetUser->email, now()->timestamp);
+
+                $command->targetUser->updateQuietly(['email' => $deletedEmail]);
+
                 $command->targetUser->delete();
 
                 UserDeleted::dispatch($command->targetUser->id, $command->actor, $command->system);

@@ -10,7 +10,7 @@ use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Password;
 
-final readonly class SendResetLink
+final readonly class SendResetPasswordLink
 {
     public function __construct(
         private DatabaseManager $db

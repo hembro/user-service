@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Auth\SendResetLink;
+use App\Actions\Auth\SendResetPasswordLink;
 use App\Commands\Auth\ForgotPasswordCommand;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Traits\HasApiResponse;
@@ -15,7 +15,7 @@ final class ForgotPasswordController
     use HasApiResponse;
 
     public function __construct(
-        private readonly SendResetLink $action
+        private readonly SendResetPasswordLink $action
     ) {}
 
     public function __invoke(ForgotPasswordRequest $request): JsonResponse
