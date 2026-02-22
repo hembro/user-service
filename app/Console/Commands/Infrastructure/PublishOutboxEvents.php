@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Console\Commands\Infrastructure;
 
 use App\Enums\Infrastructure\OutboxStatus;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Infrastructure\Amqp\EventPublisher;
 use App\Models\OutboxEvent;
 use Illuminate\Console\Command;
@@ -48,9 +47,7 @@ final class PublishOutboxEvents extends Command
     private function processEvent(OutboxEvent $event): void
     {
         try {
-            $routingKey = RoutingKey::from($event->event_type);
-
-            $this->publisher->publish($routingKey, $event->payload);
+            $this->publisher->publish($event->event_type, $event->payload);
 
             $event->update(['status' => OutboxStatus::PUBLISHED]);
         } catch (Throwable $e) {

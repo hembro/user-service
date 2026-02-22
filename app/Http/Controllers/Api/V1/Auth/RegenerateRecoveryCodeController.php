@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\RegenerateRecoveryCodes;
-use App\DTOs\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\RegenerateRecoveryCodesRequest;
 use App\Http\Resources\Api\V1\Auth\RecoveryCodesResource;
 use App\Traits\HasApiResponse;
@@ -21,10 +20,7 @@ final class RegenerateRecoveryCodeController
 
     public function __invoke(RegenerateRecoveryCodesRequest $request): JsonResponse
     {
-        $recoveryCodes = $this->action->handle(
-            user: $request->user(),
-            metadata: RequestMetadata::fromRequest($request)
-        );
+        $recoveryCodes = $this->action->handle($request->user());
 
         return $this->success(
             data: new RecoveryCodesResource($recoveryCodes),

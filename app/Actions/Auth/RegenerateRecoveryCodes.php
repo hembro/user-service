@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Shared\RequestMetadata;
-use App\Events\Auth\RecoveryCodesRegenerated;
 use App\Exceptions\Auth\InvalidTwoFactorRequest;
 use App\Models\User;
 use App\Services\Auth\TwoFactorService;
@@ -17,7 +15,7 @@ final readonly class RegenerateRecoveryCodes
         private TwoFactorService $twoFactorService
     ) {}
 
-    public function handle(User $user, RequestMetadata $metadata): Collection
+    public function handle(User $user): Collection
     {
         if (! $user->hasEnabledTwoFactor()) {
             throw new InvalidTwoFactorRequest('Two factor authentication is not enabled.');
@@ -28,8 +26,6 @@ final readonly class RegenerateRecoveryCodes
         $user->forceFill([
             'two_factor_recovery_codes' => $newRecoveryCodes,
         ])->save();
-
-        RecoveryCodesRegenerated::dispatch($user, $metadata);
 
         return $newRecoveryCodes;
     }

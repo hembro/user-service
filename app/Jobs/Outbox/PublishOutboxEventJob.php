@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Jobs\Outbox;
 
 use App\Enums\Infrastructure\OutboxStatus;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Infrastructure\Amqp\EventPublisher;
 use App\Models\OutboxEvent;
 use Illuminate\Bus\Queueable;
@@ -51,9 +50,7 @@ final class PublishOutboxEventJob implements ShouldQueue
                     return;
                 }
 
-                $routingKey = RoutingKey::from($event->event_type);
-
-                $publisher->publish($routingKey, $event->payload);
+                $publisher->publish($event->event_type, $event->payload);
 
                 $event->update(['status' => OutboxStatus::PUBLISHED]);
             }
