@@ -10,12 +10,14 @@ use App\Exceptions\InvalidCredentialsException;
 use App\Services\Auth\TwoFactorService;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;
+use Psr\Log\LoggerInterface;
 
 final readonly class ConfirmTwoFactor
 {
     public function __construct(
         private TwoFactorService $service,
-        private DatabaseManager $db
+        private DatabaseManager $db,
+        private LoggerInterface $logger
     ) {}
 
     public function handle(ConfirmTwoFactorCommand $command): Collection
@@ -25,6 +27,15 @@ final readonly class ConfirmTwoFactor
         }
 
         if (! $this->service->validTotp($command->user, $command->code)) {
+
+            $this->logger->warning(
+                message: 'Failed TOTP confirmation attempt.',
+                context: [
+                    'user_id' => $command->user->id,
+                    'ip' => $command->metadata->ip,
+                ]
+            );
+
             throw new InvalidCredentialsException('Invalid two-factor code.');
         }
 
@@ -39,7 +50,8 @@ final readonly class ConfirmTwoFactor
                 ])->save();
 
                 TwoFactorEnabled::dispatch($command->user, $command->system);
-            });
+            }
+        );
 
         return $recoveryCodes;
     }

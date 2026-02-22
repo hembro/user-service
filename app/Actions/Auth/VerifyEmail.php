@@ -10,11 +10,13 @@ use App\Events\Auth\UserVerified;
 use App\Exceptions\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use Psr\Log\LoggerInterface;
 
 final readonly class VerifyEmail
 {
     public function __construct(
-        private DatabaseManager $db
+        private DatabaseManager $db,
+        private LoggerInterface $logger
     ) {}
 
     public function handle(VerifyEmailCommand $command): void
@@ -22,6 +24,15 @@ final readonly class VerifyEmail
         $user = User::query()->findOrFail($command->id);
 
         if (! hash_equals($command->hash, sha1($user->getEmailForVerification()))) {
+
+            $this->logger->warning(
+                message: 'Email verification hash tampering detected.',
+                context: [
+                    'user_id' => $user->id,
+                    'provided_hash' => $command->hash,
+                ]
+            );
+
             throw new InvalidVerificationRequest('The verification link is invalid or has been tampered with.');
         }
 
