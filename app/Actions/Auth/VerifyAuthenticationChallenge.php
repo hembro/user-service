@@ -49,7 +49,7 @@ final readonly class VerifyAuthenticationChallenge
 
         $this->challengeService->forget($command->challengeId);
 
-        UserLoggedIn::dispatch($user, $challenge->deviceId, $command->metadata);
+        UserLoggedIn::dispatch($user, $challenge->deviceId, $command->system, $command->metadata);
 
         return AuthenticationOutcome::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $challenge->system),

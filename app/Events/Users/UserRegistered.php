@@ -16,7 +16,7 @@ final class UserRegistered
 
     public function __construct(
         public readonly User $user,
-        public readonly string $verificationUrl,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly ?string $verificationUrl = null,
     ) {}
 }

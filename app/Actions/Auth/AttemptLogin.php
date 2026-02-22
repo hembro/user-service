@@ -49,7 +49,7 @@ final readonly class AttemptLogin
 
                     $user->touchLastLoginAt();
 
-                    UserLoggedIn::dispatch($user, $command->deviceId, $command->metadata);
+                    UserLoggedIn::dispatch($user, $command->deviceId, $command->system, $command->metadata);
 
                     return AuthenticationOutcome::authenticated(
                         token: $this->tokenIssuer->issueFullToken($user, $command->system),

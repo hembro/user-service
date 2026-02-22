@@ -61,10 +61,10 @@ final readonly class ProcessSocialLogin
         );
 
         if ($user->wasRecentlyCreated) {
-            UserRegistered::dispatch($user);
+            UserRegistered::dispatch($user, $command->system);
         }
 
-        UserLoggedIn::dispatch($user, $command->deviceId, $command->metadata);
+        UserLoggedIn::dispatch($user, $command->deviceId, $command->system, $command->metadata);
 
         return AuthenticationOutcome::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $command->system),

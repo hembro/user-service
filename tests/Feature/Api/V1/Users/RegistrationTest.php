@@ -67,8 +67,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
             'status' => UserStatus::PENDING->value, // RegisterUser sets PENDING by default
         ]);
 
-        /** @var User $user */
-        $user = User::where('email', $payload['email'])->first();
+        $user = User::query()->where('email', $payload['email'])->first();
 
         // Verify Password Hashing
         expect(Hash::check($payload['password'], $user->password))->toBeTrue();

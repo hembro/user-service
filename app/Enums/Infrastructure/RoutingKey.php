@@ -45,6 +45,7 @@ enum RoutingKey: string
      *                              AUTH
      * ----------------------------------------------------------------
      */
+    case AUTH_USER_LOGGED_IN = 'auth.user.logged_in';
     case AUTH_LOGGED_OUT = 'auth.logged_out';
     case AUTH_PASSWORD_RESET = 'auth.password.reset';
     case AUTH_PASSWORD_RESET_REQUESTED = 'auth.password.reset.requested';

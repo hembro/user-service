@@ -25,9 +25,11 @@ final readonly class StageUserRegistered
             message: UserRegisteredMessage::make($event->user, $event->system)
         );
 
-        $this->outbox->publish(
-            routingKey: RoutingKey::AUTH_VERIFICATION_REQUESTED,
-            message: EmailVerificationRequestedMessage::make($event->user, $event->verificationUrl, $event->system)
-        );
+        if ($event->verificationUrl !== null) {
+            $this->outbox->publish(
+                routingKey: RoutingKey::AUTH_VERIFICATION_REQUESTED,
+                message: EmailVerificationRequestedMessage::make($event->user, $event->verificationUrl, $event->system)
+            );
+        }
     }
 }

@@ -50,7 +50,7 @@ final readonly class RegisterUser
 
                 $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                UserRegistered::dispatch($user, $verificationUrl, $command->system);
+                UserRegistered::dispatch($user, $command->system, $verificationUrl);
 
                 return $user;
             }

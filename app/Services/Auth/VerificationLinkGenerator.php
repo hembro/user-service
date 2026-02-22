@@ -12,7 +12,7 @@ final readonly class VerificationLinkGenerator
     public function generate(User $user): string
     {
         return URL::temporarySignedRoute(
-            name: 'api.v1.auth.email.verification.verify',
+            name: 'api.v1.auth.verification.verify',
             expiration: now()->addMinutes((int) config('auth.verification.expire', 60)),
             parameters: [
                 'id' => $user->getKey(),
