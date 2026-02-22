@@ -33,7 +33,7 @@ final readonly class UserPasswordResetMessage implements IntegrationMessageInter
             'data' => [
                 'target_user' => [
                     'id' => (string) $targetUser->id,
-                    'name' => $targetUser->profile?->first_name ?? 'User',
+                    'name' => $targetUser->profile?->first_name,
                     'email' => $targetUser->email,
                 ],
                 'actor' => [

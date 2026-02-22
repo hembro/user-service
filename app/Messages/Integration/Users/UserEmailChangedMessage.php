@@ -33,7 +33,7 @@ final readonly class UserEmailChangedMessage implements IntegrationMessageInterf
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'name' => $user->profile?->first_name,
                     'changes' => [
                         'old_email' => $oldEmail,
                         'new_email' => $user->email,

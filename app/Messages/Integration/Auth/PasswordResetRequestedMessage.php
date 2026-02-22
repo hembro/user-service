@@ -35,7 +35,7 @@ final readonly class PasswordResetRequestedMessage implements IntegrationMessage
                 'actor' => [
                     'id' => (string) $user->id,
                     'email' => $user->email,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'name' => $user->profile?->first_name,
                 ],
                 'reset_token' => $token,
                 'session' => [

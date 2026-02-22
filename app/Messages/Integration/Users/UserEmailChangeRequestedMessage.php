@@ -35,7 +35,7 @@ final readonly class UserEmailChangeRequestedMessage implements IntegrationMessa
                 'actor' => [
                     'id' => (string) $user->id,
                     'new_email' => $newEmail,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'name' => $user->profile?->first_name,
                 ],
                 'email_change_token' => $token,
                 'session' => [

@@ -33,7 +33,7 @@ final readonly class UserVerifiedMessage implements IntegrationMessageInterface
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'name' => $user->profile?->first_name,
                     'email' => $user->email,
                 ],
             ],

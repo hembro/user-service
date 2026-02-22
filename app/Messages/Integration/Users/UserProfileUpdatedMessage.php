@@ -33,7 +33,7 @@ final readonly class UserProfileUpdatedMessage implements IntegrationMessageInte
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
-                    'name' => $user->profile?->first_name ?? 'User',
+                    'name' => $user->profile?->first_name,
                     'email' => $user->email,
                 ],
                 'profile' => [
