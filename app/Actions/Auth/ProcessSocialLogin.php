@@ -34,6 +34,7 @@ final readonly class ProcessSocialLogin
                 ->stateless()
                 ->user();
         } catch (Throwable $e) {
+
             $this->logger->error(
                 message: 'Social Login Failed',
                 context: [

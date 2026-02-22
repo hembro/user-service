@@ -13,7 +13,7 @@ use App\Services\Auth\TokenIssuer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Log\LoggerInterface;
 
-final class RefereshUserToken
+final class RefreshUserToken
 {
     public function __construct(
         private readonly TokenIssuer $tokenIssuer,
