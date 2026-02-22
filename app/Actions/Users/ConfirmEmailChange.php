@@ -6,7 +6,7 @@ namespace App\Actions\Users;
 
 use App\Commands\Users\VerifyEmailChangeCommand;
 use App\Events\Users\UserEmailChanged;
-use App\Exceptions\InvalidVerificationRequest;
+use App\Exceptions\Auth\InvalidVerificationRequest;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
 

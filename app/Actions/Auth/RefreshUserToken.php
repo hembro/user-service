@@ -8,7 +8,7 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Exceptions\Auth\InvalidChallengeException;
-use App\Exceptions\InvalidRefreshTokenException;
+use App\Exceptions\Auth\InvalidRefreshTokenException;
 use App\Services\Auth\TokenIssuer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Log\LoggerInterface;

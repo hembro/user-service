@@ -6,7 +6,7 @@ namespace App\Actions\Auth;
 
 use App\Commands\Auth\ResendVerifyEmailCommand;
 use App\Events\Auth\VerificationLinkRequested;
-use App\Exceptions\InvalidVerificationRequest;
+use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;

@@ -14,7 +14,7 @@ use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Events\Auth\DeviceVerificationRequested;
 use App\Events\Auth\UserLoggedIn;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Models\User;
 use App\Services\Auth\ChallengeService;
 use App\Services\Auth\TokenIssuer;

@@ -6,7 +6,7 @@ namespace App\Actions\Auth;
 
 use App\Commands\Auth\ConfirmTwoFactorCommand;
 use App\Events\Auth\TwoFactorEnabled;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Services\Auth\TwoFactorService;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Collection;

@@ -7,7 +7,7 @@ namespace App\Actions\Auth;
 use App\Commands\Auth\VerifyEmailCommand;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserVerified;
-use App\Exceptions\InvalidVerificationRequest;
+use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;

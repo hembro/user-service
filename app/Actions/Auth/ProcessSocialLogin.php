@@ -10,7 +10,7 @@ use App\DTOs\Auth\SocialProfile;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
-use App\Exceptions\InvalidCredentialsException;
+use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\SocialUserResolver;
 use App\Services\Auth\TokenIssuer;

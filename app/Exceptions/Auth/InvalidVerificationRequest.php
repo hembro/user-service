@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Exceptions;
+namespace App\Exceptions\Auth;
 
 use App\Traits\HasApiResponse;
 use Exception;

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\Systems;
-use App\Exceptions\InvalidSystemHeaderException;
+use App\Exceptions\Auth\InvalidSystemHeaderException;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Context;
