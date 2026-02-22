@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Users;
 
-use App\DTOs\Api\V1\Users\UpdateProfileData;
+use App\Commands\Users\UpdateProfileCommand;
 use App\Events\Users\UserProfileUpdated;
 use Illuminate\Database\DatabaseManager;
 
@@ -14,15 +14,15 @@ final readonly class UpdateProfile
         private DatabaseManager $db
     ) {}
 
-    public function handle(UpdateProfileData $dto): void
+    public function handle(UpdateProfileCommand $command): void
     {
         $this->db->transaction(
-            callback: function () use ($dto) {
+            callback: function () use ($command) {
 
-                $profile = $dto->user->profile;
+                $profile = $command->user->profile;
 
                 $profile->fill(
-                    attributes: $dto->toProfileAttributes()
+                    attributes: $command->toProfileAttributes()
                 );
 
                 $changes = [];
@@ -36,7 +36,7 @@ final readonly class UpdateProfile
 
                     $profile->save();
 
-                    UserProfileUpdated::dispatch($dto->user, $changes, $dto->system);
+                    UserProfileUpdated::dispatch($command->user, $changes, $command->system);
                 }
             }
         );

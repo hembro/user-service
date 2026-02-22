@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Actions\Auth;
 
-use App\DTOs\Api\V1\Auth\AuthenticationOutcomeDTO;
-use App\DTOs\Api\V1\Auth\SocialLoginDTO;
+use App\Commands\Auth\SocialLoginCommand;
 use App\DTOs\Api\V1\Auth\SocialUserDTO;
+use App\DTOs\Auth\AuthenticationOutcome;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
@@ -27,30 +27,30 @@ final readonly class ProcessSocialLogin
         private LoggerInterface $logger
     ) {}
 
-    public function handle(SocialLoginDTO $dto, string $deviceId): AuthenticationOutcomeDTO
+    public function handle(SocialLoginCommand $command): AuthenticationOutcome
     {
         try {
-            $socialiteUser = Socialite::driver($dto->provider->value)
+            $socialiteUser = Socialite::driver($command->provider->value)
                 ->stateless()
                 ->user();
         } catch (Throwable $e) {
             $this->logger->error(
                 message: 'Social Login Failed',
                 context: [
-                    'provider' => $dto->provider->value,
+                    'provider' => $command->provider->value,
                     'exception' => $e,
                 ]
             );
 
-            throw new InvalidCredentialsException("Failed to validate token with {$dto->provider->value}.");
+            throw new InvalidCredentialsException("Failed to validate token with {$command->provider->value}.");
         }
 
         $user = $this->resolver->resolve(
             dto: SocialUserDTO::fromSocialite(
-                provider: $dto->provider,
+                provider: $command->provider,
                 socialUser: $socialiteUser
             ),
-            system: $dto->system
+            system: $command->system
         );
 
         if ($user->status !== UserStatus::ACTIVE) {
@@ -59,19 +59,19 @@ final readonly class ProcessSocialLogin
 
         $this->deviceService->trustDevice(
             user: $user,
-            deviceId: $deviceId,
-            metadata: $dto->metadata
+            deviceId: $command->deviceId,
+            metadata: $command->metadata
         );
 
         if ($user->wasRecentlyCreated) {
             UserRegistered::dispatch($user);
         }
 
-        UserLoggedIn::dispatch($user, $deviceId, $dto->metadata);
+        UserLoggedIn::dispatch($user, $command->deviceId, $command->metadata);
 
-        return AuthenticationOutcomeDTO::authenticated(
-            token: $this->tokenIssuer->issueFullToken($user, $dto->system),
-            deviceId: $deviceId
+        return AuthenticationOutcome::authenticated(
+            token: $this->tokenIssuer->issueFullToken($user, $command->system),
+            deviceId: $command->deviceId
         );
     }
 }

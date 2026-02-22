@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Users;
+namespace App\Commands\Users;
 
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
-use App\Http\Requests\Api\V1\Users\RegisterRequest;
-use SensitiveParameter;
+use App\Http\Requests\Api\V1\Users\UpdateProfileRequest;
+use App\Models\User;
 
-final readonly class RegisterUserData
+final readonly class UpdateProfileCommand
 {
     public function __construct(
-        public string $email,
-        #[SensitiveParameter]
-        public string $password,
+        public User $user,
         public ?Titles $title,
         public string $firstName,
         public ?string $middleName,
@@ -26,18 +23,15 @@ final readonly class RegisterUserData
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public string $deviceId,
-        public RequestMetadata $metadata,
         public Systems $system
     ) {}
 
-    public static function fromRequest(RegisterRequest $request, string $deviceId): self
+    public static function fromRequest(UpdateProfileRequest $request, User $user): self
     {
         $data = $request->validated();
 
         return new self(
-            email: $data['email'],
-            password: $data['password'],
+            user: $user,
             title: $request->enum('title', Titles::class),
             firstName: $data['first_name'],
             middleName: $data['middle_name'] ?? null,
@@ -46,8 +40,6 @@ final readonly class RegisterUserData
             sex: $request->enum('sex', Sex::class),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            deviceId: $deviceId,
-            metadata: RequestMetadata::fromRequest($request),
             system: $request->attributes->get('system'),
         );
     }

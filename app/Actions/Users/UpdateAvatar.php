@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Users;
 
-use App\DTOs\Api\V1\Users\UpdateAvatarData;
+use App\Commands\Users\UpdateAvatarCommand;
 use App\Events\Users\UserAvatarUpdated;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Storage;
@@ -15,19 +15,19 @@ final readonly class UpdateAvatar
         private DatabaseManager $db
     ) {}
 
-    public function handle(UpdateAvatarData $dto): void
+    public function handle(UpdateAvatarCommand $command): void
     {
         $this->db->transaction(
-            callback: function () use ($dto) {
+            callback: function () use ($command) {
 
-                $profile = $dto->user->profile;
+                $profile = $command->user->profile;
 
                 if ($profile->avatar_path && Storage::disk('public')->exists($profile->avatar_path)) {
                     Storage::disk('public')->delete($profile->avatar_path);
                 }
 
-                $path = $dto->file->store(
-                    path: "avatars/{$dto->user->id}",
+                $path = $command->file->store(
+                    path: "avatars/{$command->user->id}",
                     options: 'public'
                 );
 
@@ -35,7 +35,7 @@ final readonly class UpdateAvatar
                     'avatar_path' => $path,
                 ]);
 
-                UserAvatarUpdated::dispatch($dto->user, $dto->system);
+                UserAvatarUpdated::dispatch($command->user, $command->system);
             }
         );
     }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\ProcessSocialLogin;
-use App\DTOs\Api\V1\Auth\SocialLoginDTO;
+use App\Commands\Auth\SocialLoginCommand;
 use App\Enums\SocialProviders;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
@@ -27,9 +27,10 @@ final class SocialAuthController
 
     public function __invoke(SocialLoginRequest $request, SocialProviders $provider): JsonResponse
     {
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid();
+
         $authentocationOutcome = $this->action->handle(
-            dto: SocialLoginDTO::fromRequest($request),
-            deviceId: $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid()
+            SocialLoginCommand::fromRequest($request, $deviceId, $provider)
         );
 
         return $this->success(
