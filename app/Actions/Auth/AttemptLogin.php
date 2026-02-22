@@ -21,6 +21,7 @@ use App\Services\Auth\TokenIssuer;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 
 final readonly class AttemptLogin
 {
@@ -28,7 +29,8 @@ final readonly class AttemptLogin
         private DeviceTrustVerifier $deviceService,
         private ChallengeService $challengeService,
         private TokenIssuer $tokenIssuer,
-        private DatabaseManager $db
+        private DatabaseManager $db,
+        private LoggerInterface $logger
     ) {}
 
     public function handle(LoginCommand $command): AuthenticationOutcome
@@ -39,6 +41,17 @@ final readonly class AttemptLogin
             ->first();
 
         if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($command->password, $user->password)) {
+
+            $this->logger->warning(
+                message: 'Failed login attempt.',
+                context: [
+                    'email' => $command->email,
+                    'ip_address' => $command->metadata->ip,
+                    'user_agent' => $command->metadata->userAgent,
+                    'reason' => ! $user ? 'user_not_found' : ($user->status !== UserStatus::ACTIVE ? 'inactive_account' : 'invalid_password'),
+                ]
+            );
+
             throw new InvalidCredentialsException('Invalid credentials.');
         }
 
