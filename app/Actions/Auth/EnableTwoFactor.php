@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Commands\Auth\EnableTwoFactorCommand;
-use App\DTOs\Api\V1\Auth\TwoFactorSetupDTO;
+use App\DTOs\Auth\TwoFactorSetupDetails;
 use App\Events\Auth\EnableTwoFactorRequested;
 use App\Exceptions\Auth\InvalidTwoFactorRequest;
 use App\Services\Auth\TwoFactorService;
@@ -18,7 +18,7 @@ final readonly class EnableTwoFactor
         private TwoFactorService $service
     ) {}
 
-    public function handle(EnableTwoFactorCommand $command): TwoFactorSetupDTO
+    public function handle(EnableTwoFactorCommand $command): TwoFactorSetupDetails
     {
         if ($command->user->hasEnabledTwoFactor()) {
             throw new InvalidTwoFactorRequest('Two-factor authentication is already enabled.');
@@ -41,9 +41,6 @@ final readonly class EnableTwoFactor
 
         $qrUrl = $this->service->generateQrCodeUrl($command->user, $secret);
 
-        return new TwoFactorSetupDTO(
-            secret: $secret,
-            qrCodeUrl: $qrUrl
-        );
+        return new TwoFactorSetupDetails($secret, $qrUrl);
     }
 }

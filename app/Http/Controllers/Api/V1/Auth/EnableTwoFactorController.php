@@ -25,12 +25,12 @@ final class EnableTwoFactorController
             'current_password' => ['required', 'string', 'min:8', 'max:255', 'current_password:api'],
         ]);
 
-        $dto = $this->action->handle(
+        $twoFactorSetup = $this->action->handle(
             EnableTwoFactorCommand::fromRequest($request)
         );
 
         return $this->success(
-            data: new TwoFactorSetupResource($dto),
+            data: new TwoFactorSetupResource($twoFactorSetup),
             message: 'Scan the QR code to finish setup.'
         );
     }

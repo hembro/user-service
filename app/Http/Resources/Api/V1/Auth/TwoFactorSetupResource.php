@@ -7,6 +7,9 @@ namespace App\Http\Resources\Api\V1\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @property-read \App\DTOs\Auth\TwoFactorSetupDetails $resource
+ */
 final class TwoFactorSetupResource extends JsonResource
 {
     public function toArray(Request $request): array
