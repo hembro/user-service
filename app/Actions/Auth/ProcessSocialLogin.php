@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Commands\Auth\SocialLoginCommand;
-use App\DTOs\Api\V1\Auth\SocialUserDTO;
 use App\DTOs\Auth\AuthenticationOutcome;
+use App\DTOs\Auth\SocialProfile;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
@@ -46,10 +46,7 @@ final readonly class ProcessSocialLogin
         }
 
         $user = $this->resolver->resolve(
-            dto: SocialUserDTO::fromSocialite(
-                provider: $command->provider,
-                socialUser: $socialiteUser
-            ),
+            profile: SocialProfile::fromSocialite($command->provider, $socialiteUser),
             system: $command->system
         );
 

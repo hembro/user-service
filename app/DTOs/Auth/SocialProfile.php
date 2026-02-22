@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\DTOs\Auth;
 
 use App\Enums\SocialProviders;
 use Laravel\Socialite\Contracts\User as SocialUser;
 
-final readonly class SocialUserDTO
+final readonly class SocialProfile
 {
     public function __construct(
         public SocialProviders $provider,

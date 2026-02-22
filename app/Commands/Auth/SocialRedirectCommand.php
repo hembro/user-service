@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\DTOs\Api\V1\Auth;
+namespace App\Commands\Auth;
 
 use App\Enums\SocialProviders;
 use App\Enums\Systems;
 
-final readonly class SocialRedirectDTO
+final readonly class SocialRedirectCommand
 {
     public function __construct(
         public SocialProviders $provider,
