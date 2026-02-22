@@ -27,11 +27,7 @@ Route::middleware('throttle:auth.api')->group(function () {
     Route::middleware(['auth:api', EnsureDeviceIsTrusted::class])->group(function () {
 
         // API GATEWAY VALIDATION ENDPOINT
-        Route::get('/validate', function () {
-            return response()->noContent()->withHeaders([
-                'X-User-Id' => auth('api')->id(),
-            ]);
-        })->name('validate');
+        Route::get('/validate', fn () => response()->noContent()->withHeaders(['X-User-Id' => auth('api')->id()]))->name('validate');
 
         Route::post('/logout', Auth\LogoutController::class)
             ->name('logout');
@@ -62,7 +58,7 @@ Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
         ->name('verification.resend');
 });
 
-Route::middleware(['guest', 'throttle:auth.login'])->group(function () {
+Route::middleware(['throttle:auth.login'])->group(function () {
 
     Route::get('/social/{provider}/redirect', Auth\SocialRedirectController::class)
         ->name('social.redirect');
