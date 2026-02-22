@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Admin;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -38,6 +39,7 @@ final readonly class UserEmailChangedMessage implements IntegrationMessageInterf
                 ],
                 'actor' => [
                     'id' => (string) $actor->id,
+                    'type' => ActorType::USER->value,
                     'email' => $actor->email,
                     'name' => $actor->profile?->full_name,
                 ],

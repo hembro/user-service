@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Admin;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -37,7 +38,7 @@ final readonly class UserImpersonatedMessage implements IntegrationMessageInterf
                 ],
                 'actor' => [
                     'id' => (string) $impersonator->id,
-                    'type' => 'admin',
+                    'type' => ActorType::USER->value,
                     'name' => $impersonator->profile?->full_name,
                 ],
             ],

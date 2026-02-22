@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Users;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -33,6 +34,7 @@ final readonly class UserRegisteredMessage implements IntegrationMessageInterfac
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
+                    'type' => ActorType::USER->value,
                     'email' => $user->email,
                     'status' => $user->status->value,
                     'full_name' => $user->profile?->full_name,

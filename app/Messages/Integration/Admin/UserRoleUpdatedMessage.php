@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Admin;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -34,7 +35,7 @@ final readonly class UserRoleUpdatedMessage implements IntegrationMessageInterfa
                 ],
                 'actor' => [
                     'id' => (string) $actor->id,
-                    'type' => 'admin',
+                    'type' => ActorType::USER->value,
                     'name' => $actor->profile?->full_name,
                 ],
             ],

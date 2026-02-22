@@ -6,6 +6,7 @@ namespace App\Messages\Integration\Users;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
 use App\DTOs\Shared\RequestMetadata;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -34,6 +35,7 @@ final readonly class UserEmailChangeRequestedMessage implements IntegrationMessa
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
+                    'type' => ActorType::USER->value,
                     'new_email' => $newEmail,
                     'name' => $user->profile?->first_name,
                 ],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -33,6 +34,7 @@ final readonly class EmailVerificationRequestedMessage implements IntegrationMes
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
+                    'type' => ActorType::USER->value,
                     'email' => $user->email,
                     'first_name' => $user->profile?->first_name,
                 ],

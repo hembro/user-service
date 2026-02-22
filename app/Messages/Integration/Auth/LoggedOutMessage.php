@@ -6,6 +6,7 @@ namespace App\Messages\Integration\Auth;
 
 use App\Contracts\Messages\IntegrationMessageInterface;
 use App\DTOs\Shared\RequestMetadata;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Enums\Systems;
 use App\Messages\Integration\Shared\MessageMeta;
@@ -28,6 +29,7 @@ final readonly class LoggedOutMessage implements IntegrationMessageInterface
             'data' => [
                 'actor' => [
                     'id' => (string) $user->id,
+                    'type' => ActorType::USER->value,
                 ],
                 'session' => [
                     'ip_address' => $metadata->ip,
