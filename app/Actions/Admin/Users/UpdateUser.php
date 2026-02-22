@@ -61,13 +61,6 @@ final readonly class UpdateUser
                 }
 
                 if (! empty($changes)) {
-
-                    $this->logger->debug('admin user update initiated', [
-                        'admin_id' => (string) $command->actor->id,
-                        'target_user_id' => (string) $command->targetuser->id,
-                        'changes_count' => count($changes),
-                    ]);
-
                     UserUpdated::dispatch($command->actor, $command->targetuser, $changes, $command->system);
                 }
             }

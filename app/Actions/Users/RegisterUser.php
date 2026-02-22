@@ -27,11 +27,6 @@ final readonly class RegisterUser
         return $this->db->transaction(
             callback: function () use ($command): User {
 
-                $this->logger->debug(
-                    message: 'user registration initiated',
-                    context: ['email' => $command->email]
-                );
-
                 $user = User::query()->create([
                     'email' => $command->email,
                     'password' => $command->password,

@@ -26,11 +26,6 @@ final readonly class CreateUser
         return $this->db->transaction(
             callback: function () use ($command): User {
 
-                $this->logger->debug(
-                    message: 'admin user creation initiated',
-                    context: ['admin_id' => (string) $command->actor->id, 'email' => $command->email]
-                );
-
                 /** @var User $user */
                 $user = User::create([
                     'email' => $command->email,

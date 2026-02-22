@@ -24,11 +24,6 @@ final readonly class SocialUserResolver
         return $this->db->transaction(
             callback: function () use ($profile, $system) {
 
-                $this->logger->debug(
-                    message: 'social user registration initiated',
-                    context: ['email' => $profile->email]
-                );
-
                 $user = User::query()
                     ->firstOrCreate(
                         attributes: ['email' => $profile->email],
