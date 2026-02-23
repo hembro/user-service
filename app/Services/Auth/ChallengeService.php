@@ -14,6 +14,8 @@ final readonly class ChallengeService
 
     private const CACHE_PREFIX = 'auth:challenge:';
 
+    private const STRIKES_PREFIX = 'strikes:';
+
     public function __construct(
         private OtpService $otpService
     ) {}
@@ -48,12 +50,9 @@ final readonly class ChallengeService
     public function forget(string $challengeId): void
     {
         Cache::forget(self::CACHE_PREFIX . $challengeId);
+        Cache::forget(self::CACHE_PREFIX . self::STRIKES_PREFIX . $challengeId);
     }
 
-    /**
-     * Generates a fingerprint to bind the challenge to a specific browser.
-     * This prevents a hacker from intercepting the link and opening it on their machine.
-     */
     public function generateFingerprint(RequestMetadata $metadata): string
     {
         return hash_hmac(
@@ -79,7 +78,7 @@ final readonly class ChallengeService
 
     public function incrementStrike(string $challengeId): int
     {
-        $strikeKey = self::CACHE_PREFIX . 'strikes:' . $challengeId;
+        $strikeKey = self::CACHE_PREFIX . self::STRIKES_PREFIX . $challengeId;
 
         $strikes = Cache::increment($strikeKey);
 

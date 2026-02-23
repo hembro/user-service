@@ -62,7 +62,6 @@ final readonly class VerifyAuthenticationChallenge
             ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($challenge->otpHash, $command->code),
         };
 
-        // 3 failed attempts and the challenge is destroyed
         if (! $isValid) {
 
             $strikes = $this->challengeService->incrementStrike($command->challengeId);
@@ -71,10 +70,7 @@ final readonly class VerifyAuthenticationChallenge
 
                 $this->challengeService->forget($command->challengeId);
 
-                $this->logger->warning(
-                    message: 'Auth challenge destroyed due to multiple attempt.',
-                    context: ['user_id' => $user->id]
-                );
+                $this->logger->warning('Auth challenge destroyed due to multiple attempt.', ['user_id' => $user->id]);
 
                 throw new InvalidChallengeException('Too many failed attempts. Please login again.');
             }
