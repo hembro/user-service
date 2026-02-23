@@ -13,6 +13,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -123,6 +124,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(TokenIssuer::class, function ($app) {
             return new TokenIssuer(
                 server: $app->make(AuthorizationServer::class),
+                encrypter: $app->make(Encrypter::class),
                 systemClients: config('services.passport.frontend_clients'),
                 internalSignature: config('app.key')
             );
