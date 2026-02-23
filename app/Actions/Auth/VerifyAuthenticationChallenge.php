@@ -15,11 +15,13 @@ use App\Services\Auth\ChallengeService;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use App\Services\Auth\TwoFactorService;
+use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
 
 final readonly class VerifyAuthenticationChallenge
 {
     public function __construct(
+        private DatabaseManager $db,
         private TokenIssuer $tokenIssuer,
         private DeviceTrustService $deviceService,
         private TwoFactorService $twoFactorService,
@@ -41,8 +43,8 @@ final readonly class VerifyAuthenticationChallenge
         if (! $this->challengeService->validFingerprint($challenge->fingerprint, $command->metadata)) {
 
             $this->logger->alert(
-                message: 'Session hijacking attempt detected during authentication challenge.',
-                context: [
+                'Session hijacking attempt detected during authentication challenge.',
+                [
                     'challenge_id' => $command->challengeId,
                     'expected_fingerprint' => $challenge->fingerprint,
                     'actual_ip' => $command->metadata->ip,
@@ -50,35 +52,52 @@ final readonly class VerifyAuthenticationChallenge
                 ]
             );
 
-            $this->challengeService->forget($command->challengeId);
             throw new InvalidChallengeException('Security mismatch. Please login again.');
         }
 
         $user = User::query()->findOrFail($challenge->userId);
 
-        $this->verifyCode($challenge, $user, $command->code);
+        $isValid = match ($challenge->type) {
+            ChallengeType::TWO_FACTOR => $this->twoFactorService->valid($user, $command->code),
+            ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($challenge->otpHash, $command->code),
+        };
 
-        $this->deviceService->trustDevice($user, $challenge->deviceId, $command->metadata);
+        // 3 failed attempts and the challenge is destroyed
+        if (! $isValid) {
+
+            $strikes = $this->challengeService->incrementStrike($command->challengeId);
+
+            if ($strikes >= 3) {
+
+                $this->challengeService->forget($command->challengeId);
+
+                $this->logger->warning(
+                    message: 'Auth challenge destroyed due to multiple attempt.',
+                    context: ['user_id' => $user->id]
+                );
+
+                throw new InvalidChallengeException('Too many failed attempts. Please login again.');
+            }
+
+            throw new InvalidChallengeException('Invalid code. You have ' . (3 - $strikes) . ' attempts remaining.');
+        }
+
+        $outcome = $this->db->transaction(
+            callback: function () use ($user, $challenge, $command): AuthenticationOutcome {
+
+                $this->deviceService->trustDevice($user, $challenge->deviceId, $command->metadata);
+
+                UserLoggedIn::dispatch($user, $challenge->deviceId, $command->system, $command->metadata);
+
+                return AuthenticationOutcome::authenticated(
+                    token: $this->tokenIssuer->issueFullToken($user, $challenge->system),
+                    deviceId: $challenge->deviceId,
+                );
+            }
+        );
 
         $this->challengeService->forget($command->challengeId);
 
-        UserLoggedIn::dispatch($user, $challenge->deviceId, $command->system, $command->metadata);
-
-        return AuthenticationOutcome::authenticated(
-            token: $this->tokenIssuer->issueFullToken($user, $challenge->system),
-            deviceId: $challenge->deviceId,
-        );
-    }
-
-    private function verifyCode(CachedAuthChallenge $challenge, User $user, string $inputCode): void
-    {
-        $isValid = match ($challenge->type) {
-            ChallengeType::TWO_FACTOR => $this->twoFactorService->valid($user, $inputCode),
-            ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($challenge->otpHash, $inputCode),
-        };
-
-        if (! $isValid) {
-            throw new InvalidChallengeException('Invalid verification code.');
-        }
+        return $outcome;
     }
 }

@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained(table: 'users', column: 'id')
                 ->cascadeOnDelete();
 
-            $table->uuid('device_id')->index();
+            $table->ulid('device_id')->index();
             $table->string('fingerprint_hash');
             $table->string('name')->nullable();
             $table->ipAddress('last_ip')->nullable();

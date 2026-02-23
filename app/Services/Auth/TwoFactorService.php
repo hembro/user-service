@@ -6,6 +6,7 @@ namespace App\Services\Auth;
 
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 
@@ -49,7 +50,20 @@ final readonly class TwoFactorService
             return false;
         }
 
-        return $this->engine->verifyKey($user->two_factor_secret, $code, window: 1);
+        $isValid = $this->engine->verifyKey($user->two_factor_secret, $code, window: 1);
+
+        if ($isValid) {
+
+            $cacheKey = "totp_used:{$user->id}:{$code}";
+
+            if (Cache::has($cacheKey)) {
+                return false; // Code was already used in this window!
+            }
+
+            Cache::put($cacheKey, true, now()->addMinutes(2));
+        }
+
+        return $isValid;
     }
 
     public function disable(User $user): void

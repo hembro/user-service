@@ -83,6 +83,9 @@ final class UserPolicy
 
     private function hasCommonSystemPermission(User $actor, User $target, string $type): bool
     {
+        $actor->loadMissing('roles');
+        $target->loadMissing('roles');
+
         foreach (Systems::cases() as $system) {
 
             if (! $actor->belongsToSystem($system)) {

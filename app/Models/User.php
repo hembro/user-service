@@ -51,22 +51,13 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     use Notifiable;
     use SoftDeletes;
 
-    protected $fillable = [
-        'status',
-        'email',
-        'password',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
-        'two_factor_confirmed_at',
-        'email_verified_at',
-        'last_login_at',
-        'pending_email',
-        'pending_email_token',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'password',
         'pending_email_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -119,7 +110,7 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
 
     public function hasEnabledTwoFactor(): bool
     {
-        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+        return ! blank($this->two_factor_secret) && ! blank($this->two_factor_confirmed_at);
     }
 
     public function touchLastLoginAt(): void

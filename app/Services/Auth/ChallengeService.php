@@ -42,11 +42,7 @@ final readonly class ChallengeService
     {
         $data = Cache::get(self::CACHE_PREFIX . $challengeId);
 
-        if (! is_array($data)) {
-            return null;
-        }
-
-        return $data;
+        return is_array($data) ? $data : null;
     }
 
     public function forget(string $challengeId): void
@@ -79,5 +75,18 @@ final readonly class ChallengeService
         }
 
         return $this->otpService->verify($storedHash, $inputCode);
+    }
+
+    public function incrementStrike(string $challengeId): int
+    {
+        $strikeKey = self::CACHE_PREFIX . 'strikes:' . $challengeId;
+
+        $strikes = Cache::increment($strikeKey);
+
+        if ($strikes === 1) {
+            Cache::put($strikeKey, 1, self::CHALLENGE_TTL_SECONDS);
+        }
+
+        return $strikes;
     }
 }
