@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
+use App\Contracts\Infrastructure\EventPublisherInterface;
 use App\Enums\Roles;
+use App\Infrastructure\Amqp\RabbitMqEventPublisher;
 use App\OAuth\Grants\SystemVerifiedGrant;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
@@ -133,7 +135,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function bindContracts(): void
     {
-        // For testing purposes
         $this->app->bind(DeviceTrustVerifier::class, DeviceTrustService::class);
+        $this->app->bind(EventPublisherInterface::class, RabbitMqEventPublisher::class);
     }
 }

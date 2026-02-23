@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Jobs\Outbox;
 
+use App\Contracts\Infrastructure\EventPublisherInterface;
 use App\Enums\Infrastructure\OutboxStatus;
-use App\Infrastructure\Amqp\EventPublisher;
 use App\Models\OutboxEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,7 +33,7 @@ final class PublishOutboxEventJob implements ShouldQueue
         $this->queue = 'outbox';
     }
 
-    public function handle(EventPublisher $publisher): void
+    public function handle(EventPublisherInterface $publisher): void
     {
         $event = OutboxEvent::query()
             ->where('id', $this->outboxEventId)

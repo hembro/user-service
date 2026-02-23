@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Amqp;
 
+use App\Contracts\Infrastructure\EventPublisherInterface;
 use App\Enums\Infrastructure\ExchangeType;
 use App\Enums\Infrastructure\RoutingKey;
-use Illuminate\Support\Facades\Queue;
+use Illuminate\Contracts\Queue\Factory as QueueFactory;
 
-final class EventPublisher
+final readonly class RabbitMqEventPublisher implements EventPublisherInterface
 {
+    public function __construct(
+        private QueueFactory $queue // Inject the factory, do not use the Facade
+    ) {}
+
     /**
      * Publish a raw JSON payload to the Topic Exchange.
      */
     public function publish(RoutingKey $routingKey, array $payload): void
     {
-        $connection = Queue::connection('rabbitmq_events');
+        $connection = $this->queue->connection('rabbitmq_events');
 
         $jsonPayload = json_encode($payload, JSON_THROW_ON_ERROR);
 
