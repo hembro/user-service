@@ -60,6 +60,7 @@ final readonly class VerifyAuthenticationChallenge
         $isValid = match ($challenge->type) {
             ChallengeType::TWO_FACTOR => $this->twoFactorService->valid($user, $command->code),
             ChallengeType::DEVICE_VERIFICATION => $this->challengeService->validOtp($challenge->otpHash, $command->code),
+            default => throw new InvalidChallengeException('Invalid challenge type.')
         };
 
         if (! $isValid) {
