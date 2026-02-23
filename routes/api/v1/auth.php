@@ -26,9 +26,6 @@ Route::middleware('throttle:auth.api')->group(function () {
 
     Route::middleware(['auth:api', EnsureDeviceIsTrusted::class])->group(function () {
 
-        // API GATEWAY VALIDATION ENDPOINT
-        Route::get('/validate', fn () => response()->noContent()->withHeaders(['X-User-Id' => auth('api')->id()]))->name('validate');
-
         Route::post('/logout', Auth\LogoutController::class)
             ->name('logout');
 
