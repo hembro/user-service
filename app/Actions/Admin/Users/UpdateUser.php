@@ -9,6 +9,7 @@ use App\Events\Admin\UserEmailChanged;
 use App\Events\Admin\UserUpdated;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final readonly class UpdateUser
 {
@@ -19,51 +20,60 @@ final readonly class UpdateUser
 
     public function handle(UpdateUserCommand $command): void
     {
-        $this->db->transaction(
-            callback: function () use ($command): void {
+        try {
+            $this->db->transaction(
+                callback: function () use ($command): void {
 
-                $changes = [];
+                    $changes = [];
 
-                $command->targetuser->fill([
-                    'email' => $command->email,
-                ]);
+                    $command->targetUser->fill([
+                        'email' => $command->email,
+                    ]);
 
-                if ($command->targetuser->isDirty('email')) {
-                    $command->targetuser->email_verified_at = null;
+                    if ($command->targetUser->isDirty('email')) {
+                        $command->targetUser->email_verified_at = null;
 
-                    $changes['email'] = [
-                        'old' => $command->targetuser->getOriginal('email'),
-                        'new' => $command->email,
-                    ];
-
-                    $command->targetuser->save();
-                }
-
-                $profile = $command->targetuser->profile;
-
-                $profile->fill(
-                    attributes: $command->toProfileAttributes()
-                );
-
-                if ($profile->isDirty()) {
-                    foreach ($profile->getDirty() as $key => $value) {
-                        $changes["profile.{$key}"] = [
-                            'old' => $profile->getOriginal($key),
-                            'new' => $value,
+                        $changes['email'] = [
+                            'old' => $command->targetUser->getOriginal('email'),
+                            'new' => $command->email,
                         ];
+
+                        $command->targetUser->save();
                     }
 
-                    $profile->save();
-                }
+                    $profile = $command->targetUser->profile;
 
-                if ($command->targetuser->wasChanged('email')) {
-                    UserEmailChanged::dispatch($command->targetuser, $command->actor, $command->system);
-                }
+                    $profile->fill(
+                        attributes: $command->toProfileAttributes()
+                    );
 
-                if (! empty($changes)) {
-                    UserUpdated::dispatch($command->actor, $command->targetuser, $changes, $command->system);
+                    if ($profile->isDirty()) {
+                        foreach ($profile->getDirty() as $key => $value) {
+                            $changes["profile.{$key}"] = [
+                                'old' => $profile->getOriginal($key),
+                                'new' => $value,
+                            ];
+                        }
+
+                        $profile->save();
+                    }
+
+                    if ($command->targetUser->wasChanged('email')) {
+                        UserEmailChanged::dispatch($command->targetUser, $command->actor, $command->system);
+                    }
+
+                    if (! empty($changes)) {
+                        UserUpdated::dispatch($command->actor, $command->targetUser, $changes, $command->system);
+                    }
                 }
-            }
-        );
+            );
+        } catch (Throwable $exception) {
+            $this->logger->critical('Admin User update transaction failed.', [
+                'email' => $command->email,
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+            throw $exception;
+        }
     }
 }

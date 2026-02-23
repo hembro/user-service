@@ -9,7 +9,6 @@ use App\Infrastructure\Amqp\EventPublisher;
 use App\Models\OutboxEvent;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -34,27 +33,26 @@ final class PublishOutboxEventJob implements ShouldQueue
         $this->queue = 'outbox';
     }
 
-    public function handle(EventPublisher $publisher, DatabaseManager $db): void
+    public function handle(EventPublisher $publisher): void
     {
-        $db->transaction(
-            callback: function () use ($publisher): void {
+        $event = OutboxEvent::query()
+            ->where('id', $this->outboxEventId)
+            ->where('status', OutboxStatus::PENDING)
+            ->first();
 
-                $event = OutboxEvent::query()
-                    ->where('id', $this->outboxEventId)
-                    ->lockForUpdate()
-                    ->first();
+        if (! $event) {
+            $this->delete();
 
-                if (! $event || $event->status !== OutboxStatus::PENDING) {
-                    $this->delete(); // Silently discard the job, work is already done.
+            return;
+        }
 
-                    return;
-                }
-
-                $publisher->publish($event->event_type, $event->payload);
-
-                $event->update(['status' => OutboxStatus::PUBLISHED]);
-            }
-        );
+        try {
+            $publisher->publish($event->event_type, $event->payload);
+            $event->update(['status' => OutboxStatus::PUBLISHED]);
+        } catch (Throwable $e) {
+            $this->release($this->backoff[$this->attempts() - 1] ?? 60);
+            throw $e;
+        }
     }
 
     /**

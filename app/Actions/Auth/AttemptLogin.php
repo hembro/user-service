@@ -40,19 +40,49 @@ final readonly class AttemptLogin
             ->where('email', $command->email)
             ->first();
 
-        if (! $user || $user->status !== UserStatus::ACTIVE || ! Hash::check($command->password, $user->password)) {
+        // Prevent Timing Attacks
+        $dummyHash = '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi';
+        $passwordMatches = Hash::check(
+            value: $command->password,
+            hashedValue: $user ? $user->password : $dummyHash
+        );
 
+        if (! $user || ! $passwordMatches) {
             $this->logger->warning(
-                message: 'Failed login attempt.',
-                context: [
+                'Failed login attempt: Invalid credentials.',
+                [
                     'email' => $command->email,
                     'ip_address' => $command->metadata->ip,
-                    'user_agent' => $command->metadata->userAgent,
-                    'reason' => ! $user ? 'user_not_found' : ($user->status !== UserStatus::ACTIVE ? 'inactive_account' : 'invalid_password'),
+                    'reason' => ! $user ? 'user_not_found' : 'invalid_password',
                 ]
             );
 
             throw new InvalidCredentialsException('Invalid credentials.');
+        }
+
+        if ($user->status === UserStatus::PENDING) {
+            $this->logger->notice('Login blocked: Account pending verification.', ['user_id' => $user->id]);
+            throw new InvalidCredentialsException('Please verify your email address to activate your account.');
+        }
+
+        if ($user->status === UserStatus::BANNED) {
+            $this->logger->notice('Login blocked: Account banned.', ['user_id' => $user->id]);
+            throw new InvalidCredentialsException('This account has been suspended.');
+        }
+
+        if ($user->status === UserStatus::INACTIVE) {
+            $this->logger->notice('Login blocked: Account inactive.', ['user_id' => $user->id]);
+            throw new InvalidCredentialsException('This account is currently inactive. Please contact support.');
+        }
+
+        if (! $user->belongsToSystem($command->system)) {
+
+            $this->logger->warning('Login blocked: Unauthorized system access.', [
+                'user_id' => $user->id,
+                'attempted_system' => $command->system->value,
+            ]);
+
+            throw new InvalidCredentialsException("You do not have authorization to access the {$command->system->uppercase()} system.");
         }
 
         return $this->db->transaction(

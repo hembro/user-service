@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Console\Commands\Infrastructure;
 
 use App\Enums\Infrastructure\OutboxStatus;
-use App\Infrastructure\Amqp\EventPublisher;
+use App\Jobs\Outbox\PublishOutboxEventJob;
 use App\Models\OutboxEvent;
+use Illuminate\Bus\Dispatcher;
 use Illuminate\Console\Command;
-use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 final class PublishOutboxEvents extends Command
@@ -19,43 +18,38 @@ final class PublishOutboxEvents extends Command
     protected $description = 'Reads pending events from DB and pushes to RabbitMQ';
 
     public function __construct(
-        private readonly EventPublisher $publisher,
-        private readonly DatabaseManager $db
+        private readonly Dispatcher $bus
     ) {
         parent::__construct();
     }
 
     public function handle(): void
     {
-        $this->db->transaction(
-            callback: function () {
+        $query = OutboxEvent::query()
+            ->where('status', OutboxStatus::PENDING)
+            ->where('created_at', '<=', now()->subMinutes(2))
+            ->orderBy('created_at');
 
-                $events = OutboxEvent::query()
-                    ->where('status', OutboxStatus::PENDING)
-                    ->orderBy('created_at') // FIFO
-                    ->limit(100)
-                    ->lockForUpdate() // Prevent race condition
-                    ->get();
+        $count = $query->count();
 
-                foreach ($events as $event) {
-                    $this->processEvent($event);
-                }
+        if ($count === 0) {
+            $this->info('No stuck outbox events found.');
 
-            });
-    }
-
-    private function processEvent(OutboxEvent $event): void
-    {
-        try {
-            $this->publisher->publish($event->event_type, $event->payload);
-
-            $event->update(['status' => OutboxStatus::PUBLISHED]);
-        } catch (Throwable $e) {
-            Log::channel('system')->error("Failed to publish outbox event {$event->id}: " . $e->getMessage());
-            $event->update([
-                'status' => OutboxStatus::FAILED,
-                'error' => $e->getMessage(),
-            ]);
+            return;
         }
+
+        $this->info("Found {$count} stuck outbox events. Processing synchronously...");
+
+        $query->chunkById(1000, function ($events) {
+            foreach ($events as $event) {
+                try {
+                    $this->bus->dispatchSync(
+                        new PublishOutboxEventJob($event->id)
+                    );
+                } catch (Throwable $exception) {
+                    $this->error("Failed to publish event [{$event->id}]: {$exception->getMessage()}");
+                }
+            }
+        });
     }
 }

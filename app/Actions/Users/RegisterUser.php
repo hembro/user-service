@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final readonly class RegisterUser
 {
@@ -24,31 +25,41 @@ final readonly class RegisterUser
 
     public function handle(RegisterUserCommand $command): User
     {
-        return $this->db->transaction(
-            callback: function () use ($command): User {
+        try {
+            return $this->db->transaction(
+                callback: function () use ($command): User {
 
-                $user = User::query()->create([
-                    'email' => $command->email,
-                    'password' => $command->password,
-                    'status' => UserStatus::PENDING,
-                ]);
+                    $user = User::query()->create([
+                        'email' => $command->email,
+                        'password' => $command->password,
+                        'status' => UserStatus::PENDING,
+                    ]);
 
-                $user->profile()->create(
-                    attributes: $command->toProfileAttributes()
-                );
+                    $user->profile()->create(
+                        attributes: $command->toProfileAttributes()
+                    );
 
-                $user->assignRole($command->system->defaultRole());
+                    $user->assignRole($command->system->defaultRole());
 
-                $this->deviceService->trustDevice($user, $command->deviceId, $command->metadata);
+                    $this->deviceService->trustDevice($user, $command->deviceId, $command->metadata);
 
-                $verificationUrl = $this->linkGenerator->generate($user);
+                    $verificationUrl = $this->linkGenerator->generate($user);
 
-                $user->load(['profile', 'roles.permissions', 'permissions']);
+                    $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                UserRegistered::dispatch($user, $command->system, $verificationUrl);
+                    UserRegistered::dispatch($user, $command->system, $verificationUrl);
 
-                return $user;
-            }
-        );
+                    return $user;
+                }
+            );
+        } catch (Throwable $exception) {
+            $this->logger->critical('User registration transaction failed.', [
+                'email' => $command->email,
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+
+            throw $exception;
+        }
     }
 }

@@ -23,7 +23,7 @@ final readonly class UpdateUserCommand
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public User $targetuser,
+        public User $targetUser,
         public User $actor,
         public Systems $system
     ) {}
@@ -42,7 +42,7 @@ final readonly class UpdateUserCommand
             sex: $request->enum('sex', Sex::class),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            targetuser: $targetUser,
+            targetUser: $targetUser,
             actor: $request->user(),
             system: $request->attributes->get('system'),
         );

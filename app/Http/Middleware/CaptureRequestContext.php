@@ -19,14 +19,15 @@ final class CaptureRequestContext
         $traceId = $request->header('X-Trace-ID', Str::uuid()->toString());
 
         $systemValue = $request->header('X-Source-System');
+        $systemString = is_array($systemValue) ? $systemValue[0] : $systemValue;
 
-        if (blank($systemValue) || ! $system = Systems::tryFrom($systemValue)) {
-            throw new InvalidSystemHeaderException();
+        if (blank($systemString) || ! $system = Systems::tryFrom((string) $systemString)) {
+            throw new InvalidSystemHeaderException('Invalid system header');
         }
 
         Context::add([
             'trace_id' => $traceId,
-            'source_system' => $system?->value,
+            'source_system' => $system->value,
             'user_ip' => $request->ip(),
         ]);
 

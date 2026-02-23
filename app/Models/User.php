@@ -11,6 +11,7 @@ use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -29,11 +30,16 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $pending_email
  * @property-read string $pending_email_token
  * @property-read string $password
+ * @property-read ?string $two_factor_secret
+ * @property-read ?Collection $two_factor_recovery_codes
+ * @property-read ?CarbonInterface $two_factor_confirmed_at
  * @property-read CarbonInterface $last_login_at
  * @property-read CarbonInterface $email_verified_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
- * @property-read UserProfile $profile
+ * @property-read ?UserProfile $profile
+ * @property-read ?Collection $socialAccounts
+ * @property-read ?Collection $devices
  */
 #[ObservedBy([UserObserver::class])]
 final class User extends Authenticatable implements MustVerifyEmail, OAuthenticatable
