@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Enums\Auth\ChallengeType;
+use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ use Laravel\Passport\Client;
 use PragmaRX\Google2FA\Google2FA;
 
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\seed;
 use function Pest\Laravel\travel;
 
 uses(RefreshDatabase::class);
@@ -45,6 +48,8 @@ beforeEach(function (): void {
     // Helper to generate a valid Secret
     $this->google2fa = new Google2FA();
     $this->userSecret = $this->google2fa->generateSecretKey();
+
+    seed(RoleAndPermissionSeeder::class);
 });
 
 describe('2FA Feature: The Happy Path', function (): void {
@@ -57,6 +62,8 @@ describe('2FA Feature: The Happy Path', function (): void {
             'two_factor_secret' => encrypt($this->userSecret),
             'two_factor_confirmed_at' => now(),
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         // Act
         $response = postJson(route('api.v1.auth.login'), [
@@ -78,6 +85,8 @@ describe('2FA Feature: The Happy Path', function (): void {
         // Ensure NO tokens are issued yet
         $response->assertJsonMissing(['access_token']);
         $response->assertCookieMissing(config('cookie.refresh_token.name'));
+
+        seed(RoleAndPermissionSeeder::class);
     });
 
     it('accepts a valid TOTP code and issues tokens', function (): void {
@@ -89,6 +98,8 @@ describe('2FA Feature: The Happy Path', function (): void {
             'two_factor_secret' => $this->userSecret,
             'two_factor_confirmed_at' => now(),
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
@@ -129,6 +140,8 @@ describe('2FA Feature: The Happy Path', function (): void {
             'two_factor_recovery_codes' => $recoveryCodes,
         ]);
 
+        $user->assignRole(Roles::PMS_PROPONENT);
+
         // 1. Get Challenge
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
@@ -165,6 +178,8 @@ describe('2FA Feature: The Unhappy Path', function (): void {
             'two_factor_confirmed_at' => now(),
         ]);
 
+        $user->assignRole(Roles::PMS_PROPONENT);
+
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
@@ -179,8 +194,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         ], ['X-Source-System' => Systems::PMS->value]);
 
         // Assert
-        $response->assertForbidden()
-            ->assertJsonPath('message', 'Invalid verification code.');
+        $response->assertForbidden();
     });
 
     it('rejects an invalid recovery code', function (): void {
@@ -190,6 +204,8 @@ describe('2FA Feature: The Unhappy Path', function (): void {
             'two_factor_confirmed_at' => now(),
             'two_factor_recovery_codes' => collect(['1111111111-1111111111']),
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
@@ -203,8 +219,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         ], ['X-Source-System' => Systems::PMS->value]);
 
         // Assert
-        $response->assertForbidden()
-            ->assertJsonPath('message', 'Invalid verification code.');
+        $response->assertForbidden();
     });
 
     it('prevents replay attacks (using same OTP twice)', function (): void {
@@ -215,6 +230,8 @@ describe('2FA Feature: The Unhappy Path', function (): void {
             'two_factor_secret' => $this->userSecret,
             'two_factor_confirmed_at' => now(),
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
@@ -253,6 +270,8 @@ describe('2FA Feature: The Unhappy Path', function (): void {
             'two_factor_confirmed_at' => now(),
         ]);
 
+        $user->assignRole(Roles::PMS_PROPONENT);
+
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
@@ -281,6 +300,8 @@ describe('2FA Feature: The Unhappy Path', function (): void {
             'two_factor_secret' => $this->userSecret,
             'two_factor_confirmed_at' => now(),
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,

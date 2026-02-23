@@ -6,21 +6,23 @@ namespace Tests\Feature\Api\V1\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Auth\ChallengeType;
+use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Auth\UserLoggedOut;
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Laravel\Passport\Client;
-use Mockery\Mock;
 
 use function Pest\Laravel\call;
 use function Pest\Laravel\postJson;
+use function Pest\Laravel\seed;
 use function Pest\Laravel\withHeader;
 
 uses(RefreshDatabase::class);
@@ -56,6 +58,8 @@ beforeEach(function (): void {
         'name' => 'device_id',
         'minutes' => 2628000,
     ]);
+
+    seed(RoleAndPermissionSeeder::class);
 });
 
 describe('Authentication Feature: The Happy Path', function (): void {
@@ -67,6 +71,8 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
             'password' => $password,
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         // Act: Login without Device Trust setup
         $response = postJson(
@@ -102,6 +108,8 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
             'password' => $password,
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         // Mock: Force DeviceTrustService to say "Yes, I know this guy"
         $this->mock(DeviceTrustVerifier::class)
@@ -144,6 +152,8 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'status' => UserStatus::ACTIVE,
             'password' => $password,
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $deviceId = (string) Str::ulid();
 
@@ -193,6 +203,8 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'password' => $password,
             'status' => UserStatus::ACTIVE,
         ]);
+
+        $user->assignRole(Roles::PMS_PROPONENT);
 
         $this->mock(DeviceTrustVerifier::class)
             ->shouldReceive('isTrusted')
