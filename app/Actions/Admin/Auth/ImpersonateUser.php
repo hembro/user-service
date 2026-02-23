@@ -19,6 +19,8 @@ final readonly class ImpersonateUser
 
     public function handle(ImpersonateUserCommand $command): IssuedToken
     {
+        $command->targetUser->loadMissing('roles');
+
         $token = $this->tokenIssuer->issueFullToken($command->targetUser, $command->system);
 
         $this->db->transaction(

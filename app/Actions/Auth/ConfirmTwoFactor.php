@@ -29,8 +29,8 @@ final readonly class ConfirmTwoFactor
         if (! $this->service->validTotp($command->user, $command->code)) {
 
             $this->logger->warning(
-                message: 'Failed TOTP confirmation attempt.',
-                context: [
+                'Failed TOTP confirmation attempt.',
+                [
                     'user_id' => $command->user->id,
                     'ip' => $command->metadata->ip,
                 ]

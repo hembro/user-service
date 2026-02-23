@@ -27,8 +27,8 @@ final readonly class ConfirmEmailChange
         if (! hash_equals($command->user->pending_email_token, $command->token)) {
 
             $this->logger->warning(
-                message: 'Email change token tampering or expiration detected.',
-                context: [
+                'Email change token tampering or expiration detected.',
+                [
                     'user_id' => $command->user->id,
                     'attempted_token' => $command->token,
                 ]

@@ -33,6 +33,10 @@ final readonly class TokenIssuer
      */
     public function issueFullToken(User $user, Systems $system): IssuedToken
     {
+        if (! $user->relationLoaded('roles')) {
+            throw new RuntimeException('Roles must be eagerly loaded before issuing a token to prevent N+1 queries.');
+        }
+
         return $this->issue(
             grantType: GrantType::SYSTEM_VERIFIED,
             system: $system,

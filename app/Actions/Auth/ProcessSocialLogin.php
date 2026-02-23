@@ -36,8 +36,8 @@ final readonly class ProcessSocialLogin
         } catch (Throwable $e) {
 
             $this->logger->error(
-                message: 'Social Login Failed',
-                context: [
+                'Social Login Failed',
+                [
                     'provider' => $command->provider->value,
                     'exception' => $e,
                 ]
@@ -60,6 +60,8 @@ final readonly class ProcessSocialLogin
             deviceId: $command->deviceId,
             metadata: $command->metadata
         );
+
+        $user->loadMissing('roles');
 
         if ($user->wasRecentlyCreated) {
             UserRegistered::dispatch($user, $command->system);

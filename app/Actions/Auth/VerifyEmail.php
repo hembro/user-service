@@ -26,8 +26,8 @@ final readonly class VerifyEmail
         if (! hash_equals($command->hash, sha1($user->getEmailForVerification()))) {
 
             $this->logger->warning(
-                message: 'Email verification hash tampering detected.',
-                context: [
+                'Email verification hash tampering detected.',
+                [
                     'user_id' => $user->id,
                     'provided_hash' => $command->hash,
                 ]

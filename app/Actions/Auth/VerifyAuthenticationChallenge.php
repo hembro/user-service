@@ -55,7 +55,7 @@ final readonly class VerifyAuthenticationChallenge
             throw new InvalidChallengeException('Security mismatch. Please login again.');
         }
 
-        $user = User::query()->findOrFail($challenge->userId);
+        $user = User::query()->with('roles')->findOrFail($challenge->userId);
 
         $isValid = match ($challenge->type) {
             ChallengeType::TWO_FACTOR => $this->twoFactorService->valid($user, $command->code),

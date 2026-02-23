@@ -60,9 +60,9 @@ final class PublishOutboxEventJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        Log::channel('system')->critical(
-            message: 'Outbox event totally failed after all retries.',
-            context: [
+        Log::critical(
+            'Outbox event totally failed after all retries.',
+            [
                 'event_id' => $this->outboxEventId,
                 'exception' => $exception->getMessage(),
                 'trace' => $exception->getTraceAsString(),

@@ -40,8 +40,8 @@ final class RefreshUserToken
         if (! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
 
             $this->logger->warning(
-                message: 'refresh token usage blocked by untrusted device',
-                context: [
+                'refresh token usage blocked by untrusted device',
+                [
                     'user_id' => $user->id,
                     'device_id' => $deviceId,
                     'ip' => $metadata->ip,
