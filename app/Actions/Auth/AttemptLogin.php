@@ -112,7 +112,7 @@ final readonly class AttemptLogin
 
     private function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system, RequestMetadata $metadata): AuthenticationOutcome
     {
-        $challengeId = Str::uuid()->toString();
+        $challengeId = (string) Str::ulid();
 
         $otpCode = match ($type) {
             ChallengeType::TWO_FACTOR => null,

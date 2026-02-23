@@ -27,17 +27,17 @@ final class SocialAuthController
 
     public function __invoke(SocialLoginRequest $request, SocialProviders $provider): JsonResponse
     {
-        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid();
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::ulid();
 
-        $authentocationOutcome = $this->action->handle(
+        $authenticationOutcome = $this->action->handle(
             SocialLoginCommand::fromRequest($request, $deviceId, $provider)
         );
 
         return $this->success(
-            data: new AuthResource($authentocationOutcome),
+            data: new AuthResource($authenticationOutcome),
             message: 'Social authentication successful.'
         )
-            ->withCookie($this->cookieService->makeRefreshTokenCookie($authentocationOutcome->token->refreshToken))
-            ->withCookie($this->cookieService->makeDeviceIdCookie($authentocationOutcome->deviceId));
+            ->withCookie($this->cookieService->makeRefreshTokenCookie($authenticationOutcome->token->refreshToken))
+            ->withCookie($this->cookieService->makeDeviceIdCookie($authenticationOutcome->deviceId));
     }
 }

@@ -16,7 +16,7 @@ final class CaptureRequestContext
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $traceId = $request->header('X-Trace-ID', Str::uuid()->toString());
+        $traceId = $request->header('X-Trace-ID', (string) Str::ulid());
 
         $systemValue = $request->header('X-Source-System');
         $systemString = is_array($systemValue) ? $systemValue[0] : $systemValue;

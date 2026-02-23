@@ -28,7 +28,7 @@ final class LoginController
 
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid();
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::ulid();
 
         $outcome = $this->action->handle(
             LoginCommand::fromRequest($request, $deviceId)

@@ -145,7 +145,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
             'password' => $password,
         ]);
 
-        $deviceId = (string) Str::orderedUuid();
+        $deviceId = (string) Str::ulid();
 
         $this->mock(DeviceTrustVerifier::class, function ($mock) use ($deviceId) {
             $mock->shouldReceive('resolveDeviceId')->andReturn($deviceId);

@@ -11,6 +11,7 @@ use App\Jobs\Outbox\PublishOutboxEventJob;
 use App\Models\OutboxEvent;
 use Illuminate\Bus\Dispatcher;
 use Illuminate\Database\DatabaseManager;
+use LogicException;
 
 final readonly class OutboxPublisher
 {
@@ -25,6 +26,10 @@ final readonly class OutboxPublisher
      */
     public function publish(RoutingKey $routingKey, IntegrationMessageInterface $message): void
     {
+        if ($this->db->transactionLevel() === 0) {
+            throw new LogicException('OutboxPublisher::publish MUST be called inside an active database transaction to ensure distributed consistency.');
+        }
+
         $outbox = OutboxEvent::create([
             'id' => $message->getMessageId(),
             'event_type' => $routingKey->value,

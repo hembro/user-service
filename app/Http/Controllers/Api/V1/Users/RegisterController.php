@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Users;
 
 use App\Actions\Users\RegisterUser;
 use App\Commands\Users\RegisterUserCommand;
+use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Services\AuthCookieService;
@@ -20,12 +21,13 @@ final class RegisterController
 
     public function __construct(
         private readonly RegisterUser $action,
+        private readonly DeviceTrustVerifier $deviceService,
         private readonly AuthCookieService $cookie
     ) {}
 
     public function __invoke(RegisterRequest $request): JsonResponse
     {
-        $deviceId = (string) Str::orderedUuid();
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::ulid();
 
         $user = $this->action->handle(
             RegisterUserCommand::fromRequest($request, $deviceId)
