@@ -12,12 +12,9 @@ use Illuminate\Contracts\Queue\Factory as QueueFactory;
 final readonly class RabbitMqEventPublisher implements EventPublisherInterface
 {
     public function __construct(
-        private QueueFactory $queue // Inject the factory, do not use the Facade
+        private QueueFactory $queue
     ) {}
 
-    /**
-     * Publish a raw JSON payload to the Topic Exchange.
-     */
     public function publish(RoutingKey $routingKey, array $payload): void
     {
         $connection = $this->queue->connection('rabbitmq_events');
