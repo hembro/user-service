@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\AttemptLogin;
-use App\DTOs\Api\V1\Auth\LoginCredentials;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\Actions\Auth\AttemptLogin;
+use App\Commands\Auth\LoginCommand;
 use App\Enums\Auth\AuthResultStatus;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
@@ -29,12 +28,10 @@ final class LoginController
 
     public function __invoke(LoginRequest $request): JsonResponse
     {
-        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid();
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::ulid();
 
         $outcome = $this->action->handle(
-            credentials: LoginCredentials::fromRequest($request),
-            deviceId: $deviceId,
-            metadata: RequestMetadata::fromRequest($request)
+            LoginCommand::fromRequest($request, $deviceId)
         );
 
         $response = match ($outcome->status) {

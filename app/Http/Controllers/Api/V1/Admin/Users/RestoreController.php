@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\RestoreUser;
-use App\DTOs\Api\V1\Admin\Users\RestoreUserDTO;
+use App\Actions\Admin\Users\RestoreUser;
+use App\Commands\Admin\Users\RestoreUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\RestoreRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Models\User;
@@ -23,9 +23,7 @@ final class RestoreController
     public function __invoke(RestoreRequest $request, User $user): JsonResponse
     {
         $this->action->handle(
-            dto: RestoreUserDTO::fromRequest($request),
-            user: $user,
-            admin: $request->user()
+            RestoreUserCommand::fromRequest($request, $user),
         );
 
         return $this->success(

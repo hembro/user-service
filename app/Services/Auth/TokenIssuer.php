@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use App\DTOs\Api\V1\Auth\TokenDTO;
+use App\DTOs\Auth\IssuedToken;
 use App\Enums\Auth\GrantType;
 use App\Enums\Systems;
 use App\Models\User;
 use Defuse\Crypto\Crypto;
-use Exception;
+use Defuse\Crypto\Exception\CryptoException;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use JsonException;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Nyholm\Psr7\Response as Psr7Response;
@@ -24,6 +24,7 @@ final readonly class TokenIssuer
 {
     public function __construct(
         private AuthorizationServer $server,
+        private Encrypter $encrypter,
         private array $systemClients,
         private string $internalSignature,
     ) {}
@@ -31,8 +32,12 @@ final readonly class TokenIssuer
     /**
      * Issues a full access token for a fully authenticated user.
      */
-    public function issueFullToken(User $user, Systems $system): TokenDTO
+    public function issueFullToken(User $user, Systems $system): IssuedToken
     {
+        if (! $user->relationLoaded('roles')) {
+            throw new RuntimeException('Roles must be eagerly loaded before issuing a token to prevent N+1 queries.');
+        }
+
         return $this->issue(
             grantType: GrantType::SYSTEM_VERIFIED,
             system: $system,
@@ -44,7 +49,7 @@ final readonly class TokenIssuer
         );
     }
 
-    public function issueRefreshToken(string $refreshToken, Systems $system): TokenDTO
+    public function issueRefreshToken(string $refreshToken, Systems $system): IssuedToken
     {
         return $this->issue(
             grantType: GrantType::REFRESH_TOKEN,
@@ -54,11 +59,6 @@ final readonly class TokenIssuer
             ],
             scopes: null
         );
-    }
-
-    public function issueChallengeId(): string
-    {
-        return Str::random(32);
     }
 
     public function resolveUserFromRefreshToken(string $token): ?User
@@ -82,21 +82,14 @@ final readonly class TokenIssuer
     private function decryptPassportToken(string $token): ?string
     {
         try {
-            $key = app('encrypter')->getKey();
+            $key = $this->encrypter->getKey();
 
             $json = Crypto::decryptWithPassword($token, $key);
 
             $payload = json_decode($json, true);
 
             return $payload['refresh_token_id'] ?? null;
-        } catch (Exception) {
-        }
-
-        try {
-            $payload = app(Encrypter::class)->decrypt($token);
-
-            return $payload['refresh_token_id'] ?? null;
-        } catch (Exception) {
+        } catch (CryptoException|JsonException) {
             return null;
         }
     }
@@ -104,9 +97,8 @@ final readonly class TokenIssuer
     /**
      * The core issuance logic.
      */
-    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): TokenDTO
+    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): IssuedToken
     {
-        // 1. Prepare Request Parameters
         $baseParams = [
             ...$payload,
             'grant_type' => $grantType->value,
@@ -118,18 +110,13 @@ final readonly class TokenIssuer
 
         $requestParams = $this->mergeClientCredentials($system, $baseParams);
 
-        // 2. Construct PSR-7 Request (Internal Call)
         $request = (new Psr7Request('POST', 'oauth/token'))
             ->withParsedBody($requestParams);
 
-        // 3. Execute against OAuth Server
         try {
-            $response = $this->server->respondToAccessTokenRequest(
-                request: $request,
-                response: new Psr7Response()
-            );
+            $response = $this->server->respondToAccessTokenRequest($request, new Psr7Response());
 
-            return TokenDTO::fromArray(
+            return IssuedToken::fromArray(
                 json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR)
             );
         } catch (OAuthServerException $e) {

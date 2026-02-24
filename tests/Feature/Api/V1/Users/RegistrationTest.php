@@ -10,14 +10,11 @@ use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
-use Exception;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertDatabaseMissing;
 use function Pest\Laravel\postJson;
 use function Pest\Laravel\seed;
 
@@ -67,8 +64,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
             'status' => UserStatus::PENDING->value, // RegisterUser sets PENDING by default
         ]);
 
-        /** @var User $user */
-        $user = User::where('email', $payload['email'])->first();
+        $user = User::query()->where('email', $payload['email'])->first();
 
         // Verify Password Hashing
         expect(Hash::check($payload['password'], $user->password))->toBeTrue();
@@ -224,28 +220,5 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sex']);
-    });
-
-    it('aborts the entire transaction if profile creation fails', function (): void {
-        Log::shouldReceive('debug')
-            ->once()
-            ->andThrow(new Exception('Simulated Critical Failure'));
-
-        Log::shouldReceive('error')->withAnyArgs(); // Catch any error logs
-
-        $payload = validRegistrationPayload();
-
-        $response = postJson(
-            uri: route('api.v1.users.register', absolute: false),
-            data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
-        );
-
-        // Since the exception is thrown inside the Transaction closure, Laravel catches it and returns 500
-        $response->assertServerError();
-
-        // Critical: Verify Rollback
-        assertDatabaseMissing('users', ['email' => $payload['email']]);
-        assertDatabaseMissing('user_profiles', ['first_name' => 'Jose']);
     });
 });

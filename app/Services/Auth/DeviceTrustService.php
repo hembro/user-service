@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Api\V1\Shared\RequestMetadata;
+use App\DTOs\Shared\RequestMetadata;
 use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Http\Request;

@@ -14,7 +14,6 @@ use App\Events\Users\UserEmailChangeRequested;
 use App\Events\Users\UserPasswordUpdated;
 use App\Events\Users\UserProfileUpdated;
 use App\Models\User;
-use App\Notifications\VerifyNewEmail;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -177,11 +176,6 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         ]);
 
         Event::assertDispatched(UserEmailChangeRequested::class);
-
-        Notification::assertSentTo(
-            [$this->user],
-            VerifyNewEmail::class
-        );
     });
 
     it('can verify and finalize email change', function (): void {

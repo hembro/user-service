@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ProcessSocialLogin;
-use App\DTOs\Api\V1\Auth\SocialLoginDTO;
+use App\Actions\Auth\ProcessSocialLogin;
+use App\Commands\Auth\SocialLoginCommand;
 use App\Enums\SocialProviders;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
@@ -27,16 +27,17 @@ final class SocialAuthController
 
     public function __invoke(SocialLoginRequest $request, SocialProviders $provider): JsonResponse
     {
-        $authentocationOutcome = $this->action->handle(
-            dto: SocialLoginDTO::fromRequest($request),
-            deviceId: $this->deviceService->resolveDeviceId($request) ?? (string) Str::orderedUuid()
+        $deviceId = $this->deviceService->resolveDeviceId($request) ?? (string) Str::ulid();
+
+        $authenticationOutcome = $this->action->handle(
+            SocialLoginCommand::fromRequest($request, $deviceId, $provider)
         );
 
         return $this->success(
-            data: new AuthResource($authentocationOutcome),
+            data: new AuthResource($authenticationOutcome),
             message: 'Social authentication successful.'
         )
-            ->withCookie($this->cookieService->makeRefreshTokenCookie($authentocationOutcome->token->refreshToken))
-            ->withCookie($this->cookieService->makeDeviceIdCookie($authentocationOutcome->deviceId));
+            ->withCookie($this->cookieService->makeRefreshTokenCookie($authenticationOutcome->token->refreshToken))
+            ->withCookie($this->cookieService->makeDeviceIdCookie($authenticationOutcome->deviceId));
     }
 }

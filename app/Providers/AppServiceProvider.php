@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
+use App\Contracts\Infrastructure\EventPublisherInterface;
 use App\Enums\Roles;
+use App\Infrastructure\Amqp\RabbitMqEventPublisher;
 use App\OAuth\Grants\SystemVerifiedGrant;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\TokenIssuer;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Date;
-use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Uri;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Passport\Bridge\RefreshTokenRepository;
 use Laravel\Passport\Passport;
@@ -41,7 +41,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->configurePassport();
         $this->configureDefaults($isProduction);
         $this->configureModels($isProduction);
-        $this->configureEmailVerification();
         $this->configureRateLimiting($isProduction);
         $this->registerCustomGrants();
         $this->bindServices();
@@ -80,29 +79,6 @@ final class AppServiceProvider extends ServiceProvider
     private function configureModels(bool $isProduction): void
     {
         Model::shouldBeStrict(! $isProduction);
-    }
-
-    private function configureEmailVerification(): void
-    {
-        VerifyEmail::createUrlUsing(function (object $notifiable): string {
-            $apiUrl = URL::temporarySignedRoute(
-                name: 'api.v1.auth.verification.verify',
-                expiration: now()->addMinutes((int) config('auth.verification.expire', 60)),
-                parameters: [
-                    'id' => $notifiable->getKey(),
-                    'hash' => sha1($notifiable->getEmailForVerification()),
-                ]
-            );
-
-            $components = parse_url($apiUrl);
-            parse_str($components['query'] ?? '', $queryParams);
-
-            return Uri::of(config('app.frontend.url'))
-                ->withPath("/auth/email/verify/{$notifiable->getKey()}/" . sha1($notifiable->getEmailForVerification()))
-                ->withQuery($queryParams)
-                ->toStringable()
-                ->toString();
-        });
     }
 
     private function configureRateLimiting(bool $isProduction): void
@@ -150,6 +126,7 @@ final class AppServiceProvider extends ServiceProvider
         $this->app->bind(TokenIssuer::class, function ($app) {
             return new TokenIssuer(
                 server: $app->make(AuthorizationServer::class),
+                encrypter: $app->make(Encrypter::class),
                 systemClients: config('services.passport.frontend_clients'),
                 internalSignature: config('app.key')
             );
@@ -158,7 +135,7 @@ final class AppServiceProvider extends ServiceProvider
 
     private function bindContracts(): void
     {
-        // For testing purposes
         $this->app->bind(DeviceTrustVerifier::class, DeviceTrustService::class);
+        $this->app->bind(EventPublisherInterface::class, RabbitMqEventPublisher::class);
     }
 }

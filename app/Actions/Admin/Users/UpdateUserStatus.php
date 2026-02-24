@@ -1,0 +1,41 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Actions\Admin\Users;
+
+use App\Commands\Admin\Users\UpdateUserStatusCommand;
+use App\Enums\UserStatus;
+use App\Events\Admin\UserStatusUpdated;
+use App\Services\Auth\SystemTokenRevoker;
+use Illuminate\Database\DatabaseManager;
+
+final readonly class UpdateUserStatus
+{
+    public function __construct(
+        private DatabaseManager $db,
+        private SystemTokenRevoker $tokenRevoker
+    ) {}
+
+    public function handle(UpdateUserStatusCommand $command): void
+    {
+        if ($command->targetUser->status === $command->status) {
+            return;
+        }
+
+        $this->db->transaction(
+            callback: function () use ($command): void {
+
+                $oldStatus = $command->targetUser->status;
+
+                $command->targetUser->update(['status' => $command->status]);
+
+                if ($command->status !== UserStatus::ACTIVE) {
+                    $this->tokenRevoker->revoke($command->targetUser, $command->system);
+                }
+
+                UserStatusUpdated::dispatch($command->targetUser, $command->actor, $oldStatus, $command->status, $command->system);
+            }
+        );
+    }
+}

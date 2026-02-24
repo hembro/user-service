@@ -59,7 +59,11 @@ enum Roles: string
         return $adminRoles;
     }
 
-    /** @param array<int, Roles> $roles */
+    /**
+     * @param  array<int, Roles>  $roles
+     *
+     * @throws InvalidArgumentException
+     */
     public static function ensureBelongsToSystem(array $roles, Systems $system): void
     {
         foreach ($roles as $role) {

@@ -17,6 +17,8 @@ abstract class AdminBaseRequest extends FormRequest
         /** @var \App\Models\User */
         $user = $this->user();
 
+        $user->loadMissing('roles');
+
         if (! $user->belongsToSystem($system)) {
             throw new AccessDeniedHttpException(
                 "You are not authorized to perform actions for {$system->value}."

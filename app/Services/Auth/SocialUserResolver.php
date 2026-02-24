@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use App\DTOs\Api\V1\Auth\SocialUserDTO;
+use App\DTOs\Auth\SocialProfile;
+use App\Enums\Sex;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Models\User;
@@ -18,19 +19,14 @@ final readonly class SocialUserResolver
         private LoggerInterface $logger
     ) {}
 
-    public function resolve(SocialUserDTO $dto, Systems $system): User
+    public function resolve(SocialProfile $profile, Systems $system): User
     {
         return $this->db->transaction(
-            callback: function () use ($dto, $system) {
-
-                $this->logger->debug(
-                    message: 'social user registration initiated',
-                    context: ['email' => $dto->email]
-                );
+            callback: function () use ($profile, $system) {
 
                 $user = User::query()
                     ->firstOrCreate(
-                        attributes: ['email' => $dto->email],
+                        attributes: ['email' => $profile->email],
                         values: [
                             'password' => null,
                             'status' => UserStatus::ACTIVE,
@@ -43,10 +39,10 @@ final readonly class SocialUserResolver
                     $this->logger->info('user registered via social', ['user_id' => $user->id]);
 
                     $user->profile()->create([
-                        'first_name' => $dto->firstName,
-                        'last_name' => $dto->lastName,
-                        'avatar_path' => $dto->avatarPath,
-                        'sex' => 'unknown',
+                        'first_name' => $profile->firstName,
+                        'last_name' => $profile->lastName,
+                        'avatar_path' => $profile->avatarPath,
+                        'sex' => Sex::UNKNOWN,
                     ]);
 
                     $user->assignRole($system->defaultRole());
@@ -54,8 +50,8 @@ final readonly class SocialUserResolver
 
                 $user->socialAccounts()->firstOrCreate(
                     attributes: [
-                        'provider_name' => $dto->provider->value,
-                        'provider_id' => $dto->providerId,
+                        'provider_name' => $profile->provider->value,
+                        'provider_id' => $profile->providerId,
                     ]
                 );
 

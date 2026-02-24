@@ -11,7 +11,7 @@ final class VerifyChallengeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'challenge_id' => ['required', 'string', 'uuid'],
+            'challenge_id' => ['required', 'string', 'ulid'],
             'code' => ['required', 'string', 'min:6', 'max:21'],
         ];
     }

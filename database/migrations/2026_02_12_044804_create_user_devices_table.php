@@ -14,12 +14,10 @@ return new class extends Migration
             $table->ulid('id')->primary();
 
             $table->foreignUlid('user_id')
-                ->constrained(
-                    table: 'users',
-                    column: 'id'
-                )->cascadeOnDelete();
+                ->constrained(table: 'users', column: 'id')
+                ->cascadeOnDelete();
 
-            $table->uuid('device_id')->index();
+            $table->ulid('device_id')->index();
             $table->string('fingerprint_hash');
             $table->string('name')->nullable();
             $table->ipAddress('last_ip')->nullable();

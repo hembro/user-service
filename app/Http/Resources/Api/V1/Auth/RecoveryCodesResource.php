@@ -18,7 +18,6 @@ final class RecoveryCodesResource extends JsonResource
         return [
             'recovery_codes' => $this->resource,
             'notice' => 'Store these codes in a safe place. They are the only way to recover access if you lose your device.',
-            'created_at' => now()->toIso8601String(),
         ];
     }
 }

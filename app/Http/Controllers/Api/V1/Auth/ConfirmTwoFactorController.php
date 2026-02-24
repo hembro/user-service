@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ConfirmTwoFactor;
+use App\Actions\Auth\ConfirmTwoFactor;
+use App\Commands\Auth\ConfirmTwoFactorCommand;
 use App\Http\Requests\Api\V1\Auth\ConfirmTwoFactorRequest;
 use App\Http\Resources\Api\V1\Auth\RecoveryCodesResource;
 use App\Traits\HasApiResponse;
@@ -21,8 +22,7 @@ final class ConfirmTwoFactorController
     public function __invoke(ConfirmTwoFactorRequest $request): JsonResponse
     {
         $recoveryCodes = $this->action->handle(
-            user: $request->user(),
-            code: $request->validated('code')
+            ConfirmTwoFactorCommand::fromRequest($request)
         );
 
         return $this->success(

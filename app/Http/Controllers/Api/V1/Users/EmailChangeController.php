@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Users;
 
-use App\Actions\Api\V1\Users\ConfirmEmailChange;
-use App\Actions\Api\V1\Users\InitiateEmailChange;
-use App\DTOs\Api\V1\Users\InitiateEmailChangeDTO;
-use App\DTOs\Api\V1\Users\VerifyEmailChangeDTO;
+use App\Actions\Users\ConfirmEmailChange;
+use App\Actions\Users\InitiateEmailChange;
+use App\Commands\Users\InitiateEmailChangeCommand;
+use App\Commands\Users\VerifyEmailChangeCommand;
 use App\Http\Requests\Api\V1\Users\RequestEmailChangeRequest;
 use App\Http\Requests\Api\V1\Users\VerifyEmailChangeRequest;
 use App\Traits\HasApiResponse;
@@ -20,20 +20,18 @@ final class EmailChangeController
     public function request(RequestEmailChangeRequest $request, InitiateEmailChange $action): JsonResponse
     {
         $action->handle(
-            dto: InitiateEmailChangeDTO::fromRequest($request),
-            user: $request->user()
+            InitiateEmailChangeCommand::fromRequest($request)
         );
 
         return $this->success(
-            message: 'A verification link has been sent to your new email address.'
+            message: 'A verification link has been sent to your email address.'
         );
     }
 
     public function verify(VerifyEmailChangeRequest $request, ConfirmEmailChange $action): JsonResponse
     {
         $action->handle(
-            dto: VerifyEmailChangeDTO::fromRequest($request),
-            user: $request->user()
+            VerifyEmailChangeCommand::fromRequest($request),
         );
 
         return $this->success(

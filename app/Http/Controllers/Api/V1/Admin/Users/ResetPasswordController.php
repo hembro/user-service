@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\ResetPassword;
-use App\DTOs\Api\V1\Admin\Users\ResetPasswordDTO;
+use App\Actions\Admin\Users\ResetPassword;
+use App\Commands\Admin\Users\ResetPasswordCommand;
 use App\Http\Requests\Api\V1\Admin\Users\ResetPasswordRequest;
 use App\Models\User;
 use App\Traits\HasApiResponse;
@@ -21,9 +21,7 @@ final class ResetPasswordController
     public function __invoke(ResetPasswordRequest $request, User $user)
     {
         $this->action->handle(
-            dto: ResetPasswordDTO::fromRequest($request),
-            user: $user,
-            admin: $request->user()
+            ResetPasswordCommand::fromRequest($request, $user),
         );
 
         return $this->success(

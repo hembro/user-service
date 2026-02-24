@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin\Users;
 
-use App\Actions\Api\V1\Admin\Users\CreateUser;
-use App\DTOs\Api\V1\Admin\Users\CreateUserDTO;
+use App\Actions\Admin\Users\CreateUser;
+use App\Commands\Admin\Users\CreateUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\StoreRequest as AdminStoreRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Traits\HasApiResponse;
@@ -22,8 +22,7 @@ final class StoreController
     public function __invoke(AdminStoreRequest $request)
     {
         $user = $this->action->handle(
-            dto: CreateUserDTO::fromRequest($request),
-            admin: $request->user()
+            CreateUserCommand::fromRequest($request),
         );
 
         return $this->success(

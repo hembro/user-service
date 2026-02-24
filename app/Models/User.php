@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Roles;
-use App\Enums\SocialProviders;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
-use App\Notifications\ResetPasswordLink;
 use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,7 +19,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Context;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
@@ -32,11 +30,16 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $pending_email
  * @property-read string $pending_email_token
  * @property-read string $password
+ * @property-read ?string $two_factor_secret
+ * @property-read ?Collection $two_factor_recovery_codes
+ * @property-read ?CarbonInterface $two_factor_confirmed_at
  * @property-read CarbonInterface $last_login_at
  * @property-read CarbonInterface $email_verified_at
  * @property-read CarbonInterface $created_at
  * @property-read CarbonInterface $updated_at
- * @property-read UserProfile $profile
+ * @property-read ?UserProfile $profile
+ * @property-read ?Collection $socialAccounts
+ * @property-read ?Collection $devices
  */
 #[ObservedBy([UserObserver::class])]
 final class User extends Authenticatable implements MustVerifyEmail, OAuthenticatable
@@ -48,22 +51,13 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
     use Notifiable;
     use SoftDeletes;
 
-    protected $fillable = [
-        'status',
-        'email',
-        'password',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
-        'two_factor_confirmed_at',
-        'email_verified_at',
-        'last_login_at',
-        'pending_email',
-        'pending_email_token',
-    ];
+    protected $guarded = ['id'];
 
     protected $hidden = [
         'password',
         'pending_email_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -103,13 +97,6 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         );
     }
 
-    public function hasSocialAccount(SocialProviders $provider): bool
-    {
-        return $this->socialAccounts()
-            ->where('provider_name', $provider->value)
-            ->exists();
-    }
-
     public function belongsToSystem(Systems $system): bool
     {
         foreach ($this->getRoleNames() as $name) {
@@ -121,17 +108,15 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         return false;
     }
 
-    public function sendPasswordResetNotification($token): void
-    {
-        $system = Systems::from(Context::get('source_system'));
-
-        $this->notify(
-            instance: new ResetPasswordLink($token, $system)
-        );
-    }
-
     public function hasEnabledTwoFactor(): bool
     {
-        return $this->two_factor_secret !== null && $this->two_factor_confirmed_at !== null;
+        return ! blank($this->two_factor_secret) && ! blank($this->two_factor_confirmed_at);
+    }
+
+    public function touchLastLoginAt(): void
+    {
+        $this->updateQuietly([
+            'last_login_at' => now(),
+        ]);
     }
 }

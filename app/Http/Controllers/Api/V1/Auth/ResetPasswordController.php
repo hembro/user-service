@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\ResetUserPassword;
-use App\DTOs\Api\V1\Auth\ResetPasswordDTO;
+use App\Actions\Auth\ResetUserPassword;
+use App\Commands\Auth\ResetPasswordCommand;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +21,7 @@ final class ResetPasswordController
     public function __invoke(ResetPasswordRequest $request): JsonResponse
     {
         $this->action->handle(
-            dto: ResetPasswordDTO::fromRequest($request)
+            ResetPasswordCommand::fromRequest($request)
         );
 
         return $this->success(

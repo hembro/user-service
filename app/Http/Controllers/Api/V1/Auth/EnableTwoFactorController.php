@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Auth;
 
-use App\Actions\Api\V1\Auth\EnableTwoFactor;
+use App\Actions\Auth\EnableTwoFactor;
+use App\Commands\Auth\EnableTwoFactorCommand;
 use App\Http\Resources\Api\V1\Auth\TwoFactorSetupResource;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -24,10 +25,12 @@ final class EnableTwoFactorController
             'current_password' => ['required', 'string', 'min:8', 'max:255', 'current_password:api'],
         ]);
 
-        $dto = $this->action->handle($request->user());
+        $twoFactorSetup = $this->action->handle(
+            EnableTwoFactorCommand::fromRequest($request)
+        );
 
         return $this->success(
-            data: new TwoFactorSetupResource($dto),
+            data: new TwoFactorSetupResource($twoFactorSetup),
             message: 'Scan the QR code to finish setup.'
         );
     }
