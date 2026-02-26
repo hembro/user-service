@@ -29,7 +29,7 @@ final readonly class UpdatePassword
                     $command->user->tokens()->where('id', '!=', $currentAccessToken->id)->delete();
                 }
 
-                UserPasswordUpdated::dispatch($command->user, $command->system);
+                UserPasswordUpdated::dispatch($command->user, $command->system, $command->metadata);
             }
         );
     }

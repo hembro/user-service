@@ -36,7 +36,7 @@ final readonly class UpdateProfile
 
                     $profile->save();
 
-                    UserProfileUpdated::dispatch($command->user, $changes, $command->system);
+                    UserProfileUpdated::dispatch($command->user, $changes, $command->system, $command->metadata);
                 }
             }
         );

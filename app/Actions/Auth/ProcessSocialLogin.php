@@ -64,7 +64,7 @@ final readonly class ProcessSocialLogin
         $user->loadMissing('roles');
 
         if ($user->wasRecentlyCreated) {
-            UserRegistered::dispatch($user, $command->system);
+            UserRegistered::dispatch($user, $command->system, $command->metadata);
         }
 
         UserLoggedIn::dispatch($user, $command->deviceId, $command->system, $command->metadata);

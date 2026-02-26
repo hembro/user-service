@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Users;
 
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Users\UpdatePasswordRequest;
 use App\Models\User;
@@ -15,7 +16,8 @@ final readonly class UpdatePasswordCommand
         public User $user,
         #[SensitiveParameter]
         public string $newPassword,
-        public Systems $system
+        public Systems $system,
+        public RequestMetadata $metadata
     ) {}
 
     public static function fromRequest(UpdatePasswordRequest $request): self
@@ -24,6 +26,7 @@ final readonly class UpdatePasswordCommand
             user: $request->user(),
             newPassword: $request->validated('password'),
             system: $request->attributes->get('system'),
+            metadata: RequestMetadata::fromRequest($request),
         );
     }
 }

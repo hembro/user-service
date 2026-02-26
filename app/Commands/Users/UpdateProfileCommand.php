@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Users;
 
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
@@ -23,7 +24,8 @@ final readonly class UpdateProfileCommand
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public Systems $system
+        public Systems $system,
+        public RequestMetadata $metadata
     ) {}
 
     public static function fromRequest(UpdateProfileRequest $request, User $user): self
@@ -41,6 +43,7 @@ final readonly class UpdateProfileCommand
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
             system: $request->attributes->get('system'),
+            metadata: RequestMetadata::fromRequest($request),
         );
     }
 

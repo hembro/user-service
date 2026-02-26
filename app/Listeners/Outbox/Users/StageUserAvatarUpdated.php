@@ -7,6 +7,7 @@ namespace App\Listeners\Outbox\Users;
 use App\DTOs\Messages\Actor;
 use App\DTOs\Messages\Target;
 use App\Enums\Infrastructure\ActorType;
+use App\Enums\Infrastructure\ResourceType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserAvatarUpdated;
 use App\Messages\Integration\Shared\EntityUpdatedMessage;
@@ -26,14 +27,19 @@ final readonly class StageUserAvatarUpdated
         $routingKey = RoutingKey::USER_AVATAR_UPDATED;
 
         $actor = new Actor(
-            id: $event->user->id,
+            id: (string) $event->user->id,
             type: ActorType::USER,
-            name: $event->user->profile?->first_name
+            name: $event->user->profile?->first_name ?? 'Unknown',
+            email: $event->user->email
         );
 
         $target = new Target(
-            id: $event->user->id,
-            type: 'user',
+            id: (string) $event->user->id,
+            resourceType: ResourceType::USER,
+            attributes: [
+                'name' => $event->user->profile?->first_name ?? 'Unknown',
+                'email' => $event->user->email,
+            ],
             changes: $event->changes
         );
 

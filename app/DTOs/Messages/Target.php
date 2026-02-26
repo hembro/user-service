@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\DTOs\Messages;
 
+use App\Enums\Infrastructure\ResourceType;
+
 final readonly class Target
 {
     public function __construct(
         public string $id,
-        public string $type,
+        public ResourceType $resourceType,
+        public array $attributes = [],
         public array $changes = [],
     ) {}
 
@@ -16,7 +19,8 @@ final readonly class Target
     {
         return [
             'id' => $this->id,
-            'type' => $this->type,
+            'resource_type' => $this->resourceType,
+            'attributes' => $this->attributes,
             'changes' => $this->changes,
         ];
     }
