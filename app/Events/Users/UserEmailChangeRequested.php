@@ -18,6 +18,7 @@ final class UserEmailChangeRequested
     public function __construct(
         public readonly User $user,
         public readonly string $token,
+        public readonly string $tokenExpiresAt,
         public readonly string $newEmail,
         public readonly Systems $system,
         public readonly RequestMetadata $metadata

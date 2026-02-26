@@ -4,9 +4,15 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Users;
 
+use App\DTOs\Messages\ActionRequestData;
+use App\DTOs\Messages\Actor;
+use App\DTOs\Messages\Target;
+use App\Enums\Infrastructure\ActorType;
+use App\Enums\Infrastructure\RequestType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserEmailChangeRequested;
-use App\Messages\Integration\Users\UserEmailChangeRequestedMessage;
+use App\Messages\Integration\Shared\ActionRequestedMessage;
+use App\Messages\Integration\Shared\MessageMeta;
 use App\Services\Outbox\OutboxPublisher;
 
 final readonly class StageUserEmailChangeRequested
@@ -19,9 +25,31 @@ final readonly class StageUserEmailChangeRequested
     {
         $event->user->loadMissing('profile');
 
+        $routingKey = RoutingKey::USER_EMAIL_CHANGE_REQUESTED;
+
+        $actor = new Actor(
+            id: $event->user->id,
+            type: ActorType::USER,
+            name: $event->user->profile?->first_name,
+            email: $event->user->email
+        );
+
+        $target = new Target(
+            id: $event->user->id,
+            type: 'user'
+        );
+
+        $meta = MessageMeta::generate($event->system, $event->metadata);
+
+        $actionRequest = new ActionRequestData(
+            type: RequestType::EMAIL_CHANGE,
+            token: $event->token,
+            expiresAt: $event->tokenExpiresAt
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::USER_EMAIL_CHANGE_REQUESTED,
-            message: UserEmailChangeRequestedMessage::make($event->user, $event->token, $event->newEmail, $event->system, $event->metadata)
+            routingKey: $routingKey,
+            message: ActionRequestedMessage::make($routingKey, $actor, $target, $meta, $actionRequest)
         );
     }
 }

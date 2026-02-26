@@ -38,17 +38,8 @@ final class UserProfile extends Model
     use HasFactory;
     use HasUlids;
 
-    protected $fillable = [
-        'user_id',
-        'avatar_path',
-        'title',
-        'first_name',
-        'middle_name',
-        'last_name',
-        'suffix',
-        'sex',
-        'mobile_number',
-        'preferences',
+    protected $guarded = [
+        'id',
     ];
 
     protected $casts = [
