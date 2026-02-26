@@ -52,10 +52,10 @@ final readonly class StageUserEmailChangeRequested
         );
 
         $actionRequest = new ActionRequestData(
-            type: RequestType::EMAIL_CHANGE,
+            type: RequestType::EMAIL_CHANGE_REQUEST,
             token: $event->token,
             expiresAt: now()
-                ->addMinutes((int) Config::get('auth.verification.expire'))
+                ->addMinutes((int) Config::get('auth.verification.expire', 60))
                 ->toIso8601String()
         );
 

@@ -10,11 +10,10 @@ use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 
 final readonly class DeviceTrustService implements DeviceTrustVerifier
 {
-    private const CACHE_TTL_MINUTES = 60;
-
     public function __construct(
         private ChallengeService $challengeService
     ) {}
@@ -47,7 +46,7 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
             return false;
         }
 
-        Cache::put($cacheKey, $device->fingerprint_hash, now()->addMinutes(self::CACHE_TTL_MINUTES));
+        Cache::put($cacheKey, $device->fingerprint_hash, now()->addMinutes((int) Config::get('auth.otp.expire', 10)));
 
         return true;
     }

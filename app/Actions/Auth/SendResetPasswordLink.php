@@ -18,7 +18,10 @@ final readonly class SendResetPasswordLink
 
     public function handle(ForgotPasswordCommand $command): void
     {
-        $user = User::query()->where('email', $command->email)->first();
+        $user = User::query()
+            ->with('profile')
+            ->where('email', $command->email)
+            ->first();
 
         $this->db->transaction(
             callback: function () use ($user, $command): void {

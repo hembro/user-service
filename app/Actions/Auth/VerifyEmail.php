@@ -21,7 +21,9 @@ final readonly class VerifyEmail
 
     public function handle(VerifyEmailCommand $command): void
     {
-        $user = User::query()->findOrFail($command->id);
+        $user = User::query()
+            ->with('profile')
+            ->findOrFail($command->id);
 
         if (! hash_equals($command->hash, sha1($user->getEmailForVerification()))) {
 
@@ -49,7 +51,7 @@ final readonly class VerifyEmail
 
                 $user->update(['status' => UserStatus::ACTIVE]);
 
-                UserVerified::dispatch($user, $command->system);
+                UserVerified::dispatch($user, $command->system, $command->metadata);
             }
         );
     }

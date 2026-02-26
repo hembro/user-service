@@ -49,7 +49,7 @@ final readonly class ConfirmTwoFactor
                     'two_factor_recovery_codes' => $recoveryCodes,
                 ])->save();
 
-                TwoFactorEnabled::dispatch($command->user, $command->system);
+                TwoFactorEnabled::dispatch($command->user, $command->system, $command->metadata);
             }
         );
 

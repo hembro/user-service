@@ -55,10 +55,10 @@ final readonly class StageUserRegistered
         if ($event->verificationUrl !== null) {
 
             $actionRequest = new ActionRequestData(
-                type: RequestType::DEVICE_VERIFICATION,
+                type: RequestType::DEVICE_VERIFICATION_REQUEST,
                 token: $event->verificationUrl,
                 expiresAt: now()
-                    ->addMinutes((int) Config::get('auth.verification.expire'))
+                    ->addMinutes((int) Config::get('auth.verification.expire', 60))
                     ->toIso8601String()
             );
 

@@ -20,7 +20,10 @@ final readonly class ResendVerifyEmail
 
     public function handle(ResendVerifyEmailCommand $command): void
     {
-        $user = User::query()->where('email', $command->email)->first();
+        $user = User::query()
+            ->with('profile')
+            ->where('email', $command->email)
+            ->first();
 
         if (! $user) {
             return;
@@ -34,7 +37,7 @@ final readonly class ResendVerifyEmail
 
         $this->db->transaction(
             callback: function () use ($user, $verificationUrl, $command): void {
-                VerificationLinkRequested::dispatch($user, $verificationUrl, $command->system);
+                VerificationLinkRequested::dispatch($user, $verificationUrl, $command->system, $command->metadata);
             }
         );
     }

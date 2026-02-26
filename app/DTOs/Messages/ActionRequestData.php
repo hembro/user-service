@@ -10,16 +10,16 @@ final readonly class ActionRequestData
 {
     public function __construct(
         public RequestType $type,
-        public string $token,
-        public string $expiresAt,
+        public ?string $token = null,
+        public ?string $expiresAt = null,
     ) {}
 
     public function toArray(): array
     {
-        return [
+        return array_filter([
             'type' => $this->type->value,
-            'token' => $this->token,
             'expires_at' => $this->expiresAt,
-        ];
+            'token' => $this->token,
+        ]);
     }
 }

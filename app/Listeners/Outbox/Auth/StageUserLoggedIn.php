@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
+use App\DTOs\Messages\Actor;
+use App\Enums\Infrastructure\ActorType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\UserLoggedIn;
-use App\Messages\Integration\Auth\UserLoggedInMessage;
+use App\Messages\Integration\Shared\ActionOccurredMessage;
+use App\Messages\Integration\Shared\MessageMeta;
 use App\Services\Outbox\OutboxPublisher;
 
 final readonly class StageUserLoggedIn
@@ -17,9 +20,20 @@ final readonly class StageUserLoggedIn
 
     public function handle(UserLoggedIn $event): void
     {
+        $routingKey = RoutingKey::AUTH_USER_LOGGED_IN;
+
+        $actor = new Actor(
+            id: (string) $event->user->id,
+            type: ActorType::USER,
+            name: $event->user->profile?->first_name ?? $event->user->email,
+            email: $event->user->email
+        );
+
+        $meta = MessageMeta::generate($event->system, $event->metadata);
+
         $this->outbox->publish(
-            routingKey: RoutingKey::AUTH_USER_LOGGED_IN,
-            message: UserLoggedInMessage::make($event->user, $event->deviceId, $event->system, $event->metadata)
+            routingKey: $routingKey,
+            message: ActionOccurredMessage::make($routingKey, $actor, $meta)
         );
     }
 }

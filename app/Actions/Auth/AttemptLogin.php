@@ -32,7 +32,7 @@ final readonly class AttemptLogin
     public function handle(LoginCommand $command): AuthenticationOutcome
     {
         $user = User::query()
-            ->with('roles')
+            ->with(['profile', 'roles'])
             ->where('email', $command->email)
             ->first();
 

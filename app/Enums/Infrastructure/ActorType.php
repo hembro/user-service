@@ -8,6 +8,7 @@ enum ActorType: string
 {
     // A human being operating a client interface (Web/Mobile)
     case USER = 'user';
+    case GUEST = 'guest';
 
     // An automated internal process (Cron job, queue worker, DB trigger)
     case SYSTEM = 'system';

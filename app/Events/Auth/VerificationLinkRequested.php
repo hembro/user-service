@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Events\Auth;
 
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -17,6 +18,7 @@ final class VerificationLinkRequested
     public function __construct(
         public readonly User $user,
         public readonly string $verificationUrl,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly RequestMetadata $metadata
     ) {}
 }
