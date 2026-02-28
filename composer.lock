@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "650423119d59ba07a13125401a0b1cba",
+    "content-hash": "55e1052b7c944aa5dd3c0b2680b90751",
     "packages": [
         {
             "name": "brick/math",
@@ -1184,20 +1184,20 @@
         },
         {
             "name": "jeremyaliparo/service-integration-core",
-            "version": "v1.1.0",
+            "version": "1.1.6",
             "source": {
                 "type": "git",
                 "url": "git@github.com:jeremyaliparo/service-integration-core.git",
-                "reference": "76f57c18735750fa5f80fe8c9655740915e31e13"
+                "reference": "df33f1a2c0d7c636b59f730eb7b1262bd49c76ff"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-core/zipball/76f57c18735750fa5f80fe8c9655740915e31e13",
-                "reference": "76f57c18735750fa5f80fe8c9655740915e31e13",
+                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-core/zipball/df33f1a2c0d7c636b59f730eb7b1262bd49c76ff",
+                "reference": "df33f1a2c0d7c636b59f730eb7b1262bd49c76ff",
                 "shasum": ""
             },
             "require": {
-                "laravel/framework": "^11.44.2|^12.53.0|^13.0",
+                "laravel/framework": "^12.53.0|^13.0",
                 "php": "^8.3.0",
                 "php-amqplib/php-amqplib": "^3.7.4"
             },
@@ -1214,12 +1214,12 @@
                     "jeremyaliparo\\IntegrationCore\\": "src/"
                 }
             },
-            "description": "Core messaging, Messages, and AMQP Daemons for our microservices.",
+            "description": "Core messaging, Payloads, and AMQP Daemons for our microservices.",
             "support": {
-                "source": "https://github.com/jeremyaliparo/service-integration-core/tree/v1.1.0",
+                "source": "https://github.com/jeremyaliparo/service-integration-core/tree/1.1.6",
                 "issues": "https://github.com/jeremyaliparo/service-integration-core/issues"
             },
-            "time": "2026-02-27T08:58:33+00:00"
+            "time": "2026-02-28T05:06:29+00:00"
         },
         {
             "name": "laravel/framework",
@@ -11067,16 +11067,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.1.5",
+            "version": "2.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "79155f94852fa27e2f73b459f6503f5e87e2c188"
+                "reference": "ff31ad6efc62e66e518fbab1cde3453d389bcdc8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/79155f94852fa27e2f73b459f6503f5e87e2c188",
-                "reference": "79155f94852fa27e2f73b459f6503f5e87e2c188",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/ff31ad6efc62e66e518fbab1cde3453d389bcdc8",
+                "reference": "ff31ad6efc62e66e518fbab1cde3453d389bcdc8",
                 "shasum": ""
             },
             "require": {
@@ -11123,9 +11123,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.1.5"
+                "source": "https://github.com/webmozarts/assert/tree/2.1.6"
             },
-            "time": "2026-02-18T14:09:36+00:00"
+            "time": "2026-02-27T10:28:38+00:00"
         }
     ],
     "aliases": [],

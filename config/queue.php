@@ -90,6 +90,8 @@ return [
                 'deferred',
             ],
         ],
+
+        'rabbitmq_events' => config('integration.rabbitmq_events'),
     ],
 
     /*
