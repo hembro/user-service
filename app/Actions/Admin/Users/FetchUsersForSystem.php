@@ -52,6 +52,6 @@ final readonly class FetchUsersForSystem
 
     private function hasActiveFilters(IndexUserCommand $command): bool
     {
-        return ! empty($command->search) || ! empty($command->role) || ! empty($command->status) || ! empty($command->sort);
+        return ! empty($command->search) || ! empty($command->role) || ! empty($command->status) || ! empty($command->sort) || ! empty($command->trashed);
     }
 }

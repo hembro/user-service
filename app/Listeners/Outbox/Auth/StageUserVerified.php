@@ -35,7 +35,7 @@ final readonly class StageUserVerified
 
         $target = new Target(
             id: (string) $event->user->id,
-            resourceType: ResourceType::USER,
+            type: ResourceType::USER,
             attributes: [
                 'name' => $event->user->profile?->first_name ?? $event->user->email,
                 'email' => $event->user->email,
@@ -43,7 +43,7 @@ final readonly class StageUserVerified
             changes: [
                 'email_verified_at' => [
                     'old' => null,
-                    'new' => $event->user->email_verified_at,
+                    'new' => $event->user->email_verified_at->toIso8601String(),
                 ],
             ]
         );

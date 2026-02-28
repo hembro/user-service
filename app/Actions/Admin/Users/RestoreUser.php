@@ -40,7 +40,7 @@ final readonly class RestoreUser
 
                 $command->targetUser->restore();
 
-                UserRestored::dispatch($command->targetUser, $command->actor, $command->system);
+                UserRestored::dispatch($command->targetUser, $command->actor, $command->system, $command->metadata);
             }
         );
     }

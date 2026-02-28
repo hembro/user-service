@@ -34,7 +34,7 @@ final readonly class UpdateUserStatus
                     $this->tokenRevoker->revoke($command->targetUser, $command->system);
                 }
 
-                UserStatusUpdated::dispatch($command->targetUser, $command->actor, $oldStatus, $command->status, $command->system);
+                UserStatusUpdated::dispatch($command->targetUser, $oldStatus, $command->actor, $command->system, $command->metadata);
             }
         );
     }

@@ -40,7 +40,7 @@ final readonly class UpdateUserRole
 
                 $command->targetUser->touch();
 
-                UserRoleUpdated::dispatch($command->targetUser, $command->actor, $changes['old'], $changes['new'], $command->system);
+                UserRoleUpdated::dispatch($command->targetUser, $changes['old'], $changes['new'], $command->actor, $command->system, $command->metadata);
             }
         );
     }

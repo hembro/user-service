@@ -16,6 +16,10 @@ final readonly class DeleteUser
 
     public function handle(DeleteUserCommand $command): void
     {
+        if ($command->targetUser->trashed()) {
+            return;
+        }
+
         $this->db->transaction(
             callback: function () use ($command): void {
 
@@ -27,7 +31,14 @@ final readonly class DeleteUser
 
                 $command->targetUser->delete();
 
-                UserDeleted::dispatch($command->targetUser->id, $command->actor, $command->system);
+                UserDeleted::dispatch(
+                    $command->targetUser->id,
+                    $command->targetUser->profile?->first_name ?? $command->targetUser->email,
+                    $command->targetUser->email,
+                    $command->actor,
+                    $command->system,
+                    $command->metadata
+                );
             }
         );
     }

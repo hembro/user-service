@@ -25,7 +25,7 @@ final readonly class ImpersonateUser
 
         $this->db->transaction(
             callback: function () use ($command) {
-                UserImpersonated::dispatch($command->targetUser, $command->actor, $command->system);
+                UserImpersonated::dispatch($command->targetUser, $command->actor, $command->system, $command->metadata);
             }
         );
 

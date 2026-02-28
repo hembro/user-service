@@ -19,6 +19,7 @@ enum RoutingKey: string
      * ----------------------------------------------------------------
      */
     case USER_INVITED = 'user.invited';
+    case USER_TRASHED = 'user.trashed';
     case USER_DELETED = 'user.deleted';
     case USER_RESTORED = 'user.restored';
     case USER_STATUS_UPDATED = 'user.status.updated';

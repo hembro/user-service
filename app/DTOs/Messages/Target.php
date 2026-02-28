@@ -10,7 +10,7 @@ final readonly class Target
 {
     public function __construct(
         public string $id,
-        public ResourceType $resourceType,
+        public ResourceType $type,
         public array $attributes = [],
         public array $changes = [],
     ) {}
@@ -19,7 +19,7 @@ final readonly class Target
     {
         return [
             'id' => $this->id,
-            'resource_type' => $this->resourceType,
+            'resource_type' => $this->type,
             'attributes' => $this->attributes,
             'changes' => $this->changes,
         ];

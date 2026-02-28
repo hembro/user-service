@@ -37,7 +37,7 @@ final readonly class StageEnableTwoFactorRequested
 
         $target = new Target(
             id: (string) $event->user->id,
-            resourceType: ResourceType::USER,
+            type: ResourceType::USER,
             attributes: [
                 'name' => $event->user->profile?->first_name ?? $event->user->email,
                 'email' => $event->user->email,

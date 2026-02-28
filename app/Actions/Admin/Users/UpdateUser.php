@@ -49,7 +49,7 @@ final readonly class UpdateUser
 
                     if ($profile->isDirty()) {
                         foreach ($profile->getDirty() as $key => $value) {
-                            $changes["profile.{$key}"] = [
+                            $changes[$key] = [
                                 'old' => $profile->getOriginal($key),
                                 'new' => $value,
                             ];
@@ -59,11 +59,11 @@ final readonly class UpdateUser
                     }
 
                     if ($command->targetUser->wasChanged('email')) {
-                        UserEmailChanged::dispatch($command->targetUser, $command->actor, $command->system);
+                        UserEmailChanged::dispatch($command->targetUser, $changes['email'], $command->actor, $command->system, $command->metadata);
                     }
 
                     if (! empty($changes)) {
-                        UserUpdated::dispatch($command->actor, $command->targetUser, $changes, $command->system);
+                        UserUpdated::dispatch($command->targetUser, $changes, $command->actor, $command->system, $command->metadata);
                     }
                 }
             );

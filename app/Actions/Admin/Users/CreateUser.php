@@ -41,7 +41,7 @@ final readonly class CreateUser
 
                     $user->assignRole($command->roles);
 
-                    UserInvited::dispatch($user, $command->actor, $command->system);
+                    UserInvited::dispatch($user, $command->actor, $command->system, $command->metadata);
 
                     return $user->load(['profile', 'roles', 'permissions']);
                 }

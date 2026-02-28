@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Admin;
 
+use App\DTOs\Messages\Actor;
+use App\DTOs\Messages\Target;
+use App\Enums\Infrastructure\ActorType;
+use App\Enums\Infrastructure\ResourceType;
 use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Admin\UserUpdated;
-use App\Messages\Integration\Admin\UserUpdatedMessage;
+use App\Messages\Integration\Shared\EntityUpdatedMessage;
+use App\Messages\Integration\Shared\MessageMeta;
 use App\Services\Outbox\OutboxPublisher;
 
 final readonly class StageUserUpdated
@@ -19,9 +24,30 @@ final readonly class StageUserUpdated
     {
         $event->actor->loadMissing('profile');
 
+        $routingKey = RoutingKey::USER_UPDATED;
+
+        $actor = new Actor(
+            id: (string) $event->actor->id,
+            type: ActorType::USER,
+            name: $event->actor->profile?->first_name ?? $event->actor->email,
+            email: $event->actor->email
+        );
+
+        $target = new Target(
+            id: (string) $event->targetUser->id,
+            type: ResourceType::USER,
+            attributes: [
+                'name' => $event->targetUser->profile?->first_name ?? $event->targetUser->email,
+                'email' => $event->targetUser->email,
+            ],
+            changes: $event->changes
+        );
+
+        $meta = MessageMeta::generate($event->system, $event->metadata);
+
         $this->outbox->publish(
-            routingKey: RoutingKey::USER_UPDATED,
-            message: UserUpdatedMessage::make($event->targetUser, $event->actor, $event->changes, $event->system)
+            routingKey: $routingKey,
+            message: EntityUpdatedMessage::make($routingKey, $actor, $target, $meta)
         );
     }
 }

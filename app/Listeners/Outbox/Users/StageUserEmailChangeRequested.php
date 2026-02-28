@@ -38,7 +38,7 @@ final readonly class StageUserEmailChangeRequested
 
         $target = new Target(
             id: (string) $event->user->id,
-            resourceType: ResourceType::USER,
+            type: ResourceType::USER,
             attributes: [
                 'name' => $event->user->profile?->first_name ?? 'Unknown',
                 'email' => $event->user->email,

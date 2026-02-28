@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Commands\Admin\Users;
 
+use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRoleRequest;
@@ -15,7 +16,8 @@ final readonly class UpdateRoleCommand
         public User $targetUser,
         public User $actor,
         public array $roles,
-        public Systems $system
+        public Systems $system,
+        public RequestMetadata $metadata
     ) {}
 
     public static function fromRequest(UpdateRoleRequest $request, User $targetUser): self
@@ -30,6 +32,7 @@ final readonly class UpdateRoleCommand
                 $data['roles']
             ),
             system: $request->attributes->get('system'),
+            metadata: RequestMetadata::fromRequest($request),
         );
     }
 }
