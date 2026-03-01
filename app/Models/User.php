@@ -6,7 +6,6 @@ namespace App\Models;
 
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -19,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;

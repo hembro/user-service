@@ -26,7 +26,8 @@ final readonly class RegisterUserCommand
         public ?string $mobileNumber,
         public array $preferences,
         public string $deviceId,
-        public Systems $system
+        public Systems $system,
+        public array $systemContext,
     ) {}
 
     public static function fromRequest(RegisterRequest $request, string $deviceId): self
@@ -45,7 +46,8 @@ final readonly class RegisterUserCommand
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
             deviceId: $deviceId,
-            system: $request->attributes->get('system')
+            system: $request->attributes->get('system'),
+            systemContext: $data['system_context'] ?? [],
         );
     }
 

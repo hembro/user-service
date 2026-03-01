@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Commands\Auth\VerifyEmailCommand;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserVerified;
 use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class VerifyEmail

@@ -9,7 +9,6 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Auth\AuthenticationOutcome;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Models\User;
@@ -17,6 +16,7 @@ use App\Services\Auth\ChallengeService;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class AttemptLogin

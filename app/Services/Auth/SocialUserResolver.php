@@ -7,9 +7,9 @@ namespace App\Services\Auth;
 use App\DTOs\Auth\SocialProfile;
 use App\Enums\Sex;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class SocialUserResolver

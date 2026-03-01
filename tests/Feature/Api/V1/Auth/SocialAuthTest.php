@@ -6,7 +6,6 @@ namespace Tests\Feature\Api\V1\Auth;
 
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
@@ -18,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Laravel\Passport\Client;
 use Laravel\Socialite\Facades\Socialite;
 use Mockery;

@@ -6,20 +6,14 @@ namespace App\Listeners\Outbox\Users;
 
 use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserRegistered;
+use App\Mappers\Integration\UserIntegrationMapper;
 use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Context;
-use jeremyaliparo\IntegrationContracts\DTOs\Metadata;
 use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
 use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
-use jeremyaliparo\IntegrationSchemas\Attributes\UserAttributes;
 use jeremyaliparo\IntegrationSchemas\Commons\ActionRequest;
-use jeremyaliparo\IntegrationSchemas\Commons\Actor;
-use jeremyaliparo\IntegrationSchemas\Commons\Target;
 use jeremyaliparo\IntegrationSchemas\Enums\ActionRequestType;
-use jeremyaliparo\IntegrationSchemas\Enums\ActorType;
-use jeremyaliparo\IntegrationSchemas\Enums\ResourceType;
 use jeremyaliparo\IntegrationSchemas\Events\System\ActionRequestedEvent;
-use jeremyaliparo\IntegrationSchemas\Events\Users\UserCreatedEvent;
+use jeremyaliparo\IntegrationSchemas\Events\Users\UserRegisteredEvent;
 
 final readonly class StageUserRegistered
 {
@@ -31,37 +25,18 @@ final readonly class StageUserRegistered
     {
         $event->user->loadMissing('profile');
 
-        $actor = new Actor(
-            id: (string) $event->user->id,
-            type: ActorType::USER,
-            name: $event->user->profile->first_name ?? $event->user->email,
-            email: $event->user->email
-        );
-
-        $target = new Target(
-            id: (string) $event->user->id,
-            type: ResourceType::USER,
-            attributes: UserAttributes::fromArray([
-                'name' => $event->user->profile->first_name ?? $event->user->email,
-                'email' => $event->user->email,
-            ])
-        );
-
-        $userCreatedEventData = new UserCreatedEvent($actor, $target);
-
-        $metadata = new Metadata(
-            sourceSystem: $event->system->value,
-            sourceService: Config::get('app.name', 'user-service'),
-            timestamp: now()->toIso8601String(),
-            traceId: Context::get('trace_id', 'unknown-trace-id'),
-            ipAddress: Context::get('ip_address'),
-            userAgent: Context::get('user_agent'),
-            clientType: Context::get('client_type'),
-        );
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = UserIntegrationMapper::extractMetadata($event->system->value);
 
         $userRegisteredMessage = IntegrationMessage::make(
             eventName: RoutingKey::USER_REGISTERED->value,
-            data: $userCreatedEventData,
+            data: new UserRegisteredEvent(
+                actor: $actor,
+                target: $target,
+                occurredAt: $event->user->created_at->toIso8601String(),
+                systemContext: $event->systemContext
+            ),
             metadata: $metadata
         );
 
@@ -80,7 +55,7 @@ final readonly class StageUserRegistered
                     ->toIso8601String()
             );
 
-            $actionEvent = new ActionRequestedEvent(
+            $actionEventData = new ActionRequestedEvent(
                 actor: $actor,
                 target: $target,
                 action: $actionRequest
@@ -88,7 +63,7 @@ final readonly class StageUserRegistered
 
             $actionMessage = IntegrationMessage::make(
                 eventName: RoutingKey::AUTH_VERIFICATION_REQUESTED->value,
-                data: $actionEvent,
+                data: $actionEventData,
                 metadata: $metadata
             );
 

@@ -6,13 +6,13 @@ namespace Tests\Feature\Api\V1\Users;
 
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;

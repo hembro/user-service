@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Users;
 
 use App\Commands\Admin\Users\UpdateUserStatusCommand;
-use App\Enums\UserStatus;
 use App\Events\Admin\UserStatusUpdated;
 use App\Services\Auth\SystemTokenRevoker;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 
 final readonly class UpdateUserStatus
 {

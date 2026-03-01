@@ -21,17 +21,17 @@ use Illuminate\Support\Str;
 /**
  * @property-read string $id
  * @property-read string $user_id
- * @property-read string $avatarUrl
- * @property-read Titles $title
+ * @property-read ?string $avatarUrl
+ * @property-read ?Titles $title
  * @property-read string $first_name
- * @property-read string $middle_name
+ * @property-read ?string $middle_name
  * @property-read string $last_name
- * @property-read Suffix $suffix
+ * @property-read ?Suffix $suffix
  * @property-read Sex $sex
- * @property-read string $mobile_number
- * @property-read ArrayObject $preferences
- * @property-read CarbonInterface $created_at
- * @property-read CarbonInterface $updated_at
+ * @property-read ?string $mobile_number
+ * @property-read ?ArrayObject $preferences
+ * @property-read ?CarbonInterface $created_at
+ * @property-read ?CarbonInterface $updated_at
  */
 final class UserProfile extends Model
 {

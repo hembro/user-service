@@ -6,10 +6,10 @@ namespace App\Actions\Admin\Users;
 
 use App\Commands\Admin\Users\CreateUserCommand;
 use App\Enums\Roles;
-use App\Enums\UserStatus;
 use App\Events\Admin\UserInvited;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

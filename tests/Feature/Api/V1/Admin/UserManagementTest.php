@@ -7,7 +7,6 @@ namespace Tests\Feature\Api\V1\Admin;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Admin\UserDeleted;
 use App\Events\Admin\UserImpersonated;
 use App\Events\Admin\UserInvited;
@@ -22,6 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 

@@ -6,11 +6,11 @@ namespace App\Actions\Users;
 
 use App\Commands\Users\RegisterUserCommand;
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -47,7 +47,7 @@ final readonly class RegisterUser
 
                     $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                    UserRegistered::dispatch($user, $command->system, $verificationUrl);
+                    UserRegistered::dispatch($user, $command->system, $verificationUrl, $command->systemContext);
 
                     return $user;
                 }

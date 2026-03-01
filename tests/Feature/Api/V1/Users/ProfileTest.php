@@ -7,7 +7,6 @@ namespace Tests\Feature\Api\V1\Users;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Users\UserAvatarUpdated;
 use App\Events\Users\UserEmailChanged;
 use App\Events\Users\UserEmailChangeRequested;
@@ -21,6 +20,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Laravel\Passport\Passport;
 
 use function Pest\Laravel\assertDatabaseHas;

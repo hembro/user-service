@@ -7,7 +7,6 @@ namespace Tests\Feature\Api\V1\Auth;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
 use Laravel\Passport\Client;
 use PragmaRX\Google2FA\Google2FA;
 
