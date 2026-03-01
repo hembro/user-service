@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Actions\Auth\RefreshUserToken;
-use App\DTOs\Shared\RequestMetadata;
 use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\Auth\DeviceTrustService;
@@ -29,8 +28,7 @@ final class RefreshTokenController
         $token = $this->action->handle(
             refreshToken: $request->cookie(config('cookie.refresh_token.name')) ?? $request->validated('refresh_token'),
             deviceId: $deviceId,
-            system: $request->attributes->get('system'),
-            metadata: RequestMetadata::fromRequest($request),
+            system: $request->attributes->get('system')
         );
 
         return $this->success(

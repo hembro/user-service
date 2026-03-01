@@ -12,7 +12,6 @@ use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserProfileUpdated;
 use App\Messages\Integration\Shared\EntityUpdatedMessage;
 use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
 
 final readonly class StageUserProfileUpdated
 {

@@ -41,13 +41,13 @@ final readonly class RegisterUser
 
                     $user->assignRole($command->system->defaultRole());
 
-                    $this->deviceService->trustDevice($user, $command->deviceId, $command->metadata);
+                    $this->deviceService->trustDevice($user, $command->deviceId);
 
                     $verificationUrl = $this->linkGenerator->generate($user);
 
                     $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                    UserRegistered::dispatch($user, $command->system, $command->metadata, $verificationUrl);
+                    UserRegistered::dispatch($user, $command->system, $verificationUrl);
 
                     return $user;
                 }

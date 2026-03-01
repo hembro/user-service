@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Services\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Shared\RequestMetadata;
 use App\Models\User;
 use App\Models\UserDevice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 
 final readonly class DeviceTrustService implements DeviceTrustVerifier
 {
@@ -18,13 +18,13 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
         private ChallengeService $challengeService
     ) {}
 
-    public function isTrusted(User $user, string $deviceId, RequestMetadata $metadata): bool
+    public function isTrusted(User $user, string $deviceId): bool
     {
         if ($deviceId === null) {
             return false;
         }
 
-        $currentFingerprint = $this->challengeService->generateFingerprint($metadata);
+        $currentFingerprint = $this->challengeService->generateFingerprint();
         $cacheKey = $this->cacheKey($user->id, $deviceId);
         $cachedHash = Cache::get($cacheKey);
 
@@ -46,19 +46,27 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
             return false;
         }
 
-        Cache::put($cacheKey, $device->fingerprint_hash, now()->addMinutes((int) Config::get('auth.otp.expire', 10)));
+        Cache::put(
+            key: $cacheKey,
+            value: $device->fingerprint_hash,
+            ttl: now()->addMinutes((int) Config::get('auth.otp.expire', 10))
+        );
 
         return true;
     }
 
-    public function trustDevice(User $user, string $deviceId, RequestMetadata $metadata): void
+    public function trustDevice(User $user, string $deviceId): void
     {
+        $clientType = (string) Context::get('client_type', 'unknown');
+        $userAgent = (string) Context::get('user_agent', 'unknown');
+        $ipAddress = (string) Context::get('ip_address');
+
         $user->devices()->updateOrCreate(
             attributes: ['device_id' => $deviceId],
             values: [
-                'fingerprint_hash' => $this->challengeService->generateFingerprint($metadata),
-                'name' => $metadata->clientType . ' on ' . $metadata->userAgent,
-                'last_ip' => $metadata->ip,
+                'fingerprint_hash' => $this->challengeService->generateFingerprint(),
+                'name' => $clientType . ' on ' . mb_substr($userAgent, 0, 50),
+                'last_ip' => $ipAddress,
                 'last_used_at' => now(),
                 'verified_at' => now(),
             ]
@@ -69,11 +77,11 @@ final readonly class DeviceTrustService implements DeviceTrustVerifier
     {
         $headerValue = $request->header('X-Device-UUID');
 
-        if (! blank($headerValue)) {
+        if (is_string($headerValue) && ! blank($headerValue)) {
             return $headerValue;
         }
 
-        return $request->cookie(config('cookie.device_id.name'));
+        return $request->cookie((string) Config::get('cookie.device_id.name'));
     }
 
     public function forgetDevice(User $user, string $deviceId): void

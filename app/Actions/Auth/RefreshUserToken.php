@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Exceptions\Auth\InvalidRefreshTokenException;
@@ -21,7 +20,7 @@ final class RefreshUserToken
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(?string $refreshToken, ?string $deviceId, Systems $system, RequestMetadata $metadata)
+    public function handle(?string $refreshToken, ?string $deviceId, Systems $system)
     {
         if (blank($refreshToken)) {
             throw new InvalidRefreshTokenException('Refresh token is required.');
@@ -37,14 +36,13 @@ final class RefreshUserToken
             throw new InvalidRefreshTokenException('Invalid token.');
         }
 
-        if (! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+        if (! $this->deviceService->isTrusted($user, $deviceId)) {
 
             $this->logger->warning(
                 'refresh token usage blocked by untrusted device',
                 [
                     'user_id' => $user->id,
                     'device_id' => $deviceId,
-                    'ip' => $metadata->ip,
                 ]
             );
 

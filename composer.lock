@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "55e1052b7c944aa5dd3c0b2680b90751",
+    "content-hash": "370d323c0ba6357a5cfc4e72a4eb5d76",
     "packages": [
         {
             "name": "brick/math",
@@ -1183,20 +1183,51 @@
             "time": "2025-08-22T14:27:06+00:00"
         },
         {
-            "name": "jeremyaliparo/service-integration-core",
-            "version": "1.1.6",
+            "name": "jeremyaliparo/service-integration-contracts",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
-                "url": "git@github.com:jeremyaliparo/service-integration-core.git",
-                "reference": "df33f1a2c0d7c636b59f730eb7b1262bd49c76ff"
+                "url": "git@github.com:jeremyaliparo/service-integration-contracts.git",
+                "reference": "f0234d372b8bd53a217de16e1b0e4c17432c892a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-core/zipball/df33f1a2c0d7c636b59f730eb7b1262bd49c76ff",
-                "reference": "df33f1a2c0d7c636b59f730eb7b1262bd49c76ff",
+                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-contracts/zipball/f0234d372b8bd53a217de16e1b0e4c17432c892a",
+                "reference": "f0234d372b8bd53a217de16e1b0e4c17432c892a",
                 "shasum": ""
             },
             "require": {
+                "php": "^8.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "jeremyaliparo\\IntegrationContracts\\": "src/"
+                }
+            },
+            "description": "Strict interfaces for cross-service communication.",
+            "support": {
+                "source": "https://github.com/jeremyaliparo/service-integration-contracts/tree/1.1.0",
+                "issues": "https://github.com/jeremyaliparo/service-integration-contracts/issues"
+            },
+            "time": "2026-02-28T11:53:25+00:00"
+        },
+        {
+            "name": "jeremyaliparo/service-integration-core",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:jeremyaliparo/service-integration-core.git",
+                "reference": "6226fc1c4a0e417566090733fb2001540af5d856"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-core/zipball/6226fc1c4a0e417566090733fb2001540af5d856",
+                "reference": "6226fc1c4a0e417566090733fb2001540af5d856",
+                "shasum": ""
+            },
+            "require": {
+                "jeremyaliparo/service-integration-contracts": "^1.0.0",
                 "laravel/framework": "^12.53.0|^13.0",
                 "php": "^8.3.0",
                 "php-amqplib/php-amqplib": "^3.7.4"
@@ -1216,10 +1247,41 @@
             },
             "description": "Core messaging, Payloads, and AMQP Daemons for our microservices.",
             "support": {
-                "source": "https://github.com/jeremyaliparo/service-integration-core/tree/1.1.6",
+                "source": "https://github.com/jeremyaliparo/service-integration-core/tree/1.2.0",
                 "issues": "https://github.com/jeremyaliparo/service-integration-core/issues"
             },
-            "time": "2026-02-28T05:06:29+00:00"
+            "time": "2026-02-28T11:55:50+00:00"
+        },
+        {
+            "name": "jeremyaliparo/service-integration-schemas",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:jeremyaliparo/service-integration-schemas.git",
+                "reference": "005d8d2bf3654291c2bf70b2f55059a3e264bb02"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-schemas/zipball/005d8d2bf3654291c2bf70b2f55059a3e264bb02",
+                "reference": "005d8d2bf3654291c2bf70b2f55059a3e264bb02",
+                "shasum": ""
+            },
+            "require": {
+                "jeremyaliparo/service-integration-contracts": "^1.1",
+                "php": "^8.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "jeremyaliparo\\IntegrationSchemas\\": "src/"
+                }
+            },
+            "description": "Centralized place for integration schemas.",
+            "support": {
+                "source": "https://github.com/jeremyaliparo/service-integration-schemas/tree/1.2.0",
+                "issues": "https://github.com/jeremyaliparo/service-integration-schemas/issues"
+            },
+            "time": "2026-03-01T06:07:23+00:00"
         },
         {
             "name": "laravel/framework",

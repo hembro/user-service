@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Commands\Users;
 
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Systems;
@@ -27,8 +26,7 @@ final readonly class RegisterUserCommand
         public ?string $mobileNumber,
         public array $preferences,
         public string $deviceId,
-        public Systems $system,
-        public RequestMetadata $metadata
+        public Systems $system
     ) {}
 
     public static function fromRequest(RegisterRequest $request, string $deviceId): self
@@ -47,8 +45,7 @@ final readonly class RegisterUserCommand
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
             deviceId: $deviceId,
-            system: $request->attributes->get('system'),
-            metadata: RequestMetadata::fromRequest($request)
+            system: $request->attributes->get('system')
         );
     }
 

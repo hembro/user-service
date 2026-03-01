@@ -19,7 +19,7 @@ return [
     */
     'queue_name' => env('INTEGRATION_QUEUE_NAME', 'default_service_events'),
 
-    'rabbitmq_events' => [
+    'rabbitmq' => [
         'driver' => 'rabbitmq',
         'queue' => env('RABBITMQ_QUEUE', 'service_name_integration_events'),
         'connection' => 'default',

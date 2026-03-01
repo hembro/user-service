@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Commands\Admin\Users;
 
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\Suffix;
@@ -30,8 +29,7 @@ final readonly class CreateUserCommand
         public array $preferences,
         public array $roles,
         public User $actor,
-        public Systems $system,
-        public RequestMetadata $metadata
+        public Systems $system
     ) {}
 
     public static function fromRequest(StoreRequest $request): self
@@ -54,8 +52,7 @@ final readonly class CreateUserCommand
                 $data['roles']
             ),
             actor: $request->user(),
-            system: $request->attributes->get('system'),
-            metadata: RequestMetadata::fromRequest($request),
+            system: $request->attributes->get('system')
         );
     }
 

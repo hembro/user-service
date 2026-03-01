@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Shared\RequestMetadata;
 use App\Events\Auth\SuspiciousSessionDetected;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -32,17 +31,14 @@ final readonly class EnsureDeviceIsTrusted
             throw new AuthenticationException('Device identifier is missing. Please login again.');
         }
 
-        $metadata = RequestMetadata::fromRequest($request);
-
-        if (! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+        if (! $this->deviceService->isTrusted($user, $deviceId)) {
 
             $system = $request->attributes->get('system');
 
             SuspiciousSessionDetected::dispatch(
                 $user,
                 'untrusted_device_detected',
-                $system,
-                $metadata
+                $system
             );
 
             throw new AuthenticationException('Device context mismatch. Please login again.');

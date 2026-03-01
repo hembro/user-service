@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Events\Admin;
 
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Enums\UserStatus;
 use App\Models\User;
@@ -20,7 +19,6 @@ final class UserStatusUpdated
         public readonly User $targetUser,
         public readonly UserStatus $oldStatus,
         public readonly User $actor,
-        public readonly Systems $system,
-        public readonly RequestMetadata $metadata
+        public readonly Systems $system
     ) {}
 }

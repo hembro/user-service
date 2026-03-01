@@ -57,17 +57,16 @@ final readonly class ProcessSocialLogin
 
         $this->deviceService->trustDevice(
             user: $user,
-            deviceId: $command->deviceId,
-            metadata: $command->metadata
+            deviceId: $command->deviceId
         );
 
         $user->loadMissing('roles');
 
         if ($user->wasRecentlyCreated) {
-            UserRegistered::dispatch($user, $command->system, $command->metadata);
+            UserRegistered::dispatch($user, $command->system);
         }
 
-        UserLoggedIn::dispatch($user, $command->deviceId, $command->system, $command->metadata);
+        UserLoggedIn::dispatch($user, $command->deviceId, $command->system);
 
         return AuthenticationOutcome::authenticated(
             token: $this->tokenIssuer->issueFullToken($user, $command->system),

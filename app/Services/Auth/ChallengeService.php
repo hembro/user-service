@@ -6,13 +6,14 @@ namespace App\Services\Auth;
 
 use App\DTOs\Auth\AuthenticationOutcome;
 use App\DTOs\Auth\PendingAuthChallenge;
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
 use App\Events\Auth\DeviceVerificationRequested;
 use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
 use Psr\Log\LoggerInterface;
 
@@ -42,18 +43,21 @@ final readonly class ChallengeService
         Cache::forget(self::CACHE_PREFIX . self::STRIKES_PREFIX . $challengeId);
     }
 
-    public function generateFingerprint(RequestMetadata $metadata): string
+    public function generateFingerprint(): string
     {
+        $userAgent = (string) Context::get('user_agent', 'unknown');
+        $clientType = (string) Context::get('client_type', 'unknown');
+
         return hash_hmac(
-            'sha256',
-            $metadata->userAgent . '|' . $metadata->clientType,
-            config('app.key')
+            algo: 'sha256',
+            data: $userAgent . '|' . $clientType,
+            key: Config::string('app.key')
         );
     }
 
-    public function validFingerprint(string $fingerprint, RequestMetadata $metadata): bool
+    public function validFingerprint(string $fingerprint): bool
     {
-        return hash_equals($fingerprint, $this->generateFingerprint($metadata));
+        return hash_equals($fingerprint, $this->generateFingerprint());
     }
 
     public function validOtp(?string $storedHash, string $inputCode): bool
@@ -78,7 +82,7 @@ final readonly class ChallengeService
         return $strikes;
     }
 
-    public function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system, RequestMetadata $metadata): AuthenticationOutcome
+    public function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system): AuthenticationOutcome
     {
         $challengeId = (string) Str::ulid();
         $otpCode = null;
@@ -89,7 +93,6 @@ final readonly class ChallengeService
             if (! Cache::add($lockKey, true, 60)) {
                 $this->logger->warning('OTP Generation rate limit triggered.', [
                     'user_id' => $user->id,
-                    'ip' => $metadata->ip,
                 ]);
 
                 throw new InvalidVerificationRequest('Please wait 60 seconds before requesting another code.');
@@ -104,14 +107,13 @@ final readonly class ChallengeService
             deviceId: $deviceId,
             type: $type,
             system: $system,
-            metadata: $metadata,
             otpCode: $otpCode
         );
 
         $this->make($challenge);
 
         if ($type === ChallengeType::DEVICE_VERIFICATION) {
-            DeviceVerificationRequested::dispatch($user, $otpCode, $system, $metadata);
+            DeviceVerificationRequested::dispatch($user, $otpCode, $system);
         }
 
         return AuthenticationOutcome::challenge(
@@ -128,8 +130,7 @@ final readonly class ChallengeService
             'device_id' => $dto->deviceId,
             'type' => $dto->type->value,
             'system' => $dto->system->value,
-            'fingerprint' => $this->generateFingerprint($dto->metadata),
-            'metadata' => $dto->metadata->toArray(),
+            'fingerprint' => $this->generateFingerprint(),
             'otp_hash' => $dto->otpCode ? $this->otpService->hash($dto->otpCode) : null,
 
         ];

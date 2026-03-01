@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Commands\Auth;
 
-use App\DTOs\Shared\RequestMetadata;
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use SensitiveParameter;
@@ -16,8 +15,7 @@ final readonly class ResetPasswordCommand
         public string $token,
         #[SensitiveParameter]
         public string $password,
-        public Systems $system,
-        public RequestMetadata $metadata
+        public Systems $system
     ) {}
 
     public static function fromRequest(ResetPasswordRequest $request): self
@@ -28,8 +26,7 @@ final readonly class ResetPasswordCommand
             email: $data['email'],
             token: $data['token'],
             password: $data['password'],
-            system: $request->attributes->get('system'),
-            metadata: RequestMetadata::fromRequest($request),
+            system: $request->attributes->get('system')
         );
     }
 }
