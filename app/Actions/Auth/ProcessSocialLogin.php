@@ -13,6 +13,7 @@ use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\SocialUserResolver;
 use App\Services\Auth\TokenIssuer;
+use Illuminate\Database\DatabaseManager;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Socialite\Facades\Socialite;
 use Psr\Log\LoggerInterface;
@@ -21,6 +22,7 @@ use Throwable;
 final readonly class ProcessSocialLogin
 {
     public function __construct(
+        private DatabaseManager $db,
         private SocialUserResolver $resolver,
         private DeviceTrustService $deviceService,
         private TokenIssuer $tokenIssuer,
@@ -46,31 +48,35 @@ final readonly class ProcessSocialLogin
             throw new InvalidCredentialsException("Failed to validate token with {$command->provider->value}.");
         }
 
-        $user = $this->resolver->resolve(
-            profile: SocialProfile::fromSocialite($command->provider, $socialiteUser),
-            system: $command->system
-        );
+        return $this->db->transaction(
+            callback: function () use ($command, $socialiteUser): AuthenticationOutcome {
+                $user = $this->resolver->resolve(
+                    profile: SocialProfile::fromSocialite($command->provider, $socialiteUser),
+                    system: $command->system
+                );
 
-        if ($user->status !== UserStatus::ACTIVE) {
-            throw new InvalidCredentialsException('Account is inactive.');
-        }
+                if ($user->status !== UserStatus::ACTIVE) {
+                    throw new InvalidCredentialsException('Account is inactive.');
+                }
 
-        $this->deviceService->trustDevice(
-            user: $user,
-            deviceId: $command->deviceId
-        );
+                $this->deviceService->trustDevice(
+                    user: $user,
+                    deviceId: $command->deviceId
+                );
 
-        $user->loadMissing('roles');
+                $user->loadMissing('roles');
 
-        if ($user->wasRecentlyCreated) {
-            UserRegistered::dispatch($user, $command->system);
-        }
+                if ($user->wasRecentlyCreated) {
+                    UserRegistered::dispatch($user, $command->system);
+                }
 
-        UserLoggedIn::dispatch($user, $command->deviceId, $command->system);
+                UserLoggedIn::dispatch($user, $command->deviceId, $command->system);
 
-        return AuthenticationOutcome::authenticated(
-            token: $this->tokenIssuer->issueFullToken($user, $command->system),
-            deviceId: $command->deviceId
+                return AuthenticationOutcome::authenticated(
+                    token: $this->tokenIssuer->issueFullToken($user, $command->system),
+                    deviceId: $command->deviceId
+                );
+            }
         );
     }
 }
