@@ -35,6 +35,7 @@ it('dispatches suspicious session event when device is not trusted', function ()
 
     Event::assertDispatched(SuspiciousSessionDetected::class, function ($event) use ($user) {
         return $event->user->id === $user->id
-            && $event->metadata->userAgent === 'Test-Agent';
+            && $event->system === Systems::PMS
+            && $event->reason === 'untrusted_device_detected';
     });
 });

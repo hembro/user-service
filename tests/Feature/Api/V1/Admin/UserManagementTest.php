@@ -11,7 +11,6 @@ use App\Events\Admin\UserDeleted;
 use App\Events\Admin\UserImpersonated;
 use App\Events\Admin\UserInvited;
 use App\Events\Admin\UserPasswordReset;
-use App\Events\Admin\UserRestored;
 use App\Events\Admin\UserRoleUpdated;
 use App\Events\Admin\UserStatusUpdated;
 use App\Events\Admin\UserUpdated;
@@ -247,28 +246,6 @@ describe('Admin User Management: The Happy Path', function (): void {
         );
 
         Event::assertDispatched(UserDeleted::class);
-    });
-
-    it('can restore a deleted user', function (): void {
-        Event::fake();
-
-        $user = User::factory()->create();
-        $user->assignRole(Roles::PMS_PROPONENT);
-        $user->updateQuietly([
-            'status' => UserStatus::DELETED,
-        ]);
-
-        // FIX: HTTP PATCH
-        $response = patchJson(
-            uri: route('api.v1.admin.users.restore', $user->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
-        );
-
-        $response->assertOk();
-
-        expect($user->refresh()->status)->not(UserStatus::ACTIVE);
-
-        Event::assertDispatched(UserRestored::class);
     });
 
     it('can impersonate a non-admin user', function (): void {

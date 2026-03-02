@@ -18,7 +18,7 @@ final class UserIntegrationMapper
         return new Actor(
             id: (string) $user->id,
             type: ActorType::USER,
-            name: $user->profile->first_name ?? $user->email,
+            name: $user->profile?->first_name ?? $user->email,
             email: $user->email
         );
     }
@@ -27,10 +27,10 @@ final class UserIntegrationMapper
     {
         $attributes = new UserAttributes(
             email: $user->email,
-            name: $user->profile->first_name ?? $user->email,
+            name: $user->profile?->first_name ?? $user->email,
             status: $user->status,
-            mobileNumber: $user->profile->mobile_number,
-            avatarUrl: $user->profile->avatar_url
+            mobileNumber: $user->profile?->mobile_number,
+            avatarUrl: $user->profile?->avatarUrl
         );
 
         return new Target(
