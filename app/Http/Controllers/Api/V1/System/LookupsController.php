@@ -12,7 +12,6 @@ use App\Enums\Titles;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
-use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class LookupsController
 {
@@ -31,7 +30,6 @@ final class LookupsController
                 'titles' => Titles::options(),
                 'suffixes' => Suffix::options(),
                 'sexes' => Sex::options(),
-                'statuses' => UserStatus::options(),
                 'systems' => Systems::options(),
                 'roles' => $rolesBySystem,
             ];
