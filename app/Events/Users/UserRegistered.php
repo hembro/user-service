@@ -18,5 +18,6 @@ final class UserRegistered
         public readonly User $user,
         public readonly Systems $system,
         public readonly ?string $verificationUrl = null,
+        public readonly ?array $systemContext = [],
     ) {}
 }

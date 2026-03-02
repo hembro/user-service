@@ -19,21 +19,6 @@ final class UserObserver
         $this->clearUserListCache();
     }
 
-    public function deleted(User $user): void
-    {
-        $this->clearUserListCache();
-    }
-
-    public function restored(User $user): void
-    {
-        $this->clearUserListCache();
-    }
-
-    public function forceDeleted(User $user): void
-    {
-        $this->clearUserListCache();
-    }
-
     private function clearUserListCache(): void
     {
         Cache::tags(['users_index'])->flush();

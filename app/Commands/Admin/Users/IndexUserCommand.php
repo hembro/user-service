@@ -17,7 +17,7 @@ final readonly class IndexUserCommand
         public ?string $role,
         public ?string $status,
         public ?string $sort,
-        public ?string $trashed
+        public ?string $deleted
     ) {}
 
     public static function fromRequest(IndexRequest $request): self
@@ -30,21 +30,7 @@ final readonly class IndexUserCommand
             role: $request->query('role'),
             status: $request->query('status'),
             sort: $request->query('sort'),
-            trashed: $request->query('trashed'),
-        );
-    }
-
-    public static function fromArray(array $data): self
-    {
-        return new self(
-            system: Systems::from($data['system']),
-            page: $data['page'] ?? null,
-            perPage: $data['per_page'] ?? null,
-            search: $data['search'] ?? null,
-            role: $data['role'] ?? null,
-            status: $data['status'] ?? null,
-            sort: $data['sort'] ?? null,
-            trashed: $data['trashed'] ?? null
+            deleted: $request->query('deleted'),
         );
     }
 }

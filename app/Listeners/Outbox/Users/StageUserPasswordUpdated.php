@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Users;
 
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserPasswordUpdated;
-use App\Messages\Integration\USers\UserPasswordUpdatedMessage;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageUserPasswordUpdated
 {
@@ -19,9 +23,25 @@ final readonly class StageUserPasswordUpdated
     {
         $event->user->loadMissing('profile');
 
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
+
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::PASSWORD_CHANGED,
+                target: $target,
+            ),
+            metadata: $metadata
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::USER_PASSWORD_UPDATED,
-            message: UserPasswordUpdatedMessage::make($event->user, $event->system)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

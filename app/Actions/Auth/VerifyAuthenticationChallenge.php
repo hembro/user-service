@@ -40,15 +40,13 @@ final readonly class VerifyAuthenticationChallenge
         $challenge = CachedAuthChallenge::fromCache($cachedData);
 
         // Anti-Hijacking: Ensure the fingerprint hasn't changed.
-        if (! $this->challengeService->validFingerprint($challenge->fingerprint, $command->metadata)) {
+        if (! $this->challengeService->validFingerprint($challenge->fingerprint)) {
 
             $this->logger->alert(
                 'Session hijacking attempt detected during authentication challenge.',
                 [
                     'challenge_id' => $command->challengeId,
                     'expected_fingerprint' => $challenge->fingerprint,
-                    'actual_ip' => $command->metadata->ip,
-                    'actual_user_agent' => $command->metadata->userAgent,
                 ]
             );
 
@@ -82,9 +80,9 @@ final readonly class VerifyAuthenticationChallenge
         $outcome = $this->db->transaction(
             callback: function () use ($user, $challenge, $command): AuthenticationOutcome {
 
-                $this->deviceService->trustDevice($user, $challenge->deviceId, $command->metadata);
+                $this->deviceService->trustDevice($user, $challenge->deviceId);
 
-                UserLoggedIn::dispatch($user, $challenge->deviceId, $command->system, $command->metadata);
+                UserLoggedIn::dispatch($user, $challenge->deviceId, $command->system);
 
                 return AuthenticationOutcome::authenticated(
                     token: $this->tokenIssuer->issueFullToken($user, $challenge->system),

@@ -16,9 +16,8 @@ final class UserRoleUpdated
 
     public function __construct(
         public readonly User $targetUser,
+        public readonly array $changes,
         public readonly User $actor,
-        public readonly array $oldRoles,
-        public readonly array $newRoles,
         public readonly Systems $system
     ) {}
 }

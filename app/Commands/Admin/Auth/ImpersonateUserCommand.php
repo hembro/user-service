@@ -13,7 +13,8 @@ final readonly class ImpersonateUserCommand
     public function __construct(
         public User $targetUser,
         public User $actor,
-        public Systems $system
+        public Systems $system,
+        public ?string $reason
     ) {}
 
     public static function fromRequest(ImpersonateUserRequest $request, User $targetUser): self
@@ -21,7 +22,8 @@ final readonly class ImpersonateUserCommand
         return new self(
             targetUser: $targetUser,
             actor: $request->user(),
-            system: $request->attributes->get('system')
+            system: $request->attributes->get('system'),
+            reason: $request->validated('reason')
         );
     }
 }

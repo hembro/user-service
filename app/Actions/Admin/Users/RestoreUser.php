@@ -9,6 +9,7 @@ use App\Events\Admin\UserRestored;
 use App\Exceptions\Admin\UserRestoreCollisionException;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final readonly class RestoreUser
 {
@@ -21,7 +22,7 @@ final readonly class RestoreUser
         $this->db->transaction(
             callback: function () use ($command) {
 
-                if (! $command->targetUser->trashed()) {
+                if ($command->targetUser->status !== UserStatus::DELETED) {
                     return;
                 }
 
@@ -29,7 +30,6 @@ final readonly class RestoreUser
 
                 $emailAlreadyTaken = User::query()
                     ->where('email', $originalEmail)
-                    ->whereNull('deleted_at')
                     ->exists();
 
                 if ($emailAlreadyTaken) {

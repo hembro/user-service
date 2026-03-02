@@ -16,6 +16,7 @@ final class UserAvatarUpdated
 
     public function __construct(
         public readonly User $user,
+        public readonly ?string $oldAvatarUrl,
         public readonly Systems $system
     ) {}
 }

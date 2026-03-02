@@ -44,7 +44,7 @@ final readonly class UpdateUserCommand
             preferences: $data['preferences'] ?? [],
             targetUser: $targetUser,
             actor: $request->user(),
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 

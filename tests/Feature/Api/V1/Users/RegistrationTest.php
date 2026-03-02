@@ -6,13 +6,13 @@ namespace Tests\Feature\Api\V1\Users;
 
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 use function Pest\Laravel\assertDatabaseHas;
 use function Pest\Laravel\postJson;
@@ -126,7 +126,6 @@ describe('User Registration Feature: The Happy Path', function (): void {
     ]);
 
     it('prevents duplicate email registration', function (): void {
-        // Create an existing user (can be Soft Deleted, but unique rule checks deleted_at IS NULL)
         User::factory()->create(['email' => 'duplicate@example.com']);
 
         $payload = validRegistrationPayload(['email' => 'duplicate@example.com']);

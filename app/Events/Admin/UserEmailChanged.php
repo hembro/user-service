@@ -16,6 +16,7 @@ final class UserEmailChanged
 
     public function __construct(
         public readonly User $targetUser,
+        public readonly array $emailChanges,
         public readonly User $actor,
         public readonly Systems $system
     ) {}

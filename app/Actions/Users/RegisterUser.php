@@ -6,11 +6,11 @@ namespace App\Actions\Users;
 
 use App\Commands\Users\RegisterUserCommand;
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\Enums\UserStatus;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -41,13 +41,13 @@ final readonly class RegisterUser
 
                     $user->assignRole($command->system->defaultRole());
 
-                    $this->deviceService->trustDevice($user, $command->deviceId, $command->metadata);
+                    $this->deviceService->trustDevice($user, $command->deviceId);
 
                     $verificationUrl = $this->linkGenerator->generate($user);
 
                     $user->load(['profile', 'roles.permissions', 'permissions']);
 
-                    UserRegistered::dispatch($user, $command->system, $verificationUrl);
+                    UserRegistered::dispatch($user, $command->system, $verificationUrl, $command->systemContext);
 
                     return $user;
                 }

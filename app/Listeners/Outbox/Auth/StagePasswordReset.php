@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\PasswordReset;
-use App\Messages\Integration\Auth\PasswordResetMessage;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
 use App\Models\User;
-use App\Services\Outbox\OutboxPublisher;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StagePasswordReset
 {
@@ -22,9 +26,25 @@ final readonly class StagePasswordReset
             $event->user->loadMissing('profile');
         }
 
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
+
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::PASSWORD_RESET,
+                target: $target,
+            ),
+            metadata: $metadata
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::AUTH_PASSWORD_RESET,
-            message: PasswordResetMessage::make($event->user, $event->system)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

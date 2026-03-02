@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\DTOs\Shared\RequestMetadata;
 use App\Events\Auth\SuspiciousSessionDetected;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Database\DatabaseManager;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -17,7 +15,6 @@ final readonly class EnsureDeviceIsTrusted
 {
     public function __construct(
         private DeviceTrustVerifier $deviceService,
-        private DatabaseManager $db
     ) {}
 
     public function handle(Request $request, Closure $next): Response
@@ -34,17 +31,11 @@ final readonly class EnsureDeviceIsTrusted
             throw new AuthenticationException('Device identifier is missing. Please login again.');
         }
 
-        $metadata = RequestMetadata::fromRequest($request);
-
-        if (! $this->deviceService->isTrusted($user, $deviceId, $metadata)) {
+        if (! $this->deviceService->isTrusted($user, $deviceId)) {
 
             $system = $request->attributes->get('system');
 
-            $this->db->transaction(
-                callback: function () use ($user, $system, $metadata): void {
-                    SuspiciousSessionDetected::dispatch($user, $system, $metadata);
-                }
-            );
+            SuspiciousSessionDetected::dispatch($user, 'untrusted_device_detected', $system);
 
             throw new AuthenticationException('Device context mismatch. Please login again.');
         }

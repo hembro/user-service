@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Auth;
 
-use App\Enums\UserStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class ForgotPasswordRequest extends FormRequest
 {

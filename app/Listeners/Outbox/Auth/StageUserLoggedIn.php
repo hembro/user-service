@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\UserLoggedIn;
-use App\Messages\Integration\Auth\UserLoggedInMessage;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageUserLoggedIn
 {
@@ -17,9 +21,27 @@ final readonly class StageUserLoggedIn
 
     public function handle(UserLoggedIn $event): void
     {
+        $event->user->loadMissing('profile');
+
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
+
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::LOGIN_SUCCESS,
+                target: $target
+            ),
+            metadata: $metadata
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::AUTH_USER_LOGGED_IN,
-            message: UserLoggedInMessage::make($event->user, $event->deviceId, $event->system, $event->metadata)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

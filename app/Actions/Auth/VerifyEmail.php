@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Commands\Auth\VerifyEmailCommand;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserVerified;
 use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class VerifyEmail
@@ -21,7 +21,9 @@ final readonly class VerifyEmail
 
     public function handle(VerifyEmailCommand $command): void
     {
-        $user = User::query()->findOrFail($command->id);
+        $user = User::query()
+            ->with('profile')
+            ->findOrFail($command->id);
 
         if (! hash_equals($command->hash, sha1($user->getEmailForVerification()))) {
 

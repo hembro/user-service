@@ -10,14 +10,15 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "laravel/framework": "^12.52.0",
-        "laravel/passport": "^13.4.4",
-        "laravel/socialite": "^5.24.2",
+        "jeremyaliparo/service-integration-core": "^1.2.2",
+        "jeremyaliparo/service-integration-schemas": "^1.6.0",
+        "laravel/framework": "^12.53.0",
+        "laravel/passport": "^13.5.0",
+        "laravel/socialite": "^5.24.3",
         "laravel/tinker": "^2.11.1",
         "nyholm/psr7": "^1.8.2",
         "pragmarx/google2fa": "^9.0",
-        "spatie/laravel-permission": "^6.24.1",
-        "vladimir-yuldashev/laravel-queue-rabbitmq": "^14.4"
+        "spatie/laravel-permission": "^6.24.1"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.6.1",
@@ -95,5 +96,19 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/jeremyaliparo/service-integration-core"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/jeremyaliparo/service-integration-schemas"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/jeremyaliparo/service-integration-contracts"
+        }
+    ]
 }

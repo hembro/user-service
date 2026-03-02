@@ -26,7 +26,7 @@ final readonly class ResetPasswordCommand
             email: $data['email'],
             token: $data['token'],
             password: $data['password'],
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 }

@@ -23,7 +23,7 @@ final readonly class UpdatePasswordCommand
         return new self(
             user: $request->user(),
             newPassword: $request->validated('password'),
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 }

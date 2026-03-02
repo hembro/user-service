@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Admin\Users;
 
 use App\Commands\Admin\Users\UpdateUserStatusCommand;
-use App\Enums\UserStatus;
 use App\Events\Admin\UserStatusUpdated;
 use App\Services\Auth\SystemTokenRevoker;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final readonly class UpdateUserStatus
 {
@@ -34,7 +34,7 @@ final readonly class UpdateUserStatus
                     $this->tokenRevoker->revoke($command->targetUser, $command->system);
                 }
 
-                UserStatusUpdated::dispatch($command->targetUser, $command->actor, $oldStatus, $command->status, $command->system);
+                UserStatusUpdated::dispatch($command->targetUser, $oldStatus, $command->actor, $command->system);
             }
         );
     }

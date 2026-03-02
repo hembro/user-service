@@ -25,7 +25,7 @@ final readonly class ResetPasswordCommand
             password: $request->validated('password'),
             targetUser: $targetUser,
             actor: $request->user(),
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 }

@@ -120,7 +120,15 @@ return [
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
     'verification' => [
-        'expire' => env('AUTH_VERIFICATION_EXPIRE', 60),
+        'expire' => env('AUTH_VERIFICATION_EXPIRE_MINUTES', 60),
+    ],
+
+    'otp' => [
+        'expire' => env('AUTH_OTP_EXPIRE_MINUTES', 10),
+    ],
+
+    'totp' => [
+        'expire' => env('AUTH_TOTP_EXPIRE_SECONDS', 60),
     ],
 
 ];

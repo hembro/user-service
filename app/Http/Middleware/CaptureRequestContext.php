@@ -16,19 +16,19 @@ final class CaptureRequestContext
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $traceId = $request->header('X-Trace-ID', (string) Str::ulid());
+        $traceId = $request->header('X-Trace-ID') ?? (string) Str::ulid(); // Api Gateway should set this
+        $systemString = $request->header('X-Source-System');
 
-        $systemValue = $request->header('X-Source-System');
-        $systemString = is_array($systemValue) ? $systemValue[0] : $systemValue;
-
-        if (blank($systemString) || ! $system = Systems::tryFrom((string) $systemString)) {
+        if (blank($systemString) || ! $system = Systems::tryFrom($systemString)) {
             throw new InvalidSystemHeaderException('Invalid system header');
         }
 
         Context::add([
             'trace_id' => $traceId,
             'source_system' => $system->value,
-            'user_ip' => $request->ip(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'client_type' => $request->header('X-Client-Type', 'unknown'),
         ]);
 
         $request->attributes->set('system', $system);

@@ -90,62 +90,6 @@ return [
                 'deferred',
             ],
         ],
-
-        'rabbitmq_events' => [
-            'driver' => 'rabbitmq',
-            'queue' => env('RABBITMQ_QUEUE', 'service_name_integration_events'),
-            'connection' => 'default',
-            'hosts' => [
-                [
-                    'host' => env('RABBITMQ_HOST', '127.0.0.1'),
-                    'port' => (int) env('RABBITMQ_PORT', 5672),
-                    'user' => env('RABBITMQ_USER', 'guest'),
-                    'password' => env('RABBITMQ_PASSWORD', 'guest'),
-                    'vhost' => env('RABBITMQ_VHOST', '/'),
-                ],
-            ],
-            'options' => [
-                'ssl_options' => [
-                    'cafile' => env('RABBITMQ_SSL_CAFILE', null),
-                    'local_cert' => env('RABBITMQ_SSL_LOCAL_CERT', null),
-                    'local_pk' => env('RABBITMQ_SSL_LOCAL_KEY', null),
-                    'verify_peer' => (bool) env('RABBITMQ_SSL_VERIFY_PEER', true),
-                    'passphrase' => env('RABBITMQ_SSL_PASSPHRASE', null),
-                ],
-
-                // 1. DATA SAFETY: Wait for RabbitMQ to say "I got it"
-                // If the broker fails to ack, the driver throws an exception,
-                // allowing your Outbox Pattern to retry later.
-                'publish_confirms' => true,
-
-                // 2. STABILITY: Prevent "Zombie Consumers"
-                // Sends a heartbeat signal every 60s.
-                // The read/write timeout must be 2x the heartbeat.
-                'heartbeat' => 60,
-                'timeout' => 120,
-
-                'queue' => [
-                    'job' => VladimirYuldashev\LaravelQueueRabbitMQ\Queue\Jobs\RabbitMQJob::class,
-                ],
-                'exchange' => [
-                    'name' => env('RABBITMQ_EXCHANGE_NAME', 'microservices.topic'),
-                    'type' => 'topic',
-                    'durable' => true,
-                ],
-            ],
-
-            /**
-             * Worker Options (Scalability)
-             */
-            'worker' => 'default',
-            'after_commit' => false,
-
-            // 3. SCALABILITY: Process messages in batches
-            // If you consume from this connection, grab 20 messages at once
-            // instead of asking for 1, acking 1, asking for 1...
-            'prefetch_count' => 20,
-        ],
-
     ],
 
     /*

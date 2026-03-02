@@ -20,6 +20,8 @@ final readonly class UpdateAvatar
         $this->db->transaction(
             callback: function () use ($command) {
 
+                $oldAvatarUrl = $command->user->profile?->avatarUrl;
+
                 $profile = $command->user->profile;
 
                 if ($profile->avatar_path && Storage::disk('public')->exists($profile->avatar_path)) {
@@ -35,7 +37,7 @@ final readonly class UpdateAvatar
                     'avatar_path' => $path,
                 ]);
 
-                UserAvatarUpdated::dispatch($command->user, $command->system);
+                UserAvatarUpdated::dispatch($command->user, $oldAvatarUrl, $command->system);
             }
         );
     }

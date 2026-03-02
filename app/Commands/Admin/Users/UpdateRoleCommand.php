@@ -29,7 +29,7 @@ final readonly class UpdateRoleCommand
                 fn (string $role) => Roles::from($role),
                 $data['roles']
             ),
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 }

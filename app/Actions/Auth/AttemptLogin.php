@@ -9,7 +9,6 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\DTOs\Auth\AuthenticationOutcome;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Models\User;
@@ -17,6 +16,7 @@ use App\Services\Auth\ChallengeService;
 use App\Services\Auth\TokenIssuer;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class AttemptLogin
@@ -32,7 +32,7 @@ final readonly class AttemptLogin
     public function handle(LoginCommand $command): AuthenticationOutcome
     {
         $user = User::query()
-            ->with('roles')
+            ->with(['profile', 'roles'])
             ->where('email', $command->email)
             ->first();
 
@@ -43,11 +43,11 @@ final readonly class AttemptLogin
         return $this->db->transaction(
             callback: function () use ($user, $command): AuthenticationOutcome {
 
-                if ($this->deviceService->isTrusted($user, $command->deviceId, $command->metadata)) {
+                if ($this->deviceService->isTrusted($user, $command->deviceId)) {
 
                     $user->touchLastLoginAt();
 
-                    UserLoggedIn::dispatch($user, $command->deviceId, $command->system, $command->metadata);
+                    UserLoggedIn::dispatch($user, $command->deviceId, $command->system);
 
                     return AuthenticationOutcome::authenticated(
                         token: $this->tokenIssuer->issueFullToken($user, $command->system),
@@ -59,7 +59,7 @@ final readonly class AttemptLogin
                     ? ChallengeType::TWO_FACTOR
                     : ChallengeType::DEVICE_VERIFICATION;
 
-                return $this->challengeService->initiateChallenge($user, $challengeType, $command->deviceId, $command->system, $command->metadata);
+                return $this->challengeService->initiateChallenge($user, $challengeType, $command->deviceId, $command->system);
             }
         );
     }
@@ -78,7 +78,6 @@ final readonly class AttemptLogin
                 'Failed login attempt: Invalid credentials.',
                 [
                     'email' => $command->email,
-                    'ip_address' => $command->metadata->ip,
                     'reason' => ! $user ? 'user_not_found' : 'invalid_password',
                 ]
             );
@@ -97,7 +96,7 @@ final readonly class AttemptLogin
         };
 
         if ($message !== null) {
-            $this->logger->notice("Login blocked: Account {$user->status->label()}.", ['user_id' => $user->id]);
+            $this->logger->notice("Login blocked: Account {$user->status->value}.", ['user_id' => $user->id]);
             throw new InvalidCredentialsException($message);
         }
     }

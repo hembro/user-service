@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Admin;
 
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Admin\UserDeleted;
-use App\Messages\Integration\Admin\UserDeletedMessage;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\Users\UserDeletedEvent;
 
 final readonly class StageUserDeleted
 {
@@ -19,9 +22,25 @@ final readonly class StageUserDeleted
     {
         $event->actor->loadMissing('profile');
 
+        $routingKey = UserRoutingKey::USER_DELETED;
+
+        $actor = UserIntegrationMapper::toActor($event->actor);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new UserDeletedEvent(
+                actor: $actor,
+                userId: $event->userId,
+                occurredAt: now()->toIso8601String(),
+                reason: 'admin requested deletion'
+            ),
+            metadata: $metadata
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::USER_DELETED,
-            message: UserDeletedMessage::make($event->userId, $event->actor, $event->system)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\System;
 
+use App\Enums\Permissions;
 use App\Enums\Roles;
 use App\Enums\Sex;
+use App\Enums\SocialProviders;
 use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Enums\Titles;
-use App\Enums\UserStatus;
 use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class LookupsController
 {
@@ -24,16 +27,31 @@ final class LookupsController
 
             $rolesBySystem = [];
             foreach (Systems::cases() as $system) {
-                $rolesBySystem[$system->value] = Roles::forSystem($system, true);
+                $systemRoles = Roles::forSystem($system, false);
+
+                $rolesBySystem[$system->value] = array_map(fn (Roles $role) => [
+                    'label' => $role->description() ?? $role->name,
+                    'value' => $role->value,
+                ], $systemRoles);
             }
 
             return [
+                // Demographics
                 'titles' => Titles::options(),
                 'suffixes' => Suffix::options(),
                 'sexes' => Sex::options(),
-                'statuses' => UserStatus::options(),
+
+                // System & Access
                 'systems' => Systems::options(),
                 'roles' => $rolesBySystem,
+                'permissions' => Permissions::options(),
+
+                // State & Auth
+                'social_providers' => SocialProviders::options(),
+                'user_statuses' => collect(UserStatus::cases())->map(fn (UserStatus $status) => [
+                    'label' => Str::headline($status->value),
+                    'value' => $status->value,
+                ]),
             ];
         });
 

@@ -18,7 +18,7 @@ final class StoreRequest extends AdminBaseRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'min:3', 'max:255', 'email:rfc',  Rule::unique('users')->whereNull('deleted_at')],
+            'email' => ['required', 'min:3', 'max:255', 'email:rfc', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'title' => ['nullable', 'string', Rule::enum(Titles::class)],
             'first_name' => ['required', 'string', 'min:2', 'max:100'],
@@ -34,6 +34,8 @@ final class StoreRequest extends AdminBaseRequest
                 Rule::enum(Roles::class),
                 new EnsureRoleBelongsToSystem($this->attributes->get('system')),
             ],
+            'reason' => ['nullable', 'string'],
+            'system_context' => ['nullable', 'array'],
         ];
     }
 }

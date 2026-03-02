@@ -29,7 +29,9 @@ final readonly class CreateUserCommand
         public array $preferences,
         public array $roles,
         public User $actor,
-        public Systems $system
+        public ?string $reason,
+        public ?array $systemContext,
+        public Systems $system,
     ) {}
 
     public static function fromRequest(StoreRequest $request): self
@@ -52,7 +54,9 @@ final readonly class CreateUserCommand
                 $data['roles']
             ),
             actor: $request->user(),
-            system: $request->attributes->get('system'),
+            reason: $data['reason'] ?? null,
+            systemContext: $data['system_context'] ?? [],
+            system: $request->attributes->get('system')
         );
     }
 

@@ -8,7 +8,6 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Roles;
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Auth\UserLoggedOut;
 use App\Models\User;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 
 use function Pest\Laravel\call;

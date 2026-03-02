@@ -17,17 +17,16 @@ final readonly class InitiateEmailChange
 
     public function handle(InitiateEmailChangeCommand $command): void
     {
+        $token = Str::random(64);
+
         $this->db->transaction(
-            callback: function () use ($command) {
-
-                $token = Str::random(64);
-
+            callback: function () use ($command, $token): void {
                 $command->user->update([
                     'pending_email' => $command->email,
                     'pending_email_token' => $token,
                 ]);
 
-                UserEmailChangeRequested::dispatch($command->user, $token, $command->email, $command->system, $command->metadata);
+                UserEmailChangeRequested::dispatch($command->user, $token, $command->email, $command->system);
             }
         );
     }

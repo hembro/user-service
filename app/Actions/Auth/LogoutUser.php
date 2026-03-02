@@ -29,7 +29,7 @@ final readonly class LogoutUser
                 $accessToken->revoke();
                 $accessToken->refreshToken?->revoke();
 
-                UserLoggedOut::dispatch($command->user, $command->system, $command->metadata);
+                UserLoggedOut::dispatch($command->user, $command->system);
             }
         );
     }

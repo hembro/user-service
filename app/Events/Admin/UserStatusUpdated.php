@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Events\Admin;
 
 use App\Enums\Systems;
-use App\Enums\UserStatus;
 use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UserStatusUpdated
 {
@@ -17,9 +17,8 @@ final class UserStatusUpdated
 
     public function __construct(
         public readonly User $targetUser,
-        public readonly User $actor,
         public readonly UserStatus $oldStatus,
-        public readonly UserStatus $newStatus,
+        public readonly User $actor,
         public readonly Systems $system
     ) {}
 }

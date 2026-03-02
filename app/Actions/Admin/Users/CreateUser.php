@@ -6,10 +6,10 @@ namespace App\Actions\Admin\Users;
 
 use App\Commands\Admin\Users\CreateUserCommand;
 use App\Enums\Roles;
-use App\Enums\UserStatus;
 use App\Events\Admin\UserInvited;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
@@ -41,7 +41,7 @@ final readonly class CreateUser
 
                     $user->assignRole($command->roles);
 
-                    UserInvited::dispatch($user, $command->actor, $command->system);
+                    UserInvited::dispatch($user, $command->actor, $command->reason, $command->systemContext, $command->system);
 
                     return $user->load(['profile', 'roles', 'permissions']);
                 }

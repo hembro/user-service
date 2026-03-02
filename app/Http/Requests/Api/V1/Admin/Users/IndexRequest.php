@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Users;
 
-use App\Enums\UserStatus;
 use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 use Illuminate\Validation\Rule;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class IndexRequest extends AdminBaseRequest
 {
@@ -19,7 +19,7 @@ final class IndexRequest extends AdminBaseRequest
             'role' => ['nullable', 'string', 'max:50'],
             'status' => ['nullable', 'string', Rule::enum(UserStatus::class)],
             'sort' => ['nullable', 'string', 'in:created_at,-created_at,full_name,-full_name'],
-            'trashed' => ['nullable', 'string', 'in:with,only,without'],
+            'deleted' => ['nullable', 'string', 'in:with,only'],
         ];
     }
 }

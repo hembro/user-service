@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Users;
 
-use App\Enums\UserStatus;
 use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 use Illuminate\Validation\Rule;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UpdateStatusRequest extends AdminBaseRequest
 {

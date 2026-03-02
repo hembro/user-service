@@ -22,7 +22,7 @@ final readonly class UpdateAvatarCommand
         return new self(
             user: $user,
             file: $request->file('avatar'),
-            system: $request->attributes->get('system'),
+            system: $request->attributes->get('system')
         );
     }
 }

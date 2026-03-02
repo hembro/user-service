@@ -16,7 +16,7 @@ final class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'min:3', 'max:255', 'email:rfc',  Rule::unique('users')->whereNull('deleted_at')],
+            'email' => ['required', 'min:3', 'max:255', 'email:rfc', 'unique:users,email'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'title' => ['nullable', 'string', Rule::enum(Titles::class)],
             'first_name' => ['required', 'string', 'min:2', 'max:100'],
@@ -29,6 +29,8 @@ final class RegisterRequest extends FormRequest
             'preferences' => ['nullable', 'array'],
             'preferences.theme' => ['nullable', 'string', Rule::in(['light', 'dark', 'system'])],
             'preferences.notifications_enabled' => ['nullable', 'boolean'],
+
+            'system_context' => ['nullable', 'array'],
         ];
     }
 }

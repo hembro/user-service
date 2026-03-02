@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Enums\UserStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UserFactory extends Factory
 {

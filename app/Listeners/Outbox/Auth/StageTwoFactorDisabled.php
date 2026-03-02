@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\TwoFactorDisabled;
-use App\Messages\Integration\Auth\TwoFactorDisabledMessage;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageTwoFactorDisabled
 {
@@ -19,9 +23,25 @@ final readonly class StageTwoFactorDisabled
     {
         $event->user->loadMissing('profile');
 
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
+
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::TWO_FACTOR_DISABLED,
+                target: $target
+            ),
+            metadata: $metadata
+        );
+
         $this->outbox->publish(
-            routingKey: RoutingKey::AUTH_TWO_FACTOR_DISABLED,
-            message: TwoFactorDisabledMessage::make($event->user, $event->system, $event->metadata)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }
