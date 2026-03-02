@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UserStatusUpdated
 {

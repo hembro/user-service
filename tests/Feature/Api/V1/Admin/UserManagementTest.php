@@ -21,12 +21,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 
 use function Pest\Laravel\assertDatabaseHas;
-use function Pest\Laravel\assertSoftDeleted;
 use function Pest\Laravel\deleteJson;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\patchJson;
@@ -228,7 +227,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         Event::assertDispatched(UserPasswordReset::class);
     });
 
-    it('can soft delete a user', function (): void {
+    it('can delete a user', function (): void {
         Event::fake();
 
         $user = User::factory()->create();
@@ -242,17 +241,22 @@ describe('Admin User Management: The Happy Path', function (): void {
 
         $response->assertNoContent();
 
-        assertSoftDeleted('users', ['id' => $user->id]);
+        assertDatabaseHas(
+            'users',
+            ['id' => $user->id, 'status' => UserStatus::DELETED->value]
+        );
 
         Event::assertDispatched(UserDeleted::class);
     });
 
-    it('can restore a soft deleted user', function (): void {
+    it('can restore a deleted user', function (): void {
         Event::fake();
 
         $user = User::factory()->create();
         $user->assignRole(Roles::PMS_PROPONENT);
-        $user->delete();
+        $user->updateQuietly([
+            'status' => UserStatus::DELETED,
+        ]);
 
         // FIX: HTTP PATCH
         $response = patchJson(
@@ -262,7 +266,7 @@ describe('Admin User Management: The Happy Path', function (): void {
 
         $response->assertOk();
 
-        expect($user->refresh()->trashed())->toBeFalse();
+        expect($user->refresh()->status)->not(UserStatus::ACTIVE);
 
         Event::assertDispatched(UserRestored::class);
     });

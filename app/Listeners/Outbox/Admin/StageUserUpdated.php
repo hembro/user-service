@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Admin;
 
-use App\DTOs\Messages\Actor;
-use App\DTOs\Messages\Target;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\ResourceType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Admin\UserUpdated;
-use App\Messages\Integration\Shared\EntityUpdatedMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\Users\UserProfileUpdatedEvent;
 
 final readonly class StageUserUpdated
 {
@@ -23,31 +21,28 @@ final readonly class StageUserUpdated
     public function handle(UserUpdated $event): void
     {
         $event->actor->loadMissing('profile');
+        $event->targetUser->loadMissing('profile');
 
-        $routingKey = RoutingKey::USER_UPDATED;
+        $routingKey = UserRoutingKey::USER_PROFILE_UPDATED;
 
-        $actor = new Actor(
-            id: (string) $event->actor->id,
-            type: ActorType::USER,
-            name: $event->actor->profile?->first_name ?? $event->actor->email,
-            email: $event->actor->email
+        $actor = UserIntegrationMapper::toActor($event->actor);
+        $target = UserIntegrationMapper::toTarget($event->targetUser);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new UserProfileUpdatedEvent(
+                actor: $actor,
+                target: $target,
+                changes: $event->changes,
+                occurredAt: $event->targetUser->updated_at->toIso8601String(),
+            ),
+            metadata: $metadata
         );
-
-        $target = new Target(
-            id: (string) $event->targetUser->id,
-            type: ResourceType::USER,
-            attributes: [
-                'name' => $event->targetUser->profile?->first_name ?? $event->targetUser->email,
-                'email' => $event->targetUser->email,
-            ],
-            changes: $event->changes
-        );
-
-        $meta = MessageMeta::generate($event->system, $event->metadata);
 
         $this->outbox->publish(
-            routingKey: $routingKey,
-            message: EntityUpdatedMessage::make($routingKey, $actor, $target, $meta)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

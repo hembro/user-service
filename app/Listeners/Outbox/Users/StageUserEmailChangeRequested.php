@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Users;
 
-use App\DTOs\Messages\ActionRequestData;
-use App\DTOs\Messages\Actor;
-use App\DTOs\Messages\Target;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\RequestType;
-use App\Enums\Infrastructure\ResourceType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Users\UserEmailChangeRequested;
-use App\Messages\Integration\Shared\ActionRequestedMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
 use Illuminate\Support\Facades\Config;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Commons\ActionRequest;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionRequestType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionRequestedEvent;
 
 final readonly class StageUserEmailChangeRequested
 {
@@ -27,43 +25,31 @@ final readonly class StageUserEmailChangeRequested
     {
         $event->user->loadMissing('profile');
 
-        $routingKey = RoutingKey::USER_EMAIL_CHANGE_REQUESTED;
+        $routingKey = UserRoutingKey::ACTION_REQUESTED;
 
-        $actor = new Actor(
-            id: (string) $event->user->id,
-            type: ActorType::USER,
-            name: $event->user->profile?->first_name ?? 'Unknown',
-            email: $event->user->email
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionRequestedEvent(
+                actor: $actor,
+                target: $target,
+                action: new ActionRequest(
+                    type: UserActionRequestType::EMAIL_CHANGE,
+                    token: $event->token,
+                    expiresAt: now()
+                        ->addMinutes((int) Config::get('auth.verification.expire', 10))
+                        ->toIso8601String()
+                )
+            ),
+            metadata: $metadata
         );
-
-        $target = new Target(
-            id: (string) $event->user->id,
-            type: ResourceType::USER,
-            attributes: [
-                'name' => $event->user->profile?->first_name ?? 'Unknown',
-                'email' => $event->user->email,
-            ],
-            changes: [
-                'email' => [
-                    'old' => $event->user->email,
-                    'new' => $event->newEmail,
-                ],
-            ]
-        );
-
-        $actionRequest = new ActionRequestData(
-            type: RequestType::EMAIL_CHANGE_REQUEST,
-            token: $event->token,
-            expiresAt: now()
-                ->addMinutes((int) Config::get('auth.verification.expire', 60))
-                ->toIso8601String()
-        );
-
-        $meta = MessageMeta::generate($event->system, $event->metadata);
 
         $this->outbox->publish(
-            routingKey: $routingKey,
-            message: ActionRequestedMessage::make($routingKey, $actor, $target, $actionRequest, $meta)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

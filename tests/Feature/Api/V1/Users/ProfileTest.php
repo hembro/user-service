@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Passport;
 
 use function Pest\Laravel\assertDatabaseHas;

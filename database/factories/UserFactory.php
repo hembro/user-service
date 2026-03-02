@@ -6,7 +6,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UserFactory extends Factory
 {

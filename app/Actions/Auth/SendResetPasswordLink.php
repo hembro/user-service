@@ -26,7 +26,7 @@ final readonly class SendResetPasswordLink
         $this->db->transaction(
             callback: function () use ($user, $command): void {
                 $token = Password::createToken($user);
-                PasswordResetRequested::dispatch($user, $token, $command->system, $command->metadata);
+                PasswordResetRequested::dispatch($user, $token, $command->system);
             }
         );
     }

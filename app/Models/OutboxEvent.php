@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Infrastructure\OutboxStatus;
-use App\Enums\Infrastructure\RoutingKey;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Prunable;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
 
 /**
  * @property-read string $id
@@ -34,7 +34,7 @@ final class OutboxEvent extends Model
     ];
 
     protected $casts = [
-        'event_type' => RoutingKey::class,
+        'event_type' => UserRoutingKey::class,
         'payload' => 'array',
         'status' => OutboxStatus::class,
     ];

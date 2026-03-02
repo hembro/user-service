@@ -16,8 +16,6 @@ final class UserDeleted
 
     public function __construct(
         public readonly string $userId,
-        public readonly string $userName,
-        public readonly string $userEmail,
         public readonly User $actor,
         public readonly Systems $system
     ) {}

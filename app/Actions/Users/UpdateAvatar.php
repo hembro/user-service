@@ -20,7 +20,7 @@ final readonly class UpdateAvatar
         $this->db->transaction(
             callback: function () use ($command) {
 
-                $oldAvatarPath = $command->user->profile?->avatarUrl;
+                $oldAvatarUrl = $command->user->profile?->avatarUrl;
 
                 $profile = $command->user->profile;
 
@@ -37,12 +37,7 @@ final readonly class UpdateAvatar
                     'avatar_path' => $path,
                 ]);
 
-                $changes = [
-                    'old' => $oldAvatarPath,
-                    'new' => $profile->avatarUrl,
-                ];
-
-                UserAvatarUpdated::dispatch($command->user, $changes, $command->system, $command->metadata);
+                UserAvatarUpdated::dispatch($command->user, $oldAvatarUrl, $command->system);
             }
         );
     }

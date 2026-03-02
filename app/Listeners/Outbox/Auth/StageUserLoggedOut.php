@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
-use App\DTOs\Messages\Actor;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\UserLoggedOut;
-use App\Messages\Integration\Shared\ActionOccurredMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageUserLoggedOut
 {
@@ -20,20 +21,27 @@ final readonly class StageUserLoggedOut
 
     public function handle(UserLoggedOut $event): void
     {
-        $routingKey = RoutingKey::AUTH_LOGGED_OUT;
+        $event->user->loadMissing('profile');
 
-        $actor = new Actor(
-            id: (string) $event->user->id,
-            type: ActorType::USER,
-            name: $event->user->profile?->first_name ?? $event->user->email,
-            email: $event->user->email
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
+
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::LOGOUT,
+                target: $target,
+            ),
+            metadata: $metadata
         );
 
-        $meta = MessageMeta::generate($event->system, $event->metadata);
-
         $this->outbox->publish(
-            routingKey: $routingKey,
-            message: ActionOccurredMessage::make($routingKey, $actor, $meta)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

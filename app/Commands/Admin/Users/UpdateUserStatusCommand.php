@@ -7,7 +7,7 @@ namespace App\Commands\Admin\Users;
 use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateStatusRequest;
 use App\Models\User;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final readonly class UpdateUserStatusCommand
 {

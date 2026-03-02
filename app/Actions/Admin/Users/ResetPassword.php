@@ -23,7 +23,7 @@ final readonly class ResetPassword
 
                 $command->targetUser->tokens()->delete();
 
-                UserPasswordReset::dispatch($command->targetUser, $command->actor, $command->system, $command->metadata);
+                UserPasswordReset::dispatch($command->targetUser, $command->actor, $command->system);
             }
         );
     }

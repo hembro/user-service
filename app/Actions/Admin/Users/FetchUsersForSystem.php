@@ -44,14 +44,16 @@ final readonly class FetchUsersForSystem
                 new Users\FilterBySearch($command->search),
                 new Users\FilterByRole($command->role),
                 new Users\FilterByStatus($command->status),
+                new Users\FilterByDeletedState($command->deleted),
                 new Users\Sort($command->sort),
-                new Users\FilterByTrashed($command->trashed),
             ])
             ->thenReturn();
     }
 
     private function hasActiveFilters(IndexUserCommand $command): bool
     {
-        return ! empty($command->search) || ! empty($command->role) || ! empty($command->status) || ! empty($command->sort) || ! empty($command->trashed);
+        $hasDeletedFilter = in_array($command->deleted, ['with', 'only'], true);
+
+        return ! empty($command->search) || ! empty($command->role) || ! empty($command->status) || ! empty($command->sort) || $hasDeletedFilter;
     }
 }

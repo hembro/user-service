@@ -9,7 +9,7 @@ use App\Events\Auth\UserVerified;
 use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class VerifyEmail
@@ -51,7 +51,7 @@ final readonly class VerifyEmail
 
                 $user->update(['status' => UserStatus::ACTIVE]);
 
-                UserVerified::dispatch($user, $command->system, $command->metadata);
+                UserVerified::dispatch($user, $command->system);
             }
         );
     }

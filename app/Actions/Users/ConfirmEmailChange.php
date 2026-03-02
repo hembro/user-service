@@ -49,7 +49,7 @@ final readonly class ConfirmEmailChange
                     'pending_email_token' => null,
                 ]);
 
-                UserEmailChanged::dispatch($command->user, $oldEmail, $command->system, $command->metadata);
+                UserEmailChanged::dispatch($command->user, $oldEmail, $command->system);
             }
         );
     }

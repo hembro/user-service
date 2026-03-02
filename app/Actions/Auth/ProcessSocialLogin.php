@@ -13,7 +13,7 @@ use App\Exceptions\Auth\InvalidCredentialsException;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\Auth\SocialUserResolver;
 use App\Services\Auth\TokenIssuer;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Socialite\Facades\Socialite;
 use Psr\Log\LoggerInterface;
 use Throwable;

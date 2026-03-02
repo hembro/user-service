@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Mappers\Integration;
 
 use App\Models\User;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Context;
-use jeremyaliparo\IntegrationContracts\DTOs\Metadata;
 use jeremyaliparo\IntegrationSchemas\Attributes\UserAttributes;
 use jeremyaliparo\IntegrationSchemas\Commons\Actor;
 use jeremyaliparo\IntegrationSchemas\Commons\Target;
-use jeremyaliparo\IntegrationSchemas\Enums\ActorType;
-use jeremyaliparo\IntegrationSchemas\Enums\ResourceType;
+use jeremyaliparo\IntegrationSchemas\Enums\Commons\ActorType;
+use jeremyaliparo\IntegrationSchemas\Enums\Commons\ResourceType;
 
 final class UserIntegrationMapper
 {
@@ -40,19 +37,6 @@ final class UserIntegrationMapper
             id: (string) $user->id,
             type: ResourceType::USER,
             attributes: $attributes
-        );
-    }
-
-    public static function extractMetadata(string $sourceSystem): Metadata
-    {
-        return new Metadata(
-            sourceSystem: $sourceSystem,
-            sourceService: (string) Config::get('app.name', 'user-service'),
-            timestamp: now()->toIso8601String(),
-            traceId: (string) Context::get('trace_id', 'unknown-trace-id'),
-            ipAddress: Context::get('ip_address'),
-            userAgent: Context::get('user_agent'),
-            clientType: Context::get('client_type'),
         );
     }
 }

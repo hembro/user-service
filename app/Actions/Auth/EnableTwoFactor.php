@@ -35,7 +35,7 @@ final readonly class EnableTwoFactor
                     'two_factor_confirmed_at' => null,
                 ])->save();
 
-                EnableTwoFactorRequested::dispatch($command->user, $command->system, $command->metadata);
+                EnableTwoFactorRequested::dispatch($command->user, $command->system);
             }
         );
 

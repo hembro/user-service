@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Auth;
 
-use App\DTOs\Messages\Actor;
-use App\DTOs\Messages\Target;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\ResourceType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\UserVerified;
-use App\Messages\Integration\Shared\EntityUpdatedMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageUserVerified
 {
@@ -24,35 +23,25 @@ final readonly class StageUserVerified
     {
         $event->user->loadMissing('profile');
 
-        $routingKey = RoutingKey::AUTH_USER_VERIFIED;
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
 
-        $actor = new Actor(
-            id: (string) $event->user->id,
-            type: ActorType::USER,
-            name: $event->user->profile?->first_name ?? $event->user->email,
-            email: $event->user->email
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::USER_VERIFIED,
+                target: $target,
+            ),
+            metadata: $metadata
         );
-
-        $target = new Target(
-            id: (string) $event->user->id,
-            type: ResourceType::USER,
-            attributes: [
-                'name' => $event->user->profile?->first_name ?? $event->user->email,
-                'email' => $event->user->email,
-            ],
-            changes: [
-                'email_verified_at' => [
-                    'old' => null,
-                    'new' => $event->user->email_verified_at->toIso8601String(),
-                ],
-            ]
-        );
-
-        $meta = MessageMeta::generate($event->system, $event->metadata);
 
         $this->outbox->publish(
-            routingKey: $routingKey,
-            message: EntityUpdatedMessage::make($routingKey, $actor, $target, $meta)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

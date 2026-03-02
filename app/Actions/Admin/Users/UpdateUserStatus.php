@@ -8,7 +8,7 @@ use App\Commands\Admin\Users\UpdateUserStatusCommand;
 use App\Events\Admin\UserStatusUpdated;
 use App\Services\Auth\SystemTokenRevoker;
 use Illuminate\Database\DatabaseManager;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final readonly class UpdateUserStatus
 {
@@ -34,7 +34,7 @@ final readonly class UpdateUserStatus
                     $this->tokenRevoker->revoke($command->targetUser, $command->system);
                 }
 
-                UserStatusUpdated::dispatch($command->targetUser, $oldStatus, $command->actor, $command->system, $command->metadata);
+                UserStatusUpdated::dispatch($command->targetUser, $oldStatus, $command->actor, $command->system);
             }
         );
     }

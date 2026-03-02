@@ -10,7 +10,7 @@ use App\Events\Users\UserRegistered;
 use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
 use Illuminate\Database\DatabaseManager;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

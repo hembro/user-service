@@ -35,11 +35,7 @@ final readonly class EnsureDeviceIsTrusted
 
             $system = $request->attributes->get('system');
 
-            SuspiciousSessionDetected::dispatch(
-                $user,
-                'untrusted_device_detected',
-                $system
-            );
+            SuspiciousSessionDetected::dispatch($user, 'untrusted_device_detected', $system);
 
             throw new AuthenticationException('Device context mismatch. Please login again.');
         }

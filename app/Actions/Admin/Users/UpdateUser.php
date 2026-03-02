@@ -59,11 +59,11 @@ final readonly class UpdateUser
                     }
 
                     if ($command->targetUser->wasChanged('email')) {
-                        UserEmailChanged::dispatch($command->targetUser, $changes['email'], $command->actor, $command->system, $command->metadata);
+                        UserEmailChanged::dispatch($command->targetUser, $changes['email'], $command->actor, $command->system);
                     }
 
                     if (! empty($changes)) {
-                        UserUpdated::dispatch($command->targetUser, $changes, $command->actor, $command->system, $command->metadata);
+                        UserUpdated::dispatch($command->targetUser, $changes, $command->actor, $command->system);
                     }
                 }
             );

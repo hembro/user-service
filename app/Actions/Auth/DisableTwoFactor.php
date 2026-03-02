@@ -28,7 +28,7 @@ final readonly class DisableTwoFactor
 
                 $this->twoFactorService->disable($command->user);
 
-                TwoFactorDisabled::dispatch($command->user, $command->system, $command->metadata);
+                TwoFactorDisabled::dispatch($command->user, $command->system);
             }
         );
     }

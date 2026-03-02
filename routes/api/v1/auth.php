@@ -46,7 +46,7 @@ Route::middleware('throttle:auth.api')->group(function () {
 Route::middleware(['guest', 'throttle:auth.email'])->group(function () {
 
     Route::post('/forgot-password', Auth\ForgotPasswordController::class)
-        ->name('password.email');
+        ->name('password.forgot');
 
     Route::post('/reset-password', Auth\ResetPasswordController::class)
         ->name('password.update');

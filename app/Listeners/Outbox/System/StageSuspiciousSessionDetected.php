@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\System;
 
-use App\DTOs\Messages\Actor;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Auth\SuspiciousSessionDetected;
-use App\Messages\Integration\Shared\ActionOccurredMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserActionType;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\System\ActionOccurredEvent;
 
 final readonly class StageSuspiciousSessionDetected
 {
@@ -24,26 +25,28 @@ final readonly class StageSuspiciousSessionDetected
     {
         $event->user->loadMissing('profile');
 
-        $routingKey = RoutingKey::SYSTEM_SUSPICIOUS_SESSION;
+        $routingKey = UserRoutingKey::ACTION_OCCURRED;
 
-        $actor = new Actor(
-            id: (string) $event->user->id,
-            type: ActorType::USER,
-            name: $event->user->profile?->first_name ?? $event->user->email,
-            email: $event->user->email
+        $actor = UserIntegrationMapper::toActor($event->user);
+        $target = UserIntegrationMapper::toTarget($event->user);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new ActionOccurredEvent(
+                actor: $actor,
+                type: UserActionType::SUSPICIOUS_SESSION,
+                target: $target,
+                context: [
+                    'reason' => $event->reason,
+                ]
+            ),
+            metadata: $metadata
         );
-
-        $meta = MessageMeta::generate($event->system, $event->metadata);
-
-        $context = [
-            'reason' => $event->reason,
-        ];
-
-        $message = ActionOccurredMessage::make($routingKey, $actor, $meta, context: $context);
 
         $this->db->transaction(
             callback: fn () => $this->outbox->publish(
-                routingKey: $routingKey,
+                routingKey: $routingKey->value,
                 message: $message
             )
         );

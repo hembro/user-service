@@ -17,6 +17,7 @@ final class UserImpersonated
     public function __construct(
         public readonly User $targetUser,
         public readonly User $actor,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly ?string $reason
     ) {}
 }

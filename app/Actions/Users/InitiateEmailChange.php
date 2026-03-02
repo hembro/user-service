@@ -26,7 +26,7 @@ final readonly class InitiateEmailChange
                     'pending_email_token' => $token,
                 ]);
 
-                UserEmailChangeRequested::dispatch($command->user, $token, $command->email, $command->system, $command->metadata);
+                UserEmailChangeRequested::dispatch($command->user, $token, $command->email, $command->system);
             }
         );
     }

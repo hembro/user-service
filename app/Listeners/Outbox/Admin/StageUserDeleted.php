@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Listeners\Outbox\Admin;
 
-use App\DTOs\Messages\Actor;
-use App\DTOs\Messages\Target;
-use App\Enums\Infrastructure\ActorType;
-use App\Enums\Infrastructure\ResourceType;
-use App\Enums\Infrastructure\RoutingKey;
 use App\Events\Admin\UserDeleted;
-use App\Messages\Integration\Shared\EntityUpdatedMessage;
-use App\Messages\Integration\Shared\MessageMeta;
-use App\Services\Outbox\OutboxPublisher;
+use App\Mappers\Integration\SharedIntegrationMapper;
+use App\Mappers\Integration\UserIntegrationMapper;
+use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
+use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
+use jeremyaliparo\IntegrationSchemas\Events\Users\UserDeletedEvent;
 
 final readonly class StageUserDeleted
 {
@@ -24,35 +22,25 @@ final readonly class StageUserDeleted
     {
         $event->actor->loadMissing('profile');
 
-        $routingKey = RoutingKey::USER_TRASHED;
+        $routingKey = UserRoutingKey::USER_DELETED;
 
-        $actor = new Actor(
-            id: (string) $event->actor->id,
-            type: ActorType::USER,
-            name: $event->actor->profile?->first_name ?? $event->actor->email,
-            email: $event->actor->email
+        $actor = UserIntegrationMapper::toActor($event->actor);
+        $metadata = SharedIntegrationMapper::extractMetadata($event->system->value);
+
+        $message = IntegrationMessage::make(
+            eventName: $routingKey->value,
+            data: new UserDeletedEvent(
+                actor: $actor,
+                userId: $event->userId,
+                occurredAt: now()->toIso8601String(),
+                reason: 'admin requested deletion'
+            ),
+            metadata: $metadata
         );
-
-        $target = new Target(
-            id: $event->userId,
-            type: ResourceType::USER,
-            attributes: [
-                'name' => $event->userName,
-                'email' => $event->userEmail,
-            ],
-            changes: [
-                'deleted_at' => [
-                    'old' => null,
-                    'new' => now()->toIso8601String(),
-                ],
-            ]
-        );
-
-        $meta = MessageMeta::generate($event->system, $event->metadata);
 
         $this->outbox->publish(
-            routingKey: $routingKey,
-            message: EntityUpdatedMessage::make($routingKey, $actor, $target, $meta)
+            routingKey: $routingKey->value,
+            message: $message
         );
     }
 }

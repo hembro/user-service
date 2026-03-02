@@ -6,7 +6,7 @@ namespace App\Http\Requests\Api\V1\Admin\Users;
 
 use App\Http\Requests\Api\V1\Admin\AdminBaseRequest;
 use Illuminate\Validation\Rule;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class UpdateStatusRequest extends AdminBaseRequest
 {

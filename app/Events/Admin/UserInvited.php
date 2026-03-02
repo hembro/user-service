@@ -17,6 +17,8 @@ final class UserInvited
     public function __construct(
         public readonly User $targetUser,
         public readonly User $actor,
+        public readonly ?string $reason,
+        public readonly ?array $systemContext,
         public readonly Systems $system
     ) {}
 }

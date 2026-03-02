@@ -27,15 +27,7 @@ final readonly class ConfirmTwoFactor
         }
 
         if (! $this->service->validTotp($command->user, $command->code)) {
-
-            $this->logger->warning(
-                'Failed TOTP confirmation attempt.',
-                [
-                    'user_id' => $command->user->id,
-                    'ip' => $command->metadata->ip,
-                ]
-            );
-
+            $this->logger->warning('Failed TOTP confirmation attempt.', ['user_id' => $command->user->id]);
             throw new InvalidCredentialsException('Invalid two-factor code.');
         }
 
@@ -49,7 +41,7 @@ final readonly class ConfirmTwoFactor
                     'two_factor_recovery_codes' => $recoveryCodes,
                 ])->save();
 
-                TwoFactorEnabled::dispatch($command->user, $command->system, $command->metadata);
+                TwoFactorEnabled::dispatch($command->user, $command->system);
             }
         );
 

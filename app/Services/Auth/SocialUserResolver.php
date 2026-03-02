@@ -9,7 +9,7 @@ use App\Enums\Sex;
 use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
-use jeremyaliparo\IntegrationSchemas\Enums\UserStatus;
+use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class SocialUserResolver

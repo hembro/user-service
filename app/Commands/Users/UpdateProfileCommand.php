@@ -23,7 +23,8 @@ final readonly class UpdateProfileCommand
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public Systems $system
+        public Systems $system,
+        public ?array $systemContext,
     ) {}
 
     public static function fromRequest(UpdateProfileRequest $request, User $user): self
@@ -40,7 +41,8 @@ final readonly class UpdateProfileCommand
             sex: $request->enum('sex', Sex::class),
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
-            system: $request->attributes->get('system')
+            system: $request->attributes->get('system'),
+            systemContext: $data['system_context'] ?? [],
         );
     }
 
