@@ -7,7 +7,6 @@ namespace Database\Factories;
 use App\Enums\Sex;
 use App\Enums\Suffix;
 use App\Enums\Titles;
-use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,15 +16,27 @@ final class UserProfileFactory extends Factory
 
     public function definition(): array
     {
+        $firstName = fake()->firstName();
+        $middleName = fake()->lastName();
+        $lastName = fake()->lastName();
+
+        $suffixEnums = fake()->boolean(30)
+            ? [fake()->randomElement(Suffix::cases())]
+            : null;
+
+        $suffixString = $suffixEnums ? $suffixEnums[0]->value : '';
+
+        $fullName = mb_trim("{$firstName} " . mb_substr($middleName, 0, 1) . ". {$lastName} {$suffixString}");
+
         return [
-            'user_id' => User::factory(),
-            'title' => $this->faker->randomElement(Titles::cases()),
-            'first_name' => $this->faker->firstName(),
-            'middle_name' => $this->faker->firstName(),
-            'last_name' => $this->faker->lastName(),
-            'suffix' => $this->faker->randomElement(Suffix::cases()),
-            'sex' => $this->faker->randomElement(Sex::cases()),
-            'mobile_number' => $this->faker->phoneNumber(),
+            'title' => fake()->randomElement(Titles::cases()),
+            'first_name' => $firstName,
+            'middle_name' => $middleName,
+            'last_name' => $lastName,
+            'full_name' => $fullName,
+            'suffixes' => $suffixEnums,
+            'sex' => fake()->randomElement(Sex::cases()),
+            'mobile_number' => fake()->phoneNumber(),
             'preferences' => [],
         ];
     }

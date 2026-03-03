@@ -18,7 +18,7 @@ final class UserIntegrationMapper
         return new Actor(
             id: (string) $user->id,
             type: ActorType::USER,
-            name: $user->profile?->first_name ?? $user->email,
+            name: $user->profile?->first_name ?? 'Admin',
             email: $user->email
         );
     }
@@ -27,17 +27,9 @@ final class UserIntegrationMapper
     {
         $profile = $user->profile;
 
-        $displayName = collect([
-            $profile->title?->value,
-            $profile->first_name,
-            $profile->middle_name ? mb_substr($profile->middle_name, 0, 1) . '.' : null,
-            $profile->last_name,
-            $profile->suffix?->value,
-        ])->filter()->implode(' ');
-
         $attributes = new UserAttributes(
             email: $user->email,
-            displayName: $displayName,
+            displayName: $profile->full_name,
             firstName: $profile->first_name,
             lastName: $profile->last_name,
             status: $user->status,

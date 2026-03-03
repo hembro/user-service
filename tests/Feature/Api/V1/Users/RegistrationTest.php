@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V1\Users;
 
 use App\Enums\Roles;
+use App\Enums\Suffix;
 use App\Enums\Systems;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
@@ -34,7 +35,7 @@ function validRegistrationPayload(array $overrides = []): array
         'first_name' => 'Jose',
         'middle_name' => 'Protacio',
         'last_name' => 'Rizal',
-        'suffix' => 'Jr.',
+        'suffixes' => [Suffix::JR->value],
         'sex' => 'male',
         'mobile_number' => '09171234567',
         'preferences' => ['theme' => 'dark', 'notifications' => true],

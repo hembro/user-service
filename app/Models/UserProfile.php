@@ -10,7 +10,9 @@ use App\Enums\Titles;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\ArrayObject;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
+use Illuminate\Database\Eloquent\Casts\AsEnumCollection;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -22,11 +24,12 @@ use Illuminate\Support\Str;
  * @property-read string $id
  * @property-read string $user_id
  * @property-read ?string $avatarUrl
+ * @property-read string $full_name
  * @property-read ?Titles $title
  * @property-read string $first_name
  * @property-read ?string $middle_name
  * @property-read string $last_name
- * @property-read ?Suffix $suffix
+ * @property-read ?Collection<Suffix> $suffixes
  * @property-read Sex $sex
  * @property-read ?string $mobile_number
  * @property-read ?ArrayObject $preferences
@@ -44,7 +47,7 @@ final class UserProfile extends Model
 
     protected $casts = [
         'title' => Titles::class,
-        'suffix' => Suffix::class,
+        'suffixes' => AsEnumCollection::class . ':' . Suffix::class,
         'sex' => Sex::class,
         'preferences' => AsArrayObject::class,
     ];
@@ -54,6 +57,19 @@ final class UserProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    protected static function booted(): void
+    {
+        self::saving(function (UserProfile $profile): void {
+            $profile->full_name = collect([
+                $profile->title?->value,
+                $profile->first_name,
+                $profile->middle_name ? mb_substr($profile->middle_name, 0, 1) . '.' : null,
+                $profile->last_name,
+                $profile->suffixes?->map(fn (Suffix $s) => $s->value)->implode(', '),
+            ])->filter()->implode(' ');
+        });
     }
 
     protected function avatarUrl(): Attribute

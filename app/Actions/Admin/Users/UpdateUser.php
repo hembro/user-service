@@ -50,8 +50,8 @@ final readonly class UpdateUser
                     if ($profile->isDirty()) {
                         foreach ($profile->getDirty() as $key => $value) {
                             $changes[$key] = [
-                                'old' => $profile->getOriginal($key),
-                                'new' => $value,
+                                'old' => json_decode(json_encode($profile->getOriginal($key)), true),
+                                'new' => json_decode(json_encode($profile->getAttribute($key)), true),
                             ];
                         }
 

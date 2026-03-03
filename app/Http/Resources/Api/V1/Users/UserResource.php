@@ -26,7 +26,7 @@ final class UserResource extends JsonResource
                 'first_name' => $this->resource->profile?->first_name,
                 'middle_name' => $this->resource->profile?->middle_name,
                 'last_name' => $this->resource->profile?->last_name,
-                'suffix' => $this->resource->profile?->suffix,
+                'suffixes' => $this->resource->profile?->suffixes,
                 'sex' => $this->resource->profile?->sex,
                 'mobile_number' => $this->resource->profile?->mobile_number,
                 'preferences' => $this->resource->profile?->preferences,
