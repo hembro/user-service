@@ -16,6 +16,7 @@ final class UserUpdated
         public readonly User $targetUser,
         public readonly array $changes,
         public readonly User $actor,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly ?array $systemContext
     ) {}
 }

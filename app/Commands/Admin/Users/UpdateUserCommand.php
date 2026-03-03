@@ -25,7 +25,8 @@ final readonly class UpdateUserCommand
         public array $preferences,
         public User $targetUser,
         public User $actor,
-        public Systems $system
+        public Systems $system,
+        public ?array $systemContext
     ) {}
 
     public static function fromRequest(UpdateRequest $request, User $targetUser): self
@@ -44,7 +45,8 @@ final readonly class UpdateUserCommand
             preferences: $data['preferences'] ?? [],
             targetUser: $targetUser,
             actor: $request->user(),
-            system: $request->attributes->get('system')
+            system: $request->attributes->get('system'),
+            systemContext: $data['system_context'] ?? []
         );
     }
 

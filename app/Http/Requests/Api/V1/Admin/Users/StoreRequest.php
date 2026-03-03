@@ -28,6 +28,8 @@ final class StoreRequest extends AdminBaseRequest
             'sex' => ['required', 'string', Rule::enum(Sex::class)],
             'mobile_number' => ['nullable', 'string', 'min:10', 'max:11'],
             'preferences' => ['nullable', 'array'],
+            'preferences.theme' => ['nullable', 'string', Rule::in(['light', 'dark', 'system'])],
+            'preferences.notifications_enabled' => ['nullable', 'boolean'],
             'roles' => ['required', 'array'],
             'roles.*' => [
                 'required',

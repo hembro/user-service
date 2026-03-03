@@ -16,7 +16,7 @@ final class UserInvited
         public readonly User $targetUser,
         public readonly User $actor,
         public readonly ?string $reason,
-        public readonly ?array $systemContext,
-        public readonly Systems $system
+        public readonly Systems $system,
+        public readonly ?array $systemContext
     ) {}
 }

@@ -35,6 +35,7 @@ final readonly class StageUserProfileUpdated
                 target: $target,
                 changes: $event->changes,
                 occurredAt: $event->user->updated_at->toIso8601String(),
+                systemContext: $event->systemContext
             ),
             metadata: $metadata
         );

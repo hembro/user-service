@@ -63,7 +63,7 @@ final readonly class UpdateUser
                     }
 
                     if (! empty($changes)) {
-                        UserUpdated::dispatch($command->targetUser, $changes, $command->actor, $command->system);
+                        UserUpdated::dispatch($command->targetUser, $changes, $command->actor, $command->system, $command->systemContext);
                     }
                 }
             );

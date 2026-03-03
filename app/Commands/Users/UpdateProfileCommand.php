@@ -24,7 +24,7 @@ final readonly class UpdateProfileCommand
         public ?string $mobileNumber,
         public array $preferences,
         public Systems $system,
-        public ?array $systemContext,
+        public ?array $systemContext
     ) {}
 
     public static function fromRequest(UpdateProfileRequest $request, User $user): self
@@ -42,7 +42,7 @@ final readonly class UpdateProfileCommand
             mobileNumber: $data['mobile_number'] ?? null,
             preferences: $data['preferences'] ?? [],
             system: $request->attributes->get('system'),
-            systemContext: $data['system_context'] ?? [],
+            systemContext: $data['system_context'] ?? []
         );
     }
 

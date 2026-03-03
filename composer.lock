@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b8b0d90c8358ed4cdc0698418609014e",
+    "content-hash": "2b7c1ff80bb7403de63372c248f2a31e",
     "packages": [
         {
             "name": "brick/math",
@@ -1254,16 +1254,16 @@
         },
         {
             "name": "jeremyaliparo/service-integration-schemas",
-            "version": "1.7.0",
+            "version": "1.7.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:jeremyaliparo/service-integration-schemas.git",
-                "reference": "92fd6a38bc46bc9a01ddc7f2cee90135c41f185e"
+                "reference": "c2f24f96d5867ae8c2e2113baa4cd59ba22db331"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-schemas/zipball/92fd6a38bc46bc9a01ddc7f2cee90135c41f185e",
-                "reference": "92fd6a38bc46bc9a01ddc7f2cee90135c41f185e",
+                "url": "https://api.github.com/repos/jeremyaliparo/service-integration-schemas/zipball/c2f24f96d5867ae8c2e2113baa4cd59ba22db331",
+                "reference": "c2f24f96d5867ae8c2e2113baa4cd59ba22db331",
                 "shasum": ""
             },
             "require": {
@@ -1278,10 +1278,10 @@
             },
             "description": "Centralized place for integration schemas.",
             "support": {
-                "source": "https://github.com/jeremyaliparo/service-integration-schemas/tree/1.7.0",
+                "source": "https://github.com/jeremyaliparo/service-integration-schemas/tree/1.7.1",
                 "issues": "https://github.com/jeremyaliparo/service-integration-schemas/issues"
             },
-            "time": "2026-03-03T03:50:21+00:00"
+            "time": "2026-03-03T04:25:07+00:00"
         },
         {
             "name": "laravel/framework",
