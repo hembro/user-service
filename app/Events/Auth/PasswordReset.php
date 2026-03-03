@@ -6,13 +6,11 @@ namespace App\Events\Auth;
 
 use App\Enums\Systems;
 use App\Models\User;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
 final class PasswordReset
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
 
     public function __construct(
         public readonly User $user,

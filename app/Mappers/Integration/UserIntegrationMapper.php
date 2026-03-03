@@ -25,12 +25,24 @@ final class UserIntegrationMapper
 
     public static function toTarget(User $user): Target
     {
+        $profile = $user->profile;
+
+        $displayName = collect([
+            $profile->title?->value,
+            $profile->first_name,
+            $profile->middle_name ? mb_substr($profile->middle_name, 0, 1) . '.' : null,
+            $profile->last_name,
+            $profile->suffix?->value,
+        ])->filter()->implode(' ');
+
         $attributes = new UserAttributes(
             email: $user->email,
-            name: $user->profile?->first_name ?? $user->email,
+            displayName: $displayName,
+            firstName: $profile->first_name,
+            lastName: $profile->last_name,
             status: $user->status,
-            mobileNumber: $user->profile?->mobile_number,
-            avatarUrl: $user->profile?->avatarUrl
+            mobileNumber: $profile->mobile_number,
+            avatarUrl: $profile->avatarUrl
         );
 
         return new Target(
