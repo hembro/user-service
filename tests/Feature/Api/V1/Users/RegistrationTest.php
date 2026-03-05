@@ -46,7 +46,9 @@ function validRegistrationPayload(array $overrides = []): array
 describe('User Registration Feature: The Happy Path', function (): void {
 
     it('registers a user successfully, creates profile, assigns role, and fires event', function (): void {
-        Event::fake();
+        Event::fake([
+            UserRegistered::class,
+        ]);
 
         $payload = validRegistrationPayload();
 
@@ -88,7 +90,9 @@ describe('User Registration Feature: The Happy Path', function (): void {
     });
 
     it('assigns the correct role based on the system', function (string $system, string $expectedRole): void {
-        Event::fake();
+        Event::fake([
+            UserRegistered::class,
+        ]);
 
         $payload = validRegistrationPayload();
 

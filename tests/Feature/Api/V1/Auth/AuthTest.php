@@ -11,6 +11,7 @@ use App\Enums\Systems;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Auth\UserLoggedOut;
 use App\Models\User;
+use App\Models\UserProfile;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
@@ -67,10 +68,12 @@ describe('Authentication Feature: The Happy Path', function (): void {
     it('returns a challenge for a new/untrusted device', function (): void {
         // Arrange: User exists, but device is NOT in DB
         $password = 'password123';
-        $user = User::factory()->create([
-            'status' => UserStatus::ACTIVE,
-            'password' => $password,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'status' => UserStatus::ACTIVE,
+                'password' => $password,
+            ]);
 
         $user->assignRole(Roles::PMS_PROPONENT);
 
@@ -104,10 +107,12 @@ describe('Authentication Feature: The Happy Path', function (): void {
     it('logs in and issues tokens for a trusted device', function (): void {
         // Arrange
         $password = 'password123';
-        $user = User::factory()->create([
-            'status' => UserStatus::ACTIVE,
-            'password' => $password,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'status' => UserStatus::ACTIVE,
+                'password' => $password,
+            ]);
 
         $user->assignRole(Roles::PMS_PROPONENT);
 
@@ -148,10 +153,12 @@ describe('Authentication Feature: The Happy Path', function (): void {
         // Arrange: We need a valid Refresh Token Cookie first.
         // We simulate a Trusted Login to get it naturally.
         $password = 'password123';
-        $user = User::factory()->create([
-            'status' => UserStatus::ACTIVE,
-            'password' => $password,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'status' => UserStatus::ACTIVE,
+                'password' => $password,
+            ]);
 
         $user->assignRole(Roles::PMS_PROPONENT);
 

@@ -9,6 +9,7 @@ use App\Enums\Roles;
 use App\Enums\Systems;
 use App\Events\Auth\UserLoggedIn;
 use App\Models\User;
+use App\Models\UserProfile;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -133,12 +134,14 @@ describe('2FA Feature: The Happy Path', function (): void {
             Str::random(10) . '-' . Str::random(10),
         ]);
 
-        $user = User::factory()->create([
-            'password' => 'password',
-            'two_factor_secret' => $this->userSecret,
-            'two_factor_confirmed_at' => now(),
-            'two_factor_recovery_codes' => $recoveryCodes,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'password' => 'password',
+                'two_factor_secret' => $this->userSecret,
+                'two_factor_confirmed_at' => now(),
+                'two_factor_recovery_codes' => $recoveryCodes,
+            ]);
 
         $user->assignRole(Roles::PMS_PROPONENT);
 
@@ -225,11 +228,13 @@ describe('2FA Feature: The Unhappy Path', function (): void {
     it('prevents replay attacks (using same OTP twice)', function (): void {
         // Note: Standard TOTP allows the code to be valid for ~30 seconds.
 
-        $user = User::factory()->create([
-            'password' => 'password',
-            'two_factor_secret' => $this->userSecret,
-            'two_factor_confirmed_at' => now(),
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'password' => 'password',
+                'two_factor_secret' => $this->userSecret,
+                'two_factor_confirmed_at' => now(),
+            ]);
 
         $user->assignRole(Roles::PMS_PROPONENT);
 

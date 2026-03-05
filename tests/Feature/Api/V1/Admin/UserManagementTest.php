@@ -64,7 +64,9 @@ beforeEach(function (): void {
 describe('Admin User Management: The Happy Path', function (): void {
 
     it('can create a new user (invite flow)', function (): void {
-        Event::fake();
+        Event::fake([
+            UserInvited::class,
+        ]);
 
         $payload = [
             'email' => 'new.employee@pms.gov.ph',
@@ -126,7 +128,9 @@ describe('Admin User Management: The Happy Path', function (): void {
     });
 
     it('can update a user profile', function (): void {
-        Event::fake();
+        Event::fake([
+            UserUpdated::class,
+        ]);
 
         $user = User::factory()->create();
 

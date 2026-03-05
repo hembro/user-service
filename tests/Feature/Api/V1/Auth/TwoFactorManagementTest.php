@@ -7,6 +7,7 @@ namespace Tests\Feature\Api\V1\Auth;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Systems;
 use App\Models\User;
+use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
@@ -45,11 +46,13 @@ describe('2FA Management Feature: The Happy Path', function (): void {
         $password = 'password';
         // Arrange: User with 2FA DISABLED
         /** @var User */
-        $user = User::factory()->create([
-            'password' => $password,
-            'two_factor_secret' => null,
-            'two_factor_confirmed_at' => null,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'password' => $password,
+                'two_factor_secret' => null,
+                'two_factor_confirmed_at' => null,
+            ]);
 
         Passport::actingAs($user);
 
@@ -91,10 +94,12 @@ describe('2FA Management Feature: The Happy Path', function (): void {
         $plainSecret = $this->google2fa->generateSecretKey();
 
         /** @var User */
-        $user = User::factory()->create([
-            'two_factor_secret' => $plainSecret, // Model casts will encrypt this
-            'two_factor_confirmed_at' => null,
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'two_factor_secret' => $plainSecret, // Model casts will encrypt this
+                'two_factor_confirmed_at' => null,
+            ]);
 
         Passport::actingAs($user);
 
@@ -127,15 +132,17 @@ describe('2FA Management Feature: The Happy Path', function (): void {
         // Arrange: User with 2FA ENABLED
         $password = 'password';
         /** @var User */
-        $user = User::factory()->create([
-            'password' => $password,
-            'two_factor_secret' => 'secret',
-            'two_factor_confirmed_at' => now(),
-            'two_factor_recovery_codes' => collect([
-                Str::random(10) . '-' . Str::random(10),
-                Str::random(10) . '-' . Str::random(10),
-            ]),
-        ]);
+        $user = User::factory()
+            ->has(UserProfile::factory(), 'profile')
+            ->create([
+                'password' => $password,
+                'two_factor_secret' => 'secret',
+                'two_factor_confirmed_at' => now(),
+                'two_factor_recovery_codes' => collect([
+                    Str::random(10) . '-' . Str::random(10),
+                    Str::random(10) . '-' . Str::random(10),
+                ]),
+            ]);
 
         Passport::actingAs($user);
 
