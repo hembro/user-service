@@ -10,7 +10,7 @@ use App\Mappers\Integration\UserIntegrationMapper;
 use jeremyaliparo\IntegrationCore\Messages\IntegrationMessage;
 use jeremyaliparo\IntegrationCore\Publishing\OutboxPublisher;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserRoutingKey;
-use jeremyaliparo\IntegrationSchemas\Events\Users\UserProfileUpdatedEvent;
+use jeremyaliparo\IntegrationSchemas\Events\Users\UserAvatarUpdatedEvent;
 
 final readonly class StageUserAvatarUpdated
 {
@@ -22,7 +22,7 @@ final readonly class StageUserAvatarUpdated
     {
         $event->user->loadMissing('profile');
 
-        $routingKey = UserRoutingKey::USER_PROFILE_UPDATED;
+        $routingKey = UserRoutingKey::USER_AVATAR_UPDATED;
 
         $actor = UserIntegrationMapper::toActor($event->user);
         $target = UserIntegrationMapper::toTarget($event->user);
@@ -30,15 +30,11 @@ final readonly class StageUserAvatarUpdated
 
         $message = IntegrationMessage::make(
             eventName: $routingKey->value,
-            data: new UserProfileUpdatedEvent(
+            data: new UserAvatarUpdatedEvent(
                 actor: $actor,
                 target: $target,
-                changes: [
-                    'avatar' => [
-                        'new' => $event->user->profile?->avatarUrl,
-                        'old' => $event->oldAvatarUrl,
-                    ],
-                ],
+                oldAvatarUrl: $event->oldAvatarUrl,
+                newAvatarUrl: $event->user->profile?->avatarUrl,
                 occurredAt: $event->user->updated_at->toIso8601String(),
             ),
             metadata: $metadata

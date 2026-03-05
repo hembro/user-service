@@ -11,7 +11,7 @@
     "require": {
 		"php": "^8.4 || ^8.5",
         "jeremyaliparo/service-integration-core": "^1.6.1",
-        "jeremyaliparo/service-integration-schemas": "^1.8.0",
+        "jeremyaliparo/service-integration-schemas": "^1.9.0",
         "laravel/framework": "^12.53.0",
         "laravel/passport": "^13.5.0",
         "laravel/socialite": "^5.24.3",
