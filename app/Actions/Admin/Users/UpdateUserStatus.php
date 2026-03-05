@@ -8,6 +8,7 @@ use App\Commands\Admin\Users\UpdateUserStatusCommand;
 use App\Events\Admin\UserStatusUpdated;
 use App\Services\Auth\SystemTokenRevoker;
 use Illuminate\Database\DatabaseManager;
+use InvalidArgumentException;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final readonly class UpdateUserStatus
@@ -21,6 +22,10 @@ final readonly class UpdateUserStatus
     {
         if ($command->targetUser->status === $command->status) {
             return;
+        }
+
+        if ($command->status === UserStatus::DELETED) {
+            throw new InvalidArgumentException('Use the delete route to delete users.');
         }
 
         $this->db->transaction(
