@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\Users;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Users\UpdatePasswordRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 use SensitiveParameter;
 
 final readonly class UpdatePasswordCommand
@@ -15,7 +15,7 @@ final readonly class UpdatePasswordCommand
         public User $user,
         #[SensitiveParameter]
         public string $newPassword,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(UpdatePasswordRequest $request): self

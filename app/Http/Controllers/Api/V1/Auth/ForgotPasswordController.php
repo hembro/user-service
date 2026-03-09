@@ -7,13 +7,10 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Auth\SendResetPasswordLink;
 use App\Commands\Auth\ForgotPasswordCommand;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class ForgotPasswordController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly SendResetPasswordLink $action
     ) {}
@@ -24,7 +21,7 @@ final class ForgotPasswordController
             ForgotPasswordCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'We sent your password reset link!'
         );
     }

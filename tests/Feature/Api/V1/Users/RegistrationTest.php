@@ -6,13 +6,13 @@ namespace Tests\Feature\Api\V1\Users;
 
 use App\Enums\Roles;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use Database\Seeders\RoleAndPermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 use function Pest\Laravel\assertDatabaseHas;
@@ -39,7 +39,7 @@ function validRegistrationPayload(array $overrides = []): array
         'sex' => 'male',
         'mobile_number' => '09171234567',
         'preferences' => ['theme' => 'dark', 'notifications' => true],
-        'system' => Systems::PMS->value,
+        'system' => System::PMS->value,
     ], $overrides);
 }
 
@@ -56,7 +56,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
             headers: [
-                'X-Source-System' => Systems::PMS->value,
+                'X-Source-System' => System::PMS->value,
             ]
         );
 
@@ -107,9 +107,9 @@ describe('User Registration Feature: The Happy Path', function (): void {
         $user = User::where('email', $payload['email'])->first();
         expect($user->hasRole($expectedRole))->toBeTrue();
     })->with([
-        [Systems::PMS->value, Roles::PMS_PROPONENT->value],
-        [Systems::HERDIN->value, Roles::HERDIN_USER->value],
-        [Systems::PHRR->value, Roles::PHRR_USER->value],
+        [System::PMS->value, Roles::PMS_PROPONENT->value],
+        [System::HERDIN->value, Roles::HERDIN_USER->value],
+        [System::PHRR->value, Roles::PHRR_USER->value],
     ]);
 
     it('validates required fields', function (string $field): void {
@@ -118,7 +118,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors([$field]);
@@ -138,7 +138,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
@@ -150,7 +150,7 @@ describe('User Registration Feature: The Happy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['password']);
@@ -190,7 +190,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['password']);
@@ -202,7 +202,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);
@@ -220,7 +220,7 @@ describe('User Registration Feature: The Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.users.register', absolute: false),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['sex']);

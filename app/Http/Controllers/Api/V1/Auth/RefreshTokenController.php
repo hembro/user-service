@@ -9,19 +9,17 @@ use App\Http\Requests\Api\V1\Auth\RefreshTokenRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
+use Illuminate\Http\JsonResponse;
 
 final class RefreshTokenController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly RefreshUserToken $action,
         private readonly DeviceTrustService $deviceService,
         private readonly AuthCookieService $cookie,
     ) {}
 
-    public function __invoke(RefreshTokenRequest $request)
+    public function __invoke(RefreshTokenRequest $request): JsonResponse
     {
         $deviceId = $this->deviceService->resolveDeviceId($request);
 
@@ -31,7 +29,7 @@ final class RefreshTokenController
             system: $request->attributes->get('system')
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new TokenResource($token)
         )->withCookie(
             $this->cookie->makeRefreshTokenCookie($token->refreshToken)

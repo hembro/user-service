@@ -10,20 +10,17 @@ use App\Commands\Users\InitiateEmailChangeCommand;
 use App\Commands\Users\VerifyEmailChangeCommand;
 use App\Http\Requests\Api\V1\Users\RequestEmailChangeRequest;
 use App\Http\Requests\Api\V1\Users\VerifyEmailChangeRequest;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class EmailChangeController
 {
-    use HasApiResponse;
-
     public function request(RequestEmailChangeRequest $request, InitiateEmailChange $action): JsonResponse
     {
         $action->handle(
             InitiateEmailChangeCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'A verification link has been sent to your email address.'
         );
     }
@@ -34,7 +31,7 @@ final class EmailChangeController
             VerifyEmailChangeCommand::fromRequest($request),
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'Your email address has been updated successfully.'
         );
     }

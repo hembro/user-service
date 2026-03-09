@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Auth;
 
-use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\Foundation\Enums\System;
 use Laravel\Passport\Passport;
 use RuntimeException;
 
@@ -16,7 +16,7 @@ final readonly class SystemTokenRevoker
         private DatabaseManager $db
     ) {}
 
-    public function revoke(User $user, Systems $system): void
+    public function revoke(User $user, System $system): void
     {
         $clients = config('services.passport.frontend_clients');
 

@@ -5,16 +5,21 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Models\User;
+use App\Services\Users\SystemRoleResolver;
+use jeremyaliparo\Foundation\Enums\System;
 
 final class UserPolicy
 {
+    public function __construct(
+        private readonly SystemRoleResolver $roleResolver
+    ) {}
+
     public function viewAny(User $actor): bool
     {
         $permissions = array_map(
-            fn (Systems $system) => $system->getUserManagementPermission(),
-            Systems::cases()
+            fn (System $system) => $this->roleResolver->userManagementPermissionFor($system),
+            System::cases()
         );
 
         return $actor->hasAnyPermission($permissions);
@@ -86,7 +91,7 @@ final class UserPolicy
         $actor->loadMissing('roles');
         $target->loadMissing('roles');
 
-        foreach (Systems::cases() as $system) {
+        foreach (System::cases() as $system) {
 
             if (! $actor->belongsToSystem($system)) {
                 continue;
@@ -95,8 +100,8 @@ final class UserPolicy
             if ($target->belongsToSystem($system)) {
 
                 $permission = match ($type) {
-                    'user' => $system->getUserManagementPermission(),
-                    'role' => $system->getRoleManagementPermission(),
+                    'user' => $this->roleResolver->userManagementPermissionFor($system),
+                    'role' => $this->roleResolver->roleManagementPermissionFor($system),
                 };
 
                 if ($actor->hasPermissionTo($permission)) {

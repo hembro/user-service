@@ -8,13 +8,10 @@ use App\Actions\Auth\ConfirmTwoFactor;
 use App\Commands\Auth\ConfirmTwoFactorCommand;
 use App\Http\Requests\Api\V1\Auth\ConfirmTwoFactorRequest;
 use App\Http\Resources\Api\V1\Auth\RecoveryCodesResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class ConfirmTwoFactorController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly ConfirmTwoFactor $action
     ) {}
@@ -25,7 +22,7 @@ final class ConfirmTwoFactorController
             ConfirmTwoFactorCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new RecoveryCodesResource($recoveryCodes),
             message: 'Two-factor authentication verified and enabled.'
         );

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Events\Users;
 
-use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
+use jeremyaliparo\Foundation\Enums\System;
 
 final class UserEmailChanged
 {
@@ -15,6 +15,6 @@ final class UserEmailChanged
     public function __construct(
         public readonly User $user,
         public readonly string $oldEmail,
-        public readonly Systems $system
+        public readonly System $system
     ) {}
 }

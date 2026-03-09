@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Actions\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\Enums\Systems;
 use App\Exceptions\Auth\InvalidChallengeException;
 use App\Exceptions\Auth\InvalidRefreshTokenException;
 use App\Services\Auth\TokenIssuer;
+use jeremyaliparo\Foundation\Enums\System;
 use League\OAuth2\Server\Exception\OAuthServerException;
 use Psr\Log\LoggerInterface;
 
@@ -20,7 +20,7 @@ final class RefreshUserToken
         private readonly LoggerInterface $logger
     ) {}
 
-    public function handle(?string $refreshToken, ?string $deviceId, Systems $system)
+    public function handle(?string $refreshToken, ?string $deviceId, System $system)
     {
         if (blank($refreshToken)) {
             throw new InvalidRefreshTokenException('Refresh token is required.');

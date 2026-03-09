@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
@@ -17,6 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 use Laravel\Socialite\Facades\Socialite;
@@ -75,7 +75,7 @@ describe('Social Authentication: Happy Path', function (): void {
 
         $response = getJson(
             uri: '/api/v1/auth/social/google/redirect',
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -94,7 +94,7 @@ describe('Social Authentication: Happy Path', function (): void {
         $response = postJson(
             uri: '/api/v1/auth/social/google/callback',
             data: ['code' => 'valid-oauth-code-from-google'],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -142,7 +142,7 @@ describe('Social Authentication: Happy Path', function (): void {
         $response = postJson(
             uri: '/api/v1/auth/social/google/callback',
             data: ['code' => 'valid-oauth-code-from-google'],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -183,7 +183,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
         postJson(
             uri: '/api/v1/auth/social/google/callback',
             data: ['code' => 'expired-or-fake-code'],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnauthorized();
     });
@@ -199,7 +199,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
         postJson(
             uri: '/api/v1/auth/social/google/callback',
             data: ['code' => 'valid-oauth-code-from-google'],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnauthorized()
             ->assertJsonPath('message', 'Account is inactive.');
@@ -209,7 +209,7 @@ describe('Social Authentication: Unhappy Path', function (): void {
         postJson(
             uri: '/api/v1/auth/social/google/callback',
             data: [], // Missing 'code'
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['code']);

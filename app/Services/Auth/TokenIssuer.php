@@ -6,12 +6,12 @@ namespace App\Services\Auth;
 
 use App\DTOs\Auth\IssuedToken;
 use App\Enums\Auth\GrantType;
-use App\Enums\Systems;
 use App\Models\User;
 use Defuse\Crypto\Crypto;
 use Defuse\Crypto\Exception\CryptoException;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Facades\DB;
+use jeremyaliparo\Foundation\Enums\System;
 use JsonException;
 use League\OAuth2\Server\AuthorizationServer;
 use League\OAuth2\Server\Exception\OAuthServerException;
@@ -32,7 +32,7 @@ final readonly class TokenIssuer
     /**
      * Issues a full access token for a fully authenticated user.
      */
-    public function issueFullToken(User $user, Systems $system): IssuedToken
+    public function issueFullToken(User $user, System $system): IssuedToken
     {
         if (! $user->relationLoaded('roles')) {
             throw new RuntimeException('Roles must be eagerly loaded before issuing a token to prevent N+1 queries.');
@@ -49,7 +49,7 @@ final readonly class TokenIssuer
         );
     }
 
-    public function issueRefreshToken(string $refreshToken, Systems $system): IssuedToken
+    public function issueRefreshToken(string $refreshToken, System $system): IssuedToken
     {
         return $this->issue(
             grantType: GrantType::REFRESH_TOKEN,
@@ -97,7 +97,7 @@ final readonly class TokenIssuer
     /**
      * The core issuance logic.
      */
-    private function issue(GrantType $grantType, Systems $system, array $payload, ?string $scopes = null): IssuedToken
+    private function issue(GrantType $grantType, System $system, array $payload, ?string $scopes = null): IssuedToken
     {
         $baseParams = [
             ...$payload,
@@ -129,7 +129,7 @@ final readonly class TokenIssuer
     /**
      * @return array<string, mixed>
      */
-    private function mergeClientCredentials(Systems $system, array $baseParams): array
+    private function mergeClientCredentials(System $system, array $baseParams): array
     {
         $client = $this->systemClients[$system->value] ?? null;
 

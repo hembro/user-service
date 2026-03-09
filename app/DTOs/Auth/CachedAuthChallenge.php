@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DTOs\Auth;
 
 use App\Enums\Auth\ChallengeType;
-use App\Enums\Systems;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class CachedAuthChallenge
 {
@@ -14,7 +14,7 @@ final readonly class CachedAuthChallenge
         public ChallengeType $type,
         public string $fingerprint,
         public string $deviceId,
-        public Systems $system,
+        public System $system,
         public ?string $otpHash = null
     ) {}
 
@@ -25,7 +25,7 @@ final readonly class CachedAuthChallenge
             type: ChallengeType::from($data['type']),
             fingerprint: (string) $data['fingerprint'],
             deviceId: (string) $data['device_id'],
-            system: Systems::from($data['system']),
+            system: System::from($data['system']),
             otpHash: $data['otp_hash'] ?? null
         );
     }

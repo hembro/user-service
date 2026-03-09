@@ -6,10 +6,10 @@ namespace App\Commands\Admin\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class UpdateUserCommand
 {
@@ -25,7 +25,7 @@ final readonly class UpdateUserCommand
         public array $preferences,
         public User $targetUser,
         public User $actor,
-        public Systems $system,
+        public System $system,
         public ?array $systemContext
     ) {}
 

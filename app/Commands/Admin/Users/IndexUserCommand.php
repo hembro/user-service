@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Commands\Admin\Users;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\IndexRequest;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class IndexUserCommand
 {
     public function __construct(
-        public Systems $system,
+        public System $system,
         public int $page,
         public int $perPage,
         public ?string $search,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Commands\Auth;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
+use jeremyaliparo\Foundation\Enums\System;
 use SensitiveParameter;
 
 final readonly class LoginCommand
@@ -15,7 +15,7 @@ final readonly class LoginCommand
         public string $email,
         #[SensitiveParameter]
         public string $password,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(LoginRequest $request, string $deviceId): self

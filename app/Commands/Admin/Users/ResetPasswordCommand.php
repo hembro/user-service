@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Commands\Admin\Users;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\ResetPasswordRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 use SensitiveParameter;
 
 final readonly class ResetPasswordCommand
@@ -16,7 +16,7 @@ final readonly class ResetPasswordCommand
         public string $password,
         public User $targetUser,
         public User $actor,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(ResetPasswordRequest $request, User $targetUser): self

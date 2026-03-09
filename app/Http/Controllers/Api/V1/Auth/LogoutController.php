@@ -8,14 +8,11 @@ use App\Actions\Auth\LogoutUser;
 use App\Commands\Auth\LogoutCommand;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class LogoutController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly LogoutUser $action,
         private readonly DeviceTrustVerifier $deviceService,
@@ -30,7 +27,7 @@ final class LogoutController
             LogoutCommand::fromRequest($request, $deviceId)
         );
 
-        return $this->noContent()
+        return JsonResponse::noContent()
             ->withCookie(
                 $this->cookie->forgetRefreshToken()
             );

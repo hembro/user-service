@@ -9,15 +9,12 @@ use App\Actions\Auth\VerifyEmail;
 use App\Commands\Auth\ResendVerifyEmailCommand;
 use App\Commands\Auth\VerifyEmailCommand;
 use App\Http\Requests\Api\V1\Auth\ResendVerifyEmailRequest;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class VerifyEmailController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly VerifyEmail $verify,
         private readonly ResendVerifyEmail $resend
@@ -29,7 +26,7 @@ final class VerifyEmailController
             VerifyEmailCommand::fromRequest($request, $id, $hash)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'Email verified successfully.'
         );
     }
@@ -40,7 +37,7 @@ final class VerifyEmailController
             ResendVerifyEmailCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             code: Response::HTTP_ACCEPTED
         );
     }

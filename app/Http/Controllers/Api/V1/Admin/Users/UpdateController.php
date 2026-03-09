@@ -9,13 +9,10 @@ use App\Commands\Admin\Users\UpdateUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRequest as AdminUpdateRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Models\User;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class UpdateController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly UpdateUser $action
     ) {}
@@ -26,7 +23,7 @@ final class UpdateController
             UpdateUserCommand::fromRequest($request, $user),
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new UserResource($user->refresh()->load(['profile', 'roles.permissions', 'permissions'])),
             message: 'User updated successfully'
         );

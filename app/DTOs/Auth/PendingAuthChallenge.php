@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\DTOs\Auth;
 
 use App\Enums\Auth\ChallengeType;
-use App\Enums\Systems;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class PendingAuthChallenge
 {
@@ -14,7 +14,7 @@ final readonly class PendingAuthChallenge
         public string $challengeId,
         public string $deviceId,
         public ChallengeType $type,
-        public Systems $system,
+        public System $system,
         public ?string $otpCode
     ) {}
 }

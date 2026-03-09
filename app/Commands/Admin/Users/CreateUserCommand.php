@@ -7,10 +7,10 @@ namespace App\Commands\Admin\Users;
 use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Admin\Users\StoreRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 use SensitiveParameter;
 
 final readonly class CreateUserCommand
@@ -30,7 +30,7 @@ final readonly class CreateUserCommand
         public array $roles,
         public User $actor,
         public ?string $reason,
-        public Systems $system,
+        public System $system,
         public ?array $systemContext
     ) {}
 

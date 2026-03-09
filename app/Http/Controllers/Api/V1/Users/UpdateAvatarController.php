@@ -8,13 +8,10 @@ use App\Actions\Users\UpdateAvatar;
 use App\Commands\Users\UpdateAvatarCommand;
 use App\Http\Requests\Api\V1\Users\UpdateAvatarRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class UpdateAvatarController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly UpdateAvatar $action
     ) {}
@@ -28,7 +25,7 @@ final class UpdateAvatarController
             UpdateAvatarCommand::fromRequest($request, $user)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new UserResource($user->refresh()->load('profile')),
             message: 'Avatar updated successfully.'
         );

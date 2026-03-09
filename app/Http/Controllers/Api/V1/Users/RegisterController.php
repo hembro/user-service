@@ -10,15 +10,12 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 final class RegisterController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly RegisterUser $action,
         private readonly DeviceTrustVerifier $deviceService,
@@ -33,7 +30,7 @@ final class RegisterController
             RegisterUserCommand::fromRequest($request, $deviceId)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new UserResource($user),
             message: 'User created successfully',
             code: Response::HTTP_CREATED

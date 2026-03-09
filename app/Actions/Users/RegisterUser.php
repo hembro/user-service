@@ -9,6 +9,7 @@ use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Events\Users\UserRegistered;
 use App\Models\User;
 use App\Services\Auth\VerificationLinkGenerator;
+use App\Services\Users\SystemRoleResolver;
 use Illuminate\Database\DatabaseManager;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
@@ -20,6 +21,7 @@ final readonly class RegisterUser
         private DatabaseManager $db,
         private DeviceTrustVerifier $deviceService,
         private VerificationLinkGenerator $linkGenerator,
+        private SystemRoleResolver $roleResolver,
         private LoggerInterface $logger
     ) {}
 
@@ -39,7 +41,7 @@ final readonly class RegisterUser
                         attributes: $command->toProfileAttributes()
                     );
 
-                    $user->assignRole($command->system->defaultRole());
+                    $user->assignRole($this->roleResolver->defaultRoleFor($command->system));
 
                     $this->deviceService->trustDevice($user, $command->deviceId);
 

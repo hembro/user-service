@@ -3,11 +3,11 @@
 declare(strict_types=1);
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\Enums\Systems;
 use App\Events\Auth\SuspiciousSessionDetected;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use jeremyaliparo\Foundation\Enums\System;
 use Mockery\MockInterface;
 
 uses(RefreshDatabase::class);
@@ -27,7 +27,7 @@ it('dispatches suspicious session event when device is not trusted', function ()
         uri: route('api.v1.users.email.change.request'),
         headers: [
             'User-Agent' => 'Test-Agent',
-            'X-Source-System' => Systems::PMS->value,
+            'X-Source-System' => System::PMS->value,
         ]
     );
 
@@ -35,7 +35,7 @@ it('dispatches suspicious session event when device is not trusted', function ()
 
     Event::assertDispatched(SuspiciousSessionDetected::class, function ($event) use ($user) {
         return $event->user->id === $user->id
-            && $event->system === Systems::PMS
+            && $event->system === System::PMS
             && $event->reason === 'untrusted_device_detected';
     });
 });

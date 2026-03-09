@@ -7,13 +7,10 @@ namespace App\Http\Controllers\Api\V1\Users;
 use App\Actions\Users\UpdatePassword;
 use App\Commands\Users\UpdatePasswordCommand;
 use App\Http\Requests\Api\V1\Users\UpdatePasswordRequest;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class UpdatePasswordController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly UpdatePassword $action
     ) {}
@@ -24,7 +21,7 @@ final class UpdatePasswordController
             UpdatePasswordCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'Password updated successfully. Other active tokens have been terminated.'
         );
     }

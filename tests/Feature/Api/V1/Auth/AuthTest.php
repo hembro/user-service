@@ -7,7 +7,6 @@ namespace Tests\Feature\Api\V1\Auth;
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Events\Auth\UserLoggedIn;
 use App\Events\Auth\UserLoggedOut;
 use App\Models\User;
@@ -18,6 +17,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 
@@ -84,7 +84,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         // Assert: Expect Challenge, NOT Token
@@ -129,7 +129,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         // Assert: Expect Tokens
@@ -172,7 +172,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
         $loginResponse = postJson(
             uri: route('api.v1.auth.login'),
             data: ['email' => $user->email, 'password' => $password],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $refreshCookieName = config('cookie.refresh_token.name');
@@ -191,7 +191,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                 $refreshCookieName => $refreshCookieValue,
                 $deviceIdCookieName => $deviceIdCookieValue,
             ],
-            server: ['HTTP_X-Source-System' => Systems::PMS->value]
+            server: ['HTTP_X-Source-System' => System::PMS->value]
         );
 
         // Assert
@@ -223,7 +223,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
                 'email' => $user->email,
                 'password' => $password,
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $deviceId = $loginResponse->getCookie(config('cookie.device_id.name'), false)->getValue();
@@ -250,7 +250,7 @@ describe('Authentication Feature: The Happy Path', function (): void {
         });
 
         // Act
-        $response = withHeader('X-Source-System', Systems::PMS->value)
+        $response = withHeader('X-Source-System', System::PMS->value)
             ->withHeader('Authorization', "Bearer {$token}")
             ->withCookie(config('cookie.device_id.name'), $deviceId)
             ->postJson(route('api.v1.auth.logout'));
@@ -277,7 +277,7 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
                 'email' => $user->email,
                 'password' => 'wrong-password',
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertUnauthorized()
@@ -296,7 +296,7 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
                 'email' => $user->email,
                 'password' => 'password123',
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertUnauthorized();
@@ -313,7 +313,7 @@ describe('Authentication Feature: The Unhappy Path', function (): void {
                 $refreshCookieName => 'this-is-a-fake-token',
                 $deviceCookieName => 'this-is-a-fake-device-id',
             ],
-            server: ['HTTP_X-Source-System' => Systems::PMS->value]
+            server: ['HTTP_X-Source-System' => System::PMS->value]
         );
 
         $response->assertUnauthorized()

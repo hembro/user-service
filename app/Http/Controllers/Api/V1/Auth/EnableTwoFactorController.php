@@ -7,14 +7,11 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Auth\EnableTwoFactor;
 use App\Commands\Auth\EnableTwoFactorCommand;
 use App\Http\Resources\Api\V1\Auth\TwoFactorSetupResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class EnableTwoFactorController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly EnableTwoFactor $action
     ) {}
@@ -29,7 +26,7 @@ final class EnableTwoFactorController
             EnableTwoFactorCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new TwoFactorSetupResource($twoFactorSetup),
             message: 'Scan the QR code to finish setup.'
         );

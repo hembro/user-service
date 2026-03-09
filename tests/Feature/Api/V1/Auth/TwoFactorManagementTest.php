@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
-use App\Enums\Systems;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use jeremyaliparo\Foundation\Enums\System;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
 use PragmaRX\Google2FA\Google2FA;
@@ -70,7 +70,7 @@ describe('2FA Management Feature: The Happy Path', function (): void {
             route('api.v1.auth.2fa.enable'),
             ['current_password' => $password],
             [
-                'X-Source-System' => Systems::PMS->value,
+                'X-Source-System' => System::PMS->value,
             ]
         );
 
@@ -116,7 +116,7 @@ describe('2FA Management Feature: The Happy Path', function (): void {
 
         $response = postJson(route('api.v1.auth.2fa.confirm'), [
             'code' => $validCode,
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertOk()
@@ -157,7 +157,7 @@ describe('2FA Management Feature: The Happy Path', function (): void {
         // Act
         $response = postJson(route('api.v1.auth.2fa.disable'), [
             'current_password' => $password,
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertOk();
@@ -197,7 +197,7 @@ describe('2FA Management Feature: The Happy Path', function (): void {
                 'current_password' => $password,
             ],
             [
-                'X-Source-System' => Systems::PMS->value,
+                'X-Source-System' => System::PMS->value,
             ]
         );
 
@@ -233,7 +233,7 @@ describe('2FA Management Feature: The Unhappy Path', function (): void {
 
         $response = postJson(route('api.v1.auth.2fa.confirm'), [
             'code' => '000000', // Invalid
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertUnauthorized()
             ->assertJsonPath('message', 'Invalid two-factor code.');
@@ -262,7 +262,7 @@ describe('2FA Management Feature: The Unhappy Path', function (): void {
 
         $response = postJson(route('api.v1.auth.2fa.disable'), [
             'current_password' => 'WrongPassword',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertInvalid(['current_password']);
 
@@ -290,7 +290,7 @@ describe('2FA Management Feature: The Unhappy Path', function (): void {
         // Try to confirm again
         $response = postJson(route('api.v1.auth.2fa.confirm'), [
             'code' => '123456',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertUnauthorized()
             ->assertJsonPath('message', 'Two-factor authentication is already enabled.');
@@ -316,7 +316,7 @@ describe('2FA Management Feature: The Unhappy Path', function (): void {
 
         $response = postJson(route('api.v1.auth.2fa.recovery-codes'), [
             'current_password' => 'WrongPassword',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertInvalid(['current_password']);
 

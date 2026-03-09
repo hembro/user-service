@@ -2,16 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Http\Middleware\CaptureRequestContext;
 use App\Http\Middleware\EnsureDeviceIsTrusted;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\Response;
+use jeremyaliparo\Foundation\Exceptions\ApiExceptionHandler;
+use jeremyaliparo\Foundation\Http\Middleware\CaptureRequestContext;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -29,35 +25,5 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-
-        $exceptions->render(function (AuthenticationException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*')) {
-                return new JsonResponse(
-                    data: [
-                        'success' => false,
-                        'message' => $e->getMessage(),
-                        'code' => Response::HTTP_UNAUTHORIZED,
-                    ],
-                    status: Response::HTTP_UNAUTHORIZED
-                );
-            }
-
-            return null;
-        });
-
-        $exceptions->render(function (ValidationException $e, Request $request) {
-            if ($request->expectsJson() || $request->is('api/*')) {
-                return new JsonResponse(
-                    data: [
-                        'success' => false,
-                        'message' => $e->validator->errors()->first(),
-                        'code' => 422,
-                        'errors' => $e->validator->errors(),
-                    ],
-                    status: Response::HTTP_UNPROCESSABLE_ENTITY
-                );
-            }
-
-            return null;
-        });
+        ApiExceptionHandler::register($exceptions);
     })->create();

@@ -7,7 +7,6 @@ namespace App\Services\Auth;
 use App\DTOs\Auth\AuthenticationOutcome;
 use App\DTOs\Auth\PendingAuthChallenge;
 use App\Enums\Auth\ChallengeType;
-use App\Enums\Systems;
 use App\Events\Auth\DeviceVerificationRequested;
 use App\Exceptions\Auth\InvalidVerificationRequest;
 use App\Models\User;
@@ -15,6 +14,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Str;
+use jeremyaliparo\Foundation\Enums\System;
 use Psr\Log\LoggerInterface;
 
 final readonly class ChallengeService
@@ -82,7 +82,7 @@ final readonly class ChallengeService
         return $strikes;
     }
 
-    public function initiateChallenge(User $user, ChallengeType $type, string $deviceId, Systems $system): AuthenticationOutcome
+    public function initiateChallenge(User $user, ChallengeType $type, string $deviceId, System $system): AuthenticationOutcome
     {
         $challengeId = (string) Str::ulid();
         $otpCode = null;

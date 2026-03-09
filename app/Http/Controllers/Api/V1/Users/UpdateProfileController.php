@@ -8,13 +8,10 @@ use App\Actions\Users\UpdateProfile;
 use App\Commands\Users\UpdateProfileCommand;
 use App\Http\Requests\Api\V1\Users\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\Users\UserResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class UpdateProfileController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly UpdateProfile $action
     ) {}
@@ -28,7 +25,7 @@ final class UpdateProfileController
             UpdateProfileCommand::fromRequest($request, $user)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new UserResource($user->refresh()->load(['profile', 'roles.permissions', 'permissions'])),
             message: 'User profile updated successfully'
         );

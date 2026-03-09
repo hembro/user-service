@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Commands\Auth;
 
 use App\Enums\SocialProviders;
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class SocialLoginCommand
 {
@@ -14,7 +14,7 @@ final readonly class SocialLoginCommand
         public SocialProviders $provider,
         public string $code,
         public string $deviceId,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(SocialLoginRequest $request, string $deviceId, SocialProviders $provider): self

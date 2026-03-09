@@ -7,13 +7,10 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Auth\ResetUserPassword;
 use App\Commands\Auth\ResetPasswordCommand;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class ResetPasswordController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly ResetUserPassword $action
     ) {}
@@ -24,7 +21,7 @@ final class ResetPasswordController
             ResetPasswordCommand::fromRequest($request)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             message: 'Your password has been reset successfully. Please login with your new password.'
         );
     }

@@ -12,14 +12,11 @@ use App\Http\Resources\Api\V1\Auth\AuthResource;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 final class LoginController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly AttemptLogin $action,
         private readonly AuthCookieService $cookie,
@@ -35,10 +32,10 @@ final class LoginController
         );
 
         $response = match ($outcome->status) {
-            AuthResultStatus::AUTHENTICATED => $this->success(
+            AuthResultStatus::AUTHENTICATED => JsonResponse::success(
                 data: new TokenResource($outcome->token)
             ),
-            AuthResultStatus::REQUIRES_CHALLENGE => $this->success(
+            AuthResultStatus::REQUIRES_CHALLENGE => JsonResponse::success(
                 data: new AuthResource($outcome),
                 message: $outcome->challengeType->message()
             ),

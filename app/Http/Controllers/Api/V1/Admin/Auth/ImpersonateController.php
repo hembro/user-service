@@ -9,23 +9,21 @@ use App\Commands\Admin\Auth\ImpersonateUserCommand;
 use App\Http\Requests\Api\V1\Admin\Users\ImpersonateUserRequest;
 use App\Http\Resources\Api\V1\Auth\TokenResource;
 use App\Models\User;
-use App\Traits\HasApiResponse;
+use Illuminate\Http\JsonResponse;
 
 final class ImpersonateController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly ImpersonateUser $action
     ) {}
 
-    public function __invoke(ImpersonateUserRequest $request, User $user)
+    public function __invoke(ImpersonateUserRequest $request, User $user): JsonResponse
     {
         $token = $this->action->handle(
             ImpersonateUserCommand::fromRequest($request, $user)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new TokenResource($token),
             message: "Impersonating {$user->email}"
         );

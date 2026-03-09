@@ -6,18 +6,20 @@ namespace App\Services\Auth;
 
 use App\DTOs\Auth\SocialProfile;
 use App\Enums\Sex;
-use App\Enums\Systems;
 use App\Models\User;
+use App\Services\Users\SystemRoleResolver;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Psr\Log\LoggerInterface;
 
 final readonly class SocialUserResolver
 {
     public function __construct(
+        private SystemRoleResolver $roleResolver,
         private LoggerInterface $logger
     ) {}
 
-    public function resolve(SocialProfile $profile, Systems $system): User
+    public function resolve(SocialProfile $profile, System $system): User
     {
         $user = User::query()
             ->firstOrCreate(
@@ -40,7 +42,7 @@ final readonly class SocialUserResolver
                 'sex' => Sex::UNKNOWN,
             ]);
 
-            $user->assignRole($system->defaultRole());
+            $user->assignRole($this->roleResolver->defaultRoleFor($system));
         }
 
         $user->socialAccounts()->firstOrCreate(

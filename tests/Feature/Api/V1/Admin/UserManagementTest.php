@@ -6,7 +6,6 @@ namespace Tests\Feature\Api\V1\Admin;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Events\Admin\UserDeleted;
 use App\Events\Admin\UserImpersonated;
 use App\Events\Admin\UserInvited;
@@ -20,6 +19,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 use Laravel\Passport\Passport;
@@ -82,7 +82,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         $response = postJson(
             uri: route('api.v1.admin.users.store'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertCreated()
@@ -102,7 +102,7 @@ describe('Admin User Management: The Happy Path', function (): void {
 
         $response = getJson(
             uri: route('api.v1.admin.users.index') . '?per_page=10&sort=-created_at',
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -120,7 +120,7 @@ describe('Admin User Management: The Happy Path', function (): void {
 
         $response = getJson(
             uri: route('api.v1.admin.users.show', $user->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -152,7 +152,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         $response = putJson(
             uri: route('api.v1.admin.users.update', $user->id),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -172,7 +172,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         $response = patchJson(
             uri: route('api.v1.admin.users.status.update', $user->id),
             data: ['status' => UserStatus::BANNED->value],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -195,7 +195,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         $response = patchJson(
             uri: route('api.v1.admin.users.role.update', $user->id),
             data: ['roles' => [Roles::PMS_DIVISION_CHIEF->value]],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -220,7 +220,7 @@ describe('Admin User Management: The Happy Path', function (): void {
                 'password' => $newPassword,
                 'password_confirmation' => $newPassword,
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -239,7 +239,7 @@ describe('Admin User Management: The Happy Path', function (): void {
         // FIX: Route name 'delete'
         $response = deleteJson(
             uri: route('api.v1.admin.users.delete', $user->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertNoContent();
@@ -262,7 +262,7 @@ describe('Admin User Management: The Happy Path', function (): void {
 
         $response = postJson(
             uri: route('api.v1.admin.auth.impersonate', $targetUser->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -293,7 +293,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.admin.users.store'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )->assertForbidden();
     });
 
@@ -311,7 +311,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.admin.users.store'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['roles.0']);
@@ -320,7 +320,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
     it('prevents deleting yourself', function (): void {
         deleteJson(
             uri: route('api.v1.admin.users.delete', $this->admin->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )->assertForbidden();
     });
 
@@ -330,7 +330,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
 
         postJson(
             uri: route('api.v1.admin.auth.impersonate', $otherAdmin->id),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )->assertForbidden();
     });
 
@@ -347,7 +347,7 @@ describe('Admin User Management: The Unhappy Path', function (): void {
                 'last_name' => 'User',
                 'sex' => 'male',
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['email']);

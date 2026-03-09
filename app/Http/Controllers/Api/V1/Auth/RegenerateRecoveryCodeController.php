@@ -7,13 +7,10 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Auth\RegenerateRecoveryCodes;
 use App\Http\Requests\Api\V1\Auth\RegenerateRecoveryCodesRequest;
 use App\Http\Resources\Api\V1\Auth\RecoveryCodesResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class RegenerateRecoveryCodeController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly RegenerateRecoveryCodes $action
     ) {}
@@ -22,7 +19,7 @@ final class RegenerateRecoveryCodeController
     {
         $recoveryCodes = $this->action->handle($request->user());
 
-        return $this->success(
+        return JsonResponse::success(
             data: new RecoveryCodesResource($recoveryCodes),
             message: 'Recovery codes regenerated successfully.'
         );

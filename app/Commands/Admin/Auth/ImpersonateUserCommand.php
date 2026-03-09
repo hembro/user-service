@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Commands\Admin\Auth;
 
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\ImpersonateUserRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class ImpersonateUserCommand
 {
     public function __construct(
         public User $targetUser,
         public User $actor,
-        public Systems $system,
+        public System $system,
         public ?string $reason
     ) {}
 

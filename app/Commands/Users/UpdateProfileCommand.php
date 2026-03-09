@@ -6,10 +6,10 @@ namespace App\Commands\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Users\UpdateProfileRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class UpdateProfileCommand
 {
@@ -23,7 +23,7 @@ final readonly class UpdateProfileCommand
         public Sex $sex,
         public ?string $mobileNumber,
         public array $preferences,
-        public Systems $system,
+        public System $system,
         public ?array $systemContext
     ) {}
 

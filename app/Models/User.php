@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Observers\UserObserver;
 use Carbon\CarbonInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -16,6 +15,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
@@ -93,7 +93,7 @@ final class User extends Authenticatable implements MustVerifyEmail, OAuthentica
         );
     }
 
-    public function belongsToSystem(Systems $system): bool
+    public function belongsToSystem(System $system): bool
     {
         foreach ($this->getRoleNames() as $name) {
             if (Roles::tryFrom($name)?->system() === $system) {

@@ -6,9 +6,9 @@ namespace App\Commands\Users;
 
 use App\Enums\Sex;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
 use App\Http\Requests\Api\V1\Users\RegisterRequest;
+use jeremyaliparo\Foundation\Enums\System;
 use SensitiveParameter;
 
 final readonly class RegisterUserCommand
@@ -26,7 +26,7 @@ final readonly class RegisterUserCommand
         public ?string $mobileNumber,
         public array $preferences,
         public string $deviceId,
-        public Systems $system,
+        public System $system,
         public array $systemContext,
     ) {}
 

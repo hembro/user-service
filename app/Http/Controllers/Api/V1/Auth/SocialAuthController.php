@@ -11,14 +11,11 @@ use App\Http\Requests\Api\V1\Auth\SocialLoginRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
 use App\Services\Auth\DeviceTrustService;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
 
 final class SocialAuthController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly ProcessSocialLogin $action,
         private readonly AuthCookieService $cookieService,
@@ -33,7 +30,7 @@ final class SocialAuthController
             SocialLoginCommand::fromRequest($request, $deviceId, $provider)
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new AuthResource($authenticationOutcome),
             message: 'Social authentication successful.'
         )

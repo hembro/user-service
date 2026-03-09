@@ -6,7 +6,6 @@ namespace Tests\Feature\Api\V1\Users;
 
 use App\Contracts\Auth\DeviceTrustVerifier;
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Events\Users\UserAvatarUpdated;
 use App\Events\Users\UserEmailChanged;
 use App\Events\Users\UserEmailChangeRequested;
@@ -20,6 +19,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Passport;
 
@@ -70,7 +70,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
     it('can view their own profile', function (): void {
         $response = getJson(
             uri: route('api.v1.users.profile'),
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -90,7 +90,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         $response = putJson(
             uri: route('api.v1.users.profile.update'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk()
@@ -116,7 +116,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         $response = patchJson(
             uri: route('api.v1.users.profile.password.update'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -135,7 +135,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         $response = postJson(
             uri: route('api.v1.users.profile.avatar.update'),
             data: ['avatar' => $file],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -164,7 +164,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
                 'email' => $newEmail,
                 'current_password' => 'OldPassword123!',
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -194,7 +194,7 @@ describe('User Profile (Self-Service): Happy Path', function (): void {
         $response = postJson(
             uri: route('api.v1.users.email.change.verify'),
             data: ['token' => $token],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         );
 
         $response->assertOk();
@@ -222,7 +222,7 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
         patchJson(
             uri: route('api.v1.users.profile.password.update'),
             data: $payload,
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['current_password']);
@@ -236,7 +236,7 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.users.profile.avatar.update'),
             data: ['avatar' => $file],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['avatar']);
@@ -249,7 +249,7 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
                 'email' => 'new@pms.gov.ph',
                 'current_password' => 'WrongPassword!',
             ],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['current_password']);
@@ -265,7 +265,7 @@ describe('User Profile (Self-Service): Unhappy Path', function (): void {
         postJson(
             uri: route('api.v1.users.email.change.verify'),
             data: ['token' => 'fake-token'],
-            headers: ['X-Source-System' => Systems::PMS->value]
+            headers: ['X-Source-System' => System::PMS->value]
         )->assertForbidden();
     });
 });

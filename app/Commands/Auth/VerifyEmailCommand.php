@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Commands\Auth;
 
-use App\Enums\Systems;
 use Illuminate\Http\Request;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class VerifyEmailCommand
 {
     public function __construct(
         public string $id,
         public string $hash,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(Request $request, string $id, string $hash): self

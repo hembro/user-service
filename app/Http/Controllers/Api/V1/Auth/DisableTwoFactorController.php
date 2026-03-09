@@ -8,13 +8,10 @@ use App\Actions\Auth\DisableTwoFactor;
 use App\Commands\Auth\DisableTwoFactorCommand;
 use App\Http\Requests\Api\V1\Auth\DisableTwoFactorRequest;
 use App\Http\Resources\Api\V1\Auth\AuthUserResource;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class DisableTwoFactorController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly DisableTwoFactor $action
     ) {}
@@ -25,7 +22,7 @@ final class DisableTwoFactorController
             DisableTwoFactorCommand::fromRequest($request),
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new AuthUserResource($request->user()->fresh()),
             message: 'Two-factor authentication has been disabled.'
         );

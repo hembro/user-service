@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Users;
 
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Models\User;
 use Illuminate\Database\DatabaseManager;
+use jeremyaliparo\Foundation\Enums\System;
 
 final class SyncSystemRoles
 {
@@ -15,7 +15,7 @@ final class SyncSystemRoles
         private DatabaseManager $db
     ) {}
 
-    public function handle(User $user, Systems $system, array $newRoles): ?array
+    public function handle(User $user, System $system, array $newRoles): ?array
     {
         return $this->db->transaction(
             callback: function () use ($user, $system, $newRoles) {

@@ -6,7 +6,6 @@ namespace Tests\Feature\Api\V1\Auth;
 
 use App\Enums\Auth\ChallengeType;
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Events\Auth\UserLoggedIn;
 use App\Models\User;
 use App\Models\UserProfile;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 use Laravel\Passport\Client;
 use PragmaRX\Google2FA\Google2FA;
@@ -70,7 +70,7 @@ describe('2FA Feature: The Happy Path', function (): void {
         $response = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertOk()
@@ -105,7 +105,7 @@ describe('2FA Feature: The Happy Path', function (): void {
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $challengeId = $loginResponse->json('data.challenge_id');
 
@@ -116,7 +116,7 @@ describe('2FA Feature: The Happy Path', function (): void {
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => $validCode,
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertOk()
@@ -149,7 +149,7 @@ describe('2FA Feature: The Happy Path', function (): void {
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $challengeId = $loginResponse->json('data.challenge_id');
 
@@ -157,7 +157,7 @@ describe('2FA Feature: The Happy Path', function (): void {
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => $recoveryCodes->first(), // Using the first one
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertOk()
@@ -186,7 +186,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $loginResponse = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $challengeId = $loginResponse->json('data.challenge_id');
 
@@ -194,7 +194,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => '000000', // Wrong
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertForbidden();
@@ -213,13 +213,13 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value])->json('data.challenge_id');
+        ], ['X-Source-System' => System::PMS->value])->json('data.challenge_id');
 
         // Act
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => '0000000000-0000000000',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Assert
         $response->assertForbidden();
@@ -241,7 +241,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value])->json('data.challenge_id');
+        ], ['X-Source-System' => System::PMS->value])->json('data.challenge_id');
 
         $validCode = $this->google2fa->getCurrentOtp($this->userSecret);
 
@@ -249,13 +249,13 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => $validCode,
-        ], ['X-Source-System' => Systems::PMS->value])->assertOk();
+        ], ['X-Source-System' => System::PMS->value])->assertOk();
 
         // 2. Second Attempt (Same Code, Immediate)
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => $validCode,
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         // Should fail because challenge is invalidated
         // challenge_id is one-time use
@@ -280,21 +280,21 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value])->json('data.challenge_id');
+        ], ['X-Source-System' => System::PMS->value])->json('data.challenge_id');
 
         // Spam 5 wrong codes
         for ($i = 0; $i < 5; $i++) {
             postJson(route('api.v1.auth.login.challenge'), [
                 'challenge_id' => $challengeId,
                 'code' => '000000',
-            ], ['X-Source-System' => Systems::PMS->value]);
+            ], ['X-Source-System' => System::PMS->value]);
         }
 
         // 6th Attempt
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => '000000',
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertTooManyRequests();
     });
@@ -311,7 +311,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $challengeId = postJson(route('api.v1.auth.login'), [
             'email' => $user->email,
             'password' => 'password',
-        ], ['X-Source-System' => Systems::PMS->value])->json('data.challenge_id');
+        ], ['X-Source-System' => System::PMS->value])->json('data.challenge_id');
 
         // Fast forward time
         travel(16)->minutes();
@@ -321,7 +321,7 @@ describe('2FA Feature: The Unhappy Path', function (): void {
         $response = postJson(route('api.v1.auth.login.challenge'), [
             'challenge_id' => $challengeId,
             'code' => $validCode,
-        ], ['X-Source-System' => Systems::PMS->value]);
+        ], ['X-Source-System' => System::PMS->value]);
 
         $response->assertForbidden()
             ->assertJson(['message' => 'Challenge expired or invalid.']);

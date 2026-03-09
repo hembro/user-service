@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Traits\EnumOptions;
+use jeremyaliparo\Foundation\Traits\HasEnumOptions;
 
 enum Suffix: string
 {
-    use EnumOptions;
+    use HasEnumOptions;
 
     /**
      * ==========================================

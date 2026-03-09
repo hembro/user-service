@@ -9,13 +9,10 @@ use App\Commands\Auth\VerifyChallengeCommand;
 use App\Http\Requests\Api\V1\Auth\VerifyChallengeRequest;
 use App\Http\Resources\Api\V1\Auth\AuthResource;
 use App\Services\AuthCookieService;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 
 final class VerifyAuthenticationChallengeController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly VerifyAuthenticationChallenge $action,
         private readonly AuthCookieService $cookie
@@ -27,7 +24,7 @@ final class VerifyAuthenticationChallengeController
             VerifyChallengeCommand::fromRequest($request),
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: new AuthResource($outcome),
             message: 'Authentication successful.'
         )->withCookie(

@@ -9,24 +9,21 @@ use App\Enums\Roles;
 use App\Enums\Sex;
 use App\Enums\SocialProviders;
 use App\Enums\Suffix;
-use App\Enums\Systems;
 use App\Enums\Titles;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use jeremyaliparo\Foundation\Enums\System;
 use jeremyaliparo\IntegrationSchemas\Enums\Users\UserStatus;
 
 final class LookupsController
 {
-    use HasApiResponse;
-
     public function __invoke(): JsonResponse
     {
         $data = Cache::rememberForever('api.v1.system.lookups', function (): array {
 
             $rolesBySystem = [];
-            foreach (Systems::cases() as $system) {
+            foreach (System::cases() as $system) {
                 $systemRoles = Roles::forSystem($system, false);
 
                 $rolesBySystem[$system->value] = array_map(fn (Roles $role) => [
@@ -42,7 +39,7 @@ final class LookupsController
                 'sexes' => Sex::options(),
 
                 // System & Access
-                'systems' => Systems::options(),
+                'systems' => System::options(),
                 'roles' => $rolesBySystem,
                 'permissions' => Permissions::options(),
 
@@ -55,7 +52,7 @@ final class LookupsController
             ];
         });
 
-        return $this->success(
+        return JsonResponse::success(
             data: $data,
             message: 'System lookups retrieved successfully.'
         );

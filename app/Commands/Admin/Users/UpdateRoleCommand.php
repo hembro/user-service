@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Commands\Admin\Users;
 
 use App\Enums\Roles;
-use App\Enums\Systems;
 use App\Http\Requests\Api\V1\Admin\Users\UpdateRoleRequest;
 use App\Models\User;
+use jeremyaliparo\Foundation\Enums\System;
 
 final readonly class UpdateRoleCommand
 {
@@ -15,7 +15,7 @@ final readonly class UpdateRoleCommand
         public User $targetUser,
         public User $actor,
         public array $roles,
-        public Systems $system
+        public System $system
     ) {}
 
     public static function fromRequest(UpdateRoleRequest $request, User $targetUser): self

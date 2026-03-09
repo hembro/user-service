@@ -7,14 +7,11 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Actions\Auth\GetSocialRedirectUrl;
 use App\Commands\Auth\SocialRedirectCommand;
 use App\Enums\SocialProviders;
-use App\Traits\HasApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 final class SocialRedirectController
 {
-    use HasApiResponse;
-
     public function __construct(
         private readonly GetSocialRedirectUrl $action
     ) {}
@@ -25,7 +22,7 @@ final class SocialRedirectController
             new SocialRedirectCommand($provider, $request->attributes->get('system')),
         );
 
-        return $this->success(
+        return JsonResponse::success(
             data: [
                 'provider' => $provider->value,
                 'redirect_url' => $url,

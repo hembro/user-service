@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use App\Traits\EnumOptions;
 use InvalidArgumentException;
+use jeremyaliparo\Foundation\Enums\System;
+use jeremyaliparo\Foundation\Traits\HasEnumOptions;
 
 enum Roles: string
 {
-    use EnumOptions;
+    use HasEnumOptions;
 
     case PMS_ADMIN = 'pms.admin';
     case PMS_DIVISION_ADMIN = 'pms.division-admin';
@@ -30,7 +31,7 @@ enum Roles: string
     /**
      * Get all roles for a given system
      */
-    public static function forSystem(Systems $system, bool $returnString = false): array
+    public static function forSystem(System $system, bool $returnString = false): array
     {
         $roles = array_filter(
             self::cases(),
@@ -64,7 +65,7 @@ enum Roles: string
      *
      * @throws InvalidArgumentException
      */
-    public static function ensureBelongsToSystem(array $roles, Systems $system): void
+    public static function ensureBelongsToSystem(array $roles, System $system): void
     {
         foreach ($roles as $role) {
             if (! str_starts_with($role->value, "{$system->value}.")) {
@@ -118,12 +119,12 @@ enum Roles: string
     /**
      * Get the system for a given role
      */
-    public function system(): Systems
+    public function system(): System
     {
         return match (true) {
-            str_starts_with($this->value, 'pms.') => Systems::PMS,
-            str_starts_with($this->value, 'herdin.') => Systems::HERDIN,
-            str_starts_with($this->value, 'phrr.') => Systems::PHRR,
+            str_starts_with($this->value, 'pms.') => System::PMS,
+            str_starts_with($this->value, 'herdin.') => System::HERDIN,
+            str_starts_with($this->value, 'phrr.') => System::PHRR,
         };
     }
 }
