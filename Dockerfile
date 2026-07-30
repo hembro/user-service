@@ -1,45 +1,87 @@
-# Use the official PHP 8.2 FPM Alpine image for a lightweight footprint
-FROM php:8.2-fpm-alpine
+# ==========================================
+# Stage 1: Build Dependencies (Backend Only)
+# ==========================================
+FROM php:8.4-fpm-alpine AS builder
 
-# Install system dependencies needed for Laravel, Passport, and Spatie
+# Install system dependencies required for compiling PHP extensions
 RUN apk add --no-cache \
-    git \
-    curl \
+    postgresql-dev \
+    libzip-dev \
     zip \
     unzip \
-    libpng-dev \
-    oniguruma-dev \
-    libxml2-dev \
-    bash
+    git \
+    linux-headers \
+    $PHPIZE_DEPS
 
-# Install required PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install required PHP extensions (Postgres, Redis, BCMath for 2FA, PCNTL for Queues)
+RUN docker-php-ext-install pdo pdo_pgsql zip bcmath pcntl sockets \
+    && pecl install redis \
+    && docker-php-ext-enable redis
 
-# Copy Composer from the official image
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set the working directory
-WORKDIR /var/www/html
+WORKDIR /app
 
-# Copy the application code into the container
+# Copy application files
 COPY . .
 
-# Install PHP dependencies (optimized for production)
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+# ADD THESE LINES: Inject dummy variables to prevent PHP 8.4 strict type crashes during boot
+ENV APP_ENV="production"
+ENV APP_KEY="base64:AckfSECXIvnK5r28GVIWUAxmbBsjTsmFf2y1pEZcg/c="
+ENV APP_URL="http://localhost"
+ENV APP_FRONTEND_URL="http://localhost"
 
-# Set up the storage symbolic link (Build-time)
+# 1. Install PHP dependencies BUT skip the auto-scripts
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
+
+# 2. Forge temporary Passport keys using OpenSSL to bypass Laravel's boot crash
+RUN openssl genrsa -out storage/oauth-private.key 2048 \
+    && openssl rsa -in storage/oauth-private.key -pubout -out storage/oauth-public.key \
+    && chmod 600 storage/oauth-private.key storage/oauth-public.key
+
+# 3. Now safely run the discovery script
+RUN php artisan package:discover --ansi
+
+# 4. Create the storage symlink
 RUN php artisan storage:link
 
-# Fix directory permissions for Laravel
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# ==========================================
+# Stage 2: Production Environment
+# ==========================================
+FROM php:8.4-fpm-alpine
 
-# Copy the entrypoint script and make it executable
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENV APP_ENV=production
+ENV APP_KEY="base64:AckfSECXIvnK5r28GVIWUAxmbBsjTsmFf2y1pEZcg/c="
+ENV APP_URL=http://localhost
+ENV APP_FRONTEND_URL=http://localhost
 
-# Set the entrypoint to our custom script
-ENTRYPOINT ["docker-entrypoint.sh"]
+# Install minimal production system dependencies (Nginx and Supervisor)
+RUN apk add --no-cache \
+    nginx \
+    postgresql-dev \
+    supervisor \
+    tzdata \
+    libzip
 
-# Start the PHP-FPM server
-CMD ["php-fpm"]
+# Copy compiled PHP extensions from the builder stage
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
+
+WORKDIR /var/www/html
+
+# Copy the fully built Laravel application from the builder stage
+COPY --from=builder /app /var/www/html
+
+# Set correct storage and cache permissions for Laravel
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Copy Nginx and Supervisor configuration files
+COPY ./docker/nginx.conf /etc/nginx/nginx.conf
+COPY ./docker/supervisord.conf /etc/supervisord.conf
+
+# Expose web server port
+EXPOSE 80
+
+# Start Supervisor (This will run both Nginx and PHP-FPM simultaneously)
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
