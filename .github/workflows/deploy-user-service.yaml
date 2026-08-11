@@ -42,7 +42,7 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
-          # You can also manually inject the APP_URL if your .env.example doesn't have it
+          php artisan passport:keys
           sed -i 's/APP_URL=.*/APP_URL=http:\/\/localhost/' .env
 
       - name: Execute Tests (Pest)
