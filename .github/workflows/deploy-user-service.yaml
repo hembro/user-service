@@ -38,6 +38,13 @@ jobs:
         run: |
           composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          # You can also manually inject the APP_URL if your .env.example doesn't have it
+          sed -i 's/APP_URL=.*/APP_URL=http:\/\/localhost/' .env
+
       - name: Execute Tests (Pest)
         run: |
           vendor/bin/pest
