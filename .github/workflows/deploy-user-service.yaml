@@ -19,6 +19,12 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
+    services:
+      rabbitmq:
+        image: rabbitmq:3
+        ports:
+          - 5672:5672
+
     # 2. REQUIRED FOR KEYLESS AUTH: Allows GitHub to request an OIDC token from Google
     permissions:
       contents: "read"
