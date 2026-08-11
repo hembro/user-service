@@ -42,11 +42,7 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate
-
-          openssl genrsa -out storage/oauth-private.key 2048
-          openssl rsa -in storage/oauth-private.key -pubout -out storage/oauth-public.key
-          chmod 600 storage/oauth-private.key storage/oauth-public.key
-
+          php artisan passport:keys
           sed -i 's/APP_URL=.*/APP_URL=http:\/\/localhost/' .env
 
       - name: Execute Tests (Pest)

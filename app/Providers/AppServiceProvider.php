@@ -40,8 +40,12 @@ final class AppServiceProvider extends ServiceProvider
         $this->configureDefaults($isProduction);
         $this->configureModels($isProduction);
         $this->configureRateLimiting($isProduction);
-        $this->registerCustomGrants();
+        //$this->registerCustomGrants();
         $this->bindServices();
+
+        if (file_exists(storage_path('oauth-private.key'))) {
+            $this->registerCustomGrants();
+        }
     }
 
     private function configurePassport(): void
