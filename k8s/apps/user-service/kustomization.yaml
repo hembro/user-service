@@ -24,4 +24,4 @@ configMapGenerator:
 secretGenerator:
   - name: app-env-secret
     envs:
-      - .env.secretF
+      - .env.secret
