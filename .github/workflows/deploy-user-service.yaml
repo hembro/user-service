@@ -9,7 +9,7 @@ on:
 env:
   PROJECT_ID: project-501674b6-7d67-40dc-99c
   GAR_LOCATION: asia-southeast1
-  GAR_REPO: projects/project-501674b6-7d67-40dc-99c/locations/asia-southeast1/repositories/laravel-microservices-repo
+  GAR_REPO: laravel-microservices-repo
   IMAGE_NAME: user-service
   CLUSTER_NAME: poc-gke-cluster
   CLUSTER_ZONE: asia-southeast1-a
