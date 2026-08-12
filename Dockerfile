@@ -40,7 +40,8 @@ RUN openssl genrsa -out storage/oauth-private.key 2048 \
     && openssl rsa -in storage/oauth-private.key -pubout -out storage/oauth-public.key \
     && chmod 600 storage/oauth-private.key storage/oauth-public.key
 
-# 3. Now safely run the discovery script
+# 3. Now safely run the discovery script and rm cache for more bulletproofing
+RUN rm -f bootstrap/cache/*.php && php artisan package:discover --ansi
 RUN php artisan package:discover --ansi
 
 # 4. Create the storage symlink
