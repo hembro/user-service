@@ -92,6 +92,12 @@ jobs:
         run: |
           cd k8s/apps/user-service/
 
+          sed -i "s/DB_HOST=.*/DB_HOST=10.72.128.5/" .env.secret
+          sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env.secret
+          sed -i "s/DB_DATABASE=.*/DB_DATABASE=${{ secrets.DB_DATABASE }}/" .env.secret
+          sed -i "s/DB_USERNAME=.*/DB_USERNAME=${{ secrets.DB_USERNAME }}/" .env.secret
+          sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" .env.secret
+
           # Ensure the namespace exists before deploying
           kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}
 
