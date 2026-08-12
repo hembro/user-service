@@ -3,6 +3,7 @@ kind: Kustomization
 
 # 1. Inherit the master blueprint
 resources:
+  - serviceaccount.yaml
   - ../../base
 
 # 2. Automatically prepend "user-service-" to all resource names and labels
