@@ -12,7 +12,7 @@ env:
   GAR_REPO: laravel-microservices-repo
   IMAGE_NAME: user-service
   CLUSTER_NAME: poc-gke-cluster
-  CLUSTER_ZONE: asia-southeast1-a
+  CLUSTER_ZONE: asia-southeast1
   NAMESPACE: production
 
 jobs:
