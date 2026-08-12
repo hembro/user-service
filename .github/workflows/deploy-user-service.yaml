@@ -92,6 +92,9 @@ jobs:
         run: |
           cd k8s/apps/user-service/
 
+          # Ensure the namespace exists before deploying
+          kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}
+
           # Dynamically swap image tag
           kustomize edit set image base-image:placeholder=${{ env.IMAGE_TAG }}
 
