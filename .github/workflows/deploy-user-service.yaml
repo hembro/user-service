@@ -92,7 +92,7 @@ jobs:
         run: |
           cd k8s/apps/user-service/
 
-          sed -i "s/DB_HOST=.*/DB_HOST=10.72.128.5/" .env.secret
+          sed -i "s/DB_HOST=.*/DB_HOST=10.27.208.3/" .env.secret
           sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env.secret
           sed -i "s/DB_DATABASE=.*/DB_DATABASE=${{ secrets.DB_DATABASE }}/" .env.secret
           sed -i "s/DB_USERNAME=.*/DB_USERNAME=${{ secrets.DB_USERNAME }}/" .env.secret
