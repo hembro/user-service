@@ -90,31 +90,26 @@ jobs:
 
       - name: Deploy to GKE
         run: |
-          # 1. Move to the new Kustomize production overlay directory
-          cd k8s/overlays/production/
+          cd k8s/apps/user-service/
 
-          # 2. Update .env.secret for the Cloud SQL Auth Proxy sidecar
-          sed -i "s/DB_HOST=.*/DB_HOST=127.0.0.1/" .env.secret
-          sed -i "s/DB_PORT=.*/DB_PORT=3306/" .env.secret
+          sed -i "s/DB_HOST=.*/DB_HOST=10.27.208.3/" .env.secret
+          sed -i "s/DB_PORT=.*/DB_PORT=5432/" .env.secret
           sed -i "s/DB_DATABASE=.*/DB_DATABASE=${{ secrets.DB_DATABASE }}/" .env.secret
           sed -i "s/DB_USERNAME=.*/DB_USERNAME=${{ secrets.DB_USERNAME }}/" .env.secret
           sed -i "s/DB_PASSWORD=.*/DB_PASSWORD=${{ secrets.DB_PASSWORD }}/" .env.secret
 
-          # 3. Ensure the namespace exists before deploying
+          # Ensure the namespace exists before deploying
           kubectl get namespace ${{ env.NAMESPACE }} || kubectl create namespace ${{ env.NAMESPACE }}
 
-          # 4. Dynamically swap the image tag in kustomization.yaml
+          # Dynamically swap image tag
           kustomize edit set image base-image:placeholder=${{ env.IMAGE_TAG }}
 
-          # 5. Delete old migration job (using the component=migration label)
+          # Delete old migration job
           kubectl delete job -l component=migration --ignore-not-found -n ${{ env.NAMESPACE }}
 
-          # 6. Build Kustomize manifests and apply directly to GKE
-          kustomize build . | kubectl apply -f -
+          # Apply to GKE
+          kustomize build . | kubectl apply -n ${{ env.NAMESPACE }} -f -
 
-          # 7. Wait for the database migration to complete
-          kubectl wait --for=condition=complete job/migrate --timeout=120s -n ${{ env.NAMESPACE }}
-          
-          # 8. Ensure BOTH the Web and Worker deployments roll out successfully
-          kubectl rollout status deployment/laravel-app -n ${{ env.NAMESPACE }}
-          kubectl rollout status deployment/user-service-worker -n ${{ env.NAMESPACE }}
+          # Wait for migration and rollout
+          kubectl wait --for=condition=complete job/user-service-migrate --timeout=120s -n ${{ env.NAMESPACE }}
+          kubectl rollout status deployment/user-service-laravel-app -n ${{ env.NAMESPACE }}

@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-service-worker
+spec:
+  selector:
+    matchLabels:
+      app: user-service-worker
+  template:
+    metadata:
+      labels:
+        app: user-service-worker
+    spec:
+      serviceAccountName: user-service-laravel-k8s-sa
+      containers:
+      - name: application
+        image: user-service
+        command: ["php", "artisan", "pubsub:work"]
+        envFrom:
+        - configMapRef:
+            name: app-env-config
+        - secretRef:
+            name: app-env-secret
