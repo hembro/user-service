@@ -7,7 +7,7 @@ spec:
   template:
     spec:
       nodeSelector:
-        cloud.google.com/gke-nodepool: heavy-task-pool
+        cloud.google.com/gke-nodepool: poc-gke-node-pool
       containers:
       - name: application
         resources:
