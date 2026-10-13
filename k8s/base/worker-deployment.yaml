@@ -15,7 +15,7 @@ spec:
       containers:
       - name: application
         image: base-image:placeholder
-        command: ["php", "artisan", "pubsub:work"]
+        command: ["php", "artisan", "queue:work"]
         envFrom:
         - configMapRef:
             name: app-env-config
