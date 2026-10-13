@@ -8,6 +8,6 @@ data:
   LOG_CHANNEL: "stderr"
   CLOUD_SQL_CONNECTION_NAME: "project-4d486229-502c-4ea7-890:asia-southeast1:poc-postgres-instance"
   DB_HOST: "127.0.0.1"
-  DB_PORT: "3306"
+  DB_PORT: "5432"
   DB_DATABASE: "user_service_db"
   PUBSUB_TOPIC: "user-creation-topic"
