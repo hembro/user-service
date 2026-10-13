@@ -14,7 +14,7 @@ spec:
       serviceAccountName: user-service-laravel-k8s-sa
       containers:
       - name: application
-        image: user-service
+        image: base-image:placeholder
         command: ["php", "artisan", "pubsub:work"]
         envFrom:
         - configMapRef:
