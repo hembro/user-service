@@ -12,8 +12,8 @@ spec:
       - name: application
         resources:
           requests:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "50m"
+            memory: "128Mi"
           limits:
-            cpu: "1000m"
-            memory: "1024Mi"
+            cpu: "250m"
+            memory: "256Mi"
