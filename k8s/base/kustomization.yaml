@@ -6,3 +6,4 @@ resources:
   - service.yaml
   - migration-job.yaml
   - worker-deployment.yaml
+  - serviceaccount.yaml
