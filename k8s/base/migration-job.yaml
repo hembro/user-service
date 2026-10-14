@@ -43,7 +43,8 @@ spec:
         - name: artisan-migrate
           image: base-image:placeholder
           # Override the default command to run migrations
-          command: ["php", "artisan", "migrate", "--force"]
+          command: ["/bin/sh", "-c"] 
+          args: ["sleep 5 && php artisan migrate --force"]
           envFrom:
             - configMapRef:
                 name: app-env-config
